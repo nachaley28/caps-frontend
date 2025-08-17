@@ -1,340 +1,209 @@
 import React, { useState } from 'react';
-import { FaPlus, FaLaptop, FaDesktop, FaPlug, FaEdit, FaTrash, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaLaptop, FaPlug, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
-// ----- Lab Form Component -----
-function LabForm({ show, onClose, onSave, labName, setLabName, labLocation, setLabLocation, editing }) {
-  if (!show) return null;
-  return (
-    <div className="card shadow-sm p-3 mb-3 border-0">
-      <h5 className="card-title">{editing ? 'Edit Lab' : 'Add New Lab'}</h5>
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder="Lab Name"
-        value={labName}
-        onChange={(e) => setLabName(e.target.value)}
-      />
-      <input
-        type="text"
-        className="form-control mb-3"
-        placeholder="Location"
-        value={labLocation}
-        onChange={(e) => setLabLocation(e.target.value)}
-      />
-      <div className="d-flex gap-2">
-        <button className="btn btn-primary w-100" onClick={onSave}>
-          {editing ? 'Update Lab' : 'Save Lab'}
-        </button>
-        <button className="btn btn-secondary w-100" onClick={onClose}>Cancel</button>
-      </div>
-    </div>
-  );
-}
+export default function LabInventoryDashboard() {
+  const [labs, setLabs] = useState([
+    {
+      id: 'lab-1',
+      name: 'Computer Lab A',
+      location: 'Building 1',
+      items: [
+        { id: 'item-1', name: 'PC-01', type: 'Computer', spec: 'Intel i5, 8GB RAM' },
+        { id: 'item-2', name: 'Projector', type: 'Accessory', spec: 'Full HD' },
+      ],
+    },
+    {
+      id: 'lab-2',
+      name: 'Computer Lab B',
+      location: 'Building 2',
+      items: [
+        { id: 'item-3', name: 'PC-02', type: 'Computer', spec: 'Intel i7, 16GB RAM' },
+        { id: 'item-4', name: 'Printer', type: 'Accessory', spec: 'LaserJet' },
+      ],
+    },
+  ]);
 
-// ----- Computer / Accessory Form Component -----
-function ItemForm({ show, onClose, onSave, name, setName, spec, setSpec, assignedLab, setAssignedLab, labs, editing, title, btnColor }) {
-  if (!show) return null;
-  return (
-    <div className={`card shadow-sm p-3 mb-3 border-0`}>
-      <h5 className="card-title">{editing ? `Edit ${title}` : `Add ${title}`}</h5>
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder={`${title} Name/Unit`}
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder="Specification"
-        value={spec}
-        onChange={(e) => setSpec(e.target.value)}
-      />
-      <select className="form-select mb-3" value={assignedLab} onChange={(e) => setAssignedLab(e.target.value)}>
-        <option value="">Assign to Lab</option>
-        {labs.map(l => <option key={l.id} value={`${l.name} (${l.location})`}>{l.name} — {l.location}</option>)}
-      </select>
-      <div className="d-flex gap-2">
-        <button className={`btn btn-${btnColor} w-100`} onClick={onSave}>{editing ? `Update ${title}` : `Save ${title}`}</button>
-        <button className="btn btn-secondary w-100" onClick={onClose}>Cancel</button>
-      </div>
-    </div>
-  );
-}
-
-// ----- Main Component -----
-export default function AdminComputers() {
-  // --- Dummy Data ---
-  const initialLabs = [
-    { id: 1, name: 'Computer Lab A', location: 'Building 1' },
-    { id: 2, name: 'Computer Lab B', location: 'Building 2' }
-  ];
-  const initialComputers = [
-    { id: 1, name: 'PC-01', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab A (Building 1)' },
-    { id: 2, name: 'PC-02', spec: 'Intel i7, 16GB RAM', lab: 'Computer Lab A (Building 1)' },
-    { id: 3, name: 'PC-03', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab B (Building 2)' }
-  ];
-  const initialAccessories = [
-    { id: 1, name: 'Projector', spec: 'Full HD', lab: 'Computer Lab A (Building 1)' },
-    { id: 2, name: 'Printer', spec: 'LaserJet', lab: 'Computer Lab B (Building 2)' }
-  ];
-
-  // --- State ---
-  const [labs, setLabs] = useState(initialLabs);
-  const [computers, setComputers] = useState(initialComputers);
-  const [accessories, setAccessories] = useState(initialAccessories);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Form toggles
-  const [showLabForm, setShowLabForm] = useState(false);
-  const [showComputerForm, setShowComputerForm] = useState(false);
-  const [showAccessoryForm, setShowAccessoryForm] = useState(false);
-
-  // Lab form states
-  const [newLabName, setNewLabName] = useState('');
-  const [newLabLocation, setNewLabLocation] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [editingLabId, setEditingLabId] = useState(null);
+  const [itemName, setItemName] = useState('');
+  const [itemSpec, setItemSpec] = useState('');
+  const [itemType, setItemType] = useState('Computer');
 
-  // Computer form states
-  const [newComputerName, setNewComputerName] = useState('');
-  const [newComputerSpec, setNewComputerSpec] = useState('');
-  const [assignedLabForComputer, setAssignedLabForComputer] = useState('');
-  const [editingComputerId, setEditingComputerId] = useState(null);
+  // ----- CRUD -----
+  const saveItem = () => {
+    if (!itemName.trim() || !itemSpec.trim()) return;
 
-  // Accessory form states
-  const [newAccessoryName, setNewAccessoryName] = useState('');
-  const [newAccessorySpec, setNewAccessorySpec] = useState('');
-  const [assignedLabForAccessory, setAssignedLabForAccessory] = useState('');
-  const [editingAccessoryId, setEditingAccessoryId] = useState(null);
-
-  // Collapse toggles per lab
-  const [collapsedLabs, setCollapsedLabs] = useState({});
-
-  const toggleCollapse = (labId) => {
-    setCollapsedLabs({ ...collapsedLabs, [labId]: !collapsedLabs[labId] });
-  };
-
-  // ----- CRUD Operations -----
-  const addOrUpdateLab = () => {
-    if (!newLabName.trim() || !newLabLocation.trim()) return;
-    if (editingLabId) {
-      const oldLab = labs.find(l => l.id === editingLabId);
-      setLabs(labs.map(l => l.id === editingLabId ? { ...l, name: newLabName, location: newLabLocation } : l));
-      setComputers(computers.map(c => c.lab === `${oldLab.name} (${oldLab.location})` ? { ...c, lab: `${newLabName} (${newLabLocation})` } : c));
-      setAccessories(accessories.map(a => a.lab === `${oldLab.name} (${oldLab.location})` ? { ...a, lab: `${newLabName} (${newLabLocation})` } : a));
-      setEditingLabId(null);
+    if (editingItem) {
+      setLabs(labs.map(lab => {
+        if (lab.id === editingLabId) {
+          return {
+            ...lab,
+            items: lab.items.map(i =>
+              i.id === editingItem.id ? { ...i, name: itemName, spec: itemSpec, type: itemType } : i
+            )
+          };
+        }
+        return lab;
+      }));
     } else {
-      setLabs([...labs, { id: Date.now(), name: newLabName, location: newLabLocation }]);
+      const newItem = { id: `item-${Date.now()}`, name: itemName, type: itemType, spec: itemSpec };
+      setLabs(labs.map(lab => {
+        if (lab.id === editingLabId) {
+          return { ...lab, items: [...lab.items, newItem] };
+        }
+        return lab;
+      }));
     }
-    setNewLabName('');
-    setNewLabLocation('');
-    setShowLabForm(false);
+
+    setModalOpen(false);
+    setEditingItem(null);
+    setItemName('');
+    setItemSpec('');
+    setItemType('Computer');
   };
 
-  const editLab = (lab) => {
-    setNewLabName(lab.name);
-    setNewLabLocation(lab.location);
-    setEditingLabId(lab.id);
-    setShowLabForm(true);
+  const deleteItem = (labId, itemId) => {
+    setLabs(labs.map(lab => {
+      if (lab.id === labId) {
+        return { ...lab, items: lab.items.filter(i => i.id !== itemId) };
+      }
+      return lab;
+    }));
   };
 
-  const deleteLab = (labId) => {
-    const lab = labs.find(l => l.id === labId);
-    setLabs(labs.filter(l => l.id !== labId));
-    setComputers(computers.filter(c => c.lab !== `${lab.name} (${lab.location})`));
-    setAccessories(accessories.filter(a => a.lab !== `${lab.name} (${lab.location})`));
+  const openModal = (labId, item = null) => {
+    setEditingLabId(labId);
+    setEditingItem(item);
+    if (item) {
+      setItemName(item.name);
+      setItemSpec(item.spec);
+      setItemType(item.type);
+    }
+    setModalOpen(true);
   };
 
-  const addOrUpdateComputer = () => {
-    if (!newComputerName.trim() || !newComputerSpec.trim() || !assignedLabForComputer) return;
-    if (editingComputerId) {
-      setComputers(computers.map(c => c.id === editingComputerId ? { ...c, name: newComputerName, spec: newComputerSpec, lab: assignedLabForComputer } : c));
-      setEditingComputerId(null);
+  // ----- Drag and Drop -----
+  const onDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    const sourceLab = labs.find(l => l.id === source.droppableId);
+    const destLab = labs.find(l => l.id === destination.droppableId);
+    const [movedItem] = sourceLab.items.splice(source.index, 1);
+
+    if (sourceLab.id === destLab.id) {
+      sourceLab.items.splice(destination.index, 0, movedItem);
+      setLabs([...labs]);
     } else {
-      setComputers([...computers, { id: Date.now(), name: newComputerName, spec: newComputerSpec, lab: assignedLabForComputer }]);
+      destLab.items.splice(destination.index, 0, movedItem);
+      setLabs(labs.map(lab => lab.id === sourceLab.id ? sourceLab : lab.id === destLab.id ? destLab : lab));
     }
-    setNewComputerName('');
-    setNewComputerSpec('');
-    setAssignedLabForComputer('');
-    setShowComputerForm(false);
   };
 
-  const editComputer = (comp) => {
-    setNewComputerName(comp.name);
-    setNewComputerSpec(comp.spec);
-    setAssignedLabForComputer(comp.lab);
-    setEditingComputerId(comp.id);
-    setShowComputerForm(true);
-  };
+  const filteredLabs = labs.map(lab => ({
+    ...lab,
+    items: lab.items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  }));
 
-  const deleteComputer = (compId) => setComputers(computers.filter(c => c.id !== compId));
-
-  const addOrUpdateAccessory = () => {
-    if (!newAccessoryName.trim() || !newAccessorySpec.trim() || !assignedLabForAccessory) return;
-    if (editingAccessoryId) {
-      setAccessories(accessories.map(a => a.id === editingAccessoryId ? { ...a, name: newAccessoryName, spec: newAccessorySpec, lab: assignedLabForAccessory } : a));
-      setEditingAccessoryId(null);
-    } else {
-      setAccessories([...accessories, { id: Date.now(), name: newAccessoryName, spec: newAccessorySpec, lab: assignedLabForAccessory }]);
-    }
-    setNewAccessoryName('');
-    setNewAccessorySpec('');
-    setAssignedLabForAccessory('');
-    setShowAccessoryForm(false);
-  };
-
-  const editAccessory = (acc) => {
-    setNewAccessoryName(acc.name);
-    setNewAccessorySpec(acc.spec);
-    setAssignedLabForAccessory(acc.lab);
-    setEditingAccessoryId(acc.id);
-    setShowAccessoryForm(true);
-  };
-
-  const deleteAccessory = (accId) => setAccessories(accessories.filter(a => a.id !== accId));
-
-  // ----- Filtered Labs -----
-  const filterLabs = labs.filter(lab =>
-    lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lab.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // ----- Render -----
   return (
     <div className="container my-5">
-      <h2 className="mb-4 text-center fw-bold">Computer Labs Management</h2>
+      <h2 className="mb-4 text-center fw-bold">Lab Inventory Dashboard</h2>
 
       {/* Search */}
       <div className="input-group mb-4 shadow-sm">
-        <span className="input-group-text bg-white"><FaSearch /></span>
         <input
           type="text"
           className="form-control"
-          placeholder="Search labs, computers, accessories..."
+          placeholder="Search items..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Forms Row */}
-      <div className="row mb-4 g-3">
-        <div className="col-md-4">
-          <button className="btn btn-primary w-100 shadow-sm" onClick={() => { setShowLabForm(!showLabForm); if (!showLabForm) { setNewLabName(''); setNewLabLocation(''); setEditingLabId(null); } }}>
-            <FaDesktop className="me-2" /> {editingLabId ? 'Edit Lab' : 'Add New Lab'}
-          </button>
-          <LabForm
-            show={showLabForm}
-            onClose={() => setShowLabForm(false)}
-            onSave={addOrUpdateLab}
-            labName={newLabName}
-            setLabName={setNewLabName}
-            labLocation={newLabLocation}
-            setLabLocation={setNewLabLocation}
-            editing={editingLabId}
-          />
-        </div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        {filteredLabs.map(lab => (
+          <div key={lab.id} className="mb-4 shadow-sm border rounded p-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h5>{lab.name} — <small>{lab.location}</small></h5>
+              <button className="btn btn-success btn-sm" onClick={() => openModal(lab.id)}><FaPlus /> Add Item</button>
+            </div>
 
-        <div className="col-md-4">
-          <button className="btn btn-success w-100 shadow-sm" onClick={() => { setShowComputerForm(!showComputerForm); if (!showComputerForm) { setNewComputerName(''); setNewComputerSpec(''); setAssignedLabForComputer(''); setEditingComputerId(null); } }}>
-            <FaLaptop className="me-2" /> {editingComputerId ? 'Edit Computer' : 'Add New Computer'}
-          </button>
-          <ItemForm
-            show={showComputerForm}
-            onClose={() => setShowComputerForm(false)}
-            onSave={addOrUpdateComputer}
-            name={newComputerName} setName={setNewComputerName}
-            spec={newComputerSpec} setSpec={setNewComputerSpec}
-            assignedLab={assignedLabForComputer} setAssignedLab={setAssignedLabForComputer}
-            labs={labs}
-            editing={editingComputerId}
-            title="Computer"
-            btnColor="success"
-          />
-        </div>
+            <Droppable droppableId={lab.id}>
+              {(provided) => (
+                <table className="table table-striped table-hover mb-0" ref={provided.innerRef} {...provided.droppableProps}>
+                  <thead>
+                    <tr>
+                      <th>Item Name</th>
+                      <th>Type</th>
+                      <th>Specification</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lab.items.map((item, index) => (
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
+                        {(provided) => (
+                          <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                            <td>{item.name}</td>
+                            <td>
+                              <span className={`badge ${item.type === 'Computer' ? 'bg-primary' : 'bg-warning text-dark'}`}>
+                                {item.type}
+                              </span>
+                            </td>
+                            <td>{item.spec}</td>
+                            <td className="d-flex gap-1">
+                              <button className="btn btn-sm btn-primary" onClick={() => openModal(lab.id, item)}><FaEdit /></button>
+                              <button className="btn btn-sm btn-danger" onClick={() => deleteItem(lab.id, item.id)}><FaTrash /></button>
+                            </td>
+                          </tr>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    {lab.items.length === 0 && <tr><td colSpan="4" className="text-center text-muted">No items</td></tr>}
+                  </tbody>
+                </table>
+              )}
+            </Droppable>
+          </div>
+        ))}
+      </DragDropContext>
 
-        <div className="col-md-4">
-          <button className="btn btn-warning w-100 shadow-sm" onClick={() => { setShowAccessoryForm(!showAccessoryForm); if (!showAccessoryForm) { setNewAccessoryName(''); setNewAccessorySpec(''); setAssignedLabForAccessory(''); setEditingAccessoryId(null); } }}>
-            <FaPlug className="me-2" /> {editingAccessoryId ? 'Edit Accessory' : 'Add Accessory/Equipment'}
-          </button>
-          <ItemForm
-            show={showAccessoryForm}
-            onClose={() => setShowAccessoryForm(false)}
-            onSave={addOrUpdateAccessory}
-            name={newAccessoryName} setName={setNewAccessoryName}
-            spec={newAccessorySpec} setSpec={setNewAccessorySpec}
-            assignedLab={assignedLabForAccessory} setAssignedLab={setAssignedLabForAccessory}
-            labs={labs}
-            editing={editingAccessoryId}
-            title="Accessory"
-            btnColor="warning"
-          />
-        </div>
-      </div>
-
-      {/* Labs Overview */}
-      <div className="row">
-        <div className="col-12">
-          <h4 className="fw-bold mb-3">Labs Overview</h4>
-          {filterLabs.length === 0 && <p className="text-muted">No labs match your search.</p>}
-          {filterLabs.map(lab => {
-            const labComputers = computers.filter(c => c.lab === `${lab.name} (${lab.location})` && c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const labAccessories = accessories.filter(a => a.lab === `${lab.name} (${lab.location})` && a.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const collapsed = collapsedLabs[lab.id];
-
-            return (
-              <div key={lab.id} className="card mb-3 shadow-sm">
-                <div className="card-header d-flex justify-content-between align-items-center bg-info text-white rounded-top">
-                  <div className="fw-bold"><FaDesktop className="me-2" /> {lab.name} — <small>{lab.location}</small></div>
-                  <div className="d-flex gap-1">
-                    <button className="btn btn-light btn-sm" onClick={() => editLab(lab)}><FaEdit /></button>
-                    <button className="btn btn-danger btn-sm" onClick={() => deleteLab(lab.id)}><FaTrash /></button>
-                    <button className="btn btn-light btn-sm" onClick={() => toggleCollapse(lab.id)}>
-                      {collapsed ? <FaChevronDown /> : <FaChevronUp />}
-                    </button>
-                  </div>
-                </div>
-                {!collapsed && (
-                  <div className="card-body">
-                    {/* Computers */}
-                    <h6 className="fw-bold">Computers</h6>
-                    {labComputers.length === 0 ? <p className="text-muted"><small>No computers match search.</small></p> :
-                      <ul className="list-group mb-3 shadow-sm">
-                        {labComputers.map(comp => (
-                          <li key={comp.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div>{comp.name} — <small>{comp.spec}</small></div>
-                            <div className="d-flex gap-1">
-                              <button className="btn btn-light btn-sm" onClick={() => editComputer(comp)}><FaEdit /></button>
-                              <button className="btn btn-danger btn-sm" onClick={() => deleteComputer(comp.id)}><FaTrash /></button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    }
-
-                    {/* Accessories */}
-                    <h6 className="fw-bold">Accessories/Equipment</h6>
-                    {labAccessories.length === 0 ? <p className="text-muted"><small>No accessories match search.</small></p> :
-                      <ul className="list-group shadow-sm">
-                        {labAccessories.map(acc => (
-                          <li key={acc.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div>{acc.name} — <small>{acc.spec}</small></div>
-                            <div className="d-flex gap-1">
-                              <button className="btn btn-light btn-sm" onClick={() => editAccessory(acc)}><FaEdit /></button>
-                              <button className="btn btn-danger btn-sm" onClick={() => deleteAccessory(acc.id)}><FaTrash /></button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    }
-                  </div>
-                )}
+      {/* Item Modal */}
+      {modalOpen && (
+        <div className="modal show d-block modal-overlay">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow">
+              <div className="modal-header">
+                <h5 className="modal-title">{editingItem ? 'Edit Item' : 'Add Item'}</h5>
+                <button type="button" className="btn-close" onClick={() => setModalOpen(false)}></button>
               </div>
-            );
-          })}
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Item Name</label>
+                  <input type="text" className="form-control" value={itemName} onChange={(e) => setItemName(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Specification</label>
+                  <input type="text" className="form-control" value={itemSpec} onChange={(e) => setItemSpec(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Type</label>
+                  <select className="form-select" value={itemType} onChange={(e) => setItemType(e.target.value)}>
+                    <option value="Computer">Computer</option>
+                    <option value="Accessory">Accessory</option>
+                  </select>
+                </div>
+                <button className="btn btn-primary w-100" onClick={saveItem}>{editingItem ? 'Update Item' : 'Add Item'}</button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

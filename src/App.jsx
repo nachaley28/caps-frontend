@@ -11,6 +11,8 @@ import Dashboard from "./pages/admin/dashboard";
 import Laboratory from "./pages/admin/labs";  
 import Reports from "./pages/admin/reports"; 
 import Inventory from "./pages/admin/inventory";  
+import UserRoles from "./pages/admin/users";  
+
 
 
 
@@ -42,6 +44,8 @@ function RouteWithTransitions() {
             <Route path="/admin/labs" element={<Laboratory />} />
             <Route path="/admin/reports" element={<Reports />} />
             <Route path="/admin/inventory" element={<Inventory />} />
+            <Route path="/admin/users" element={<UserRoles />} />
+
 
 
             </Route>
