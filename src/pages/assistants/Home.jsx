@@ -1,27 +1,52 @@
-import React, { useEffect, useState } from "react";
-import { FaLaptop, FaDesktop, FaPlug, FaUsers, FaExclamationTriangle } from "react-icons/fa";
-import { PieChart, Pie, Cell, Legend, Tooltip, LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, ScatterChart, Scatter, BarChart, Bar } from "recharts";
+import { useEffect, useState } from "react";
+import {FaLaptop,FaDesktop,FaPlug,FaUsers,FaExclamationTriangle,
+} from "react-icons/fa";
+import {PieChart,Pie,Cell,Legend,Tooltip,LineChart,Line,CartesianGrid,XAxis,YAxis,ResponsiveContainer,ScatterChart,Scatter,BarChart,Bar,
+} from "recharts";
 
-// ----- Card Component -----
-function StatCard({ title, value, icon }) {
+function StatCard({ title, value, icon, color }) {
   return (
     <div className="col">
       <div
-        className="card text-center shadow-sm text-white mb-3"
+        className="card text-center shadow-sm mb-3"
         style={{
-          borderRadius: "12px",
+          borderRadius: "10px",
           padding: "1.2rem",
-          background: "linear-gradient(90deg, #0A2E4D, #1E4D75)",
-          minHeight: "150px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+          backgroundColor: "#fff",
+          minHeight: "120px",
+          borderTop: `4px solid ${color}`,
+          transition: "all 0.3s ease-in-out",
         }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.boxShadow =
+            "0px 6px 18px rgba(90,141,238,0.3)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.boxShadow =
+            "0px 4px 6px rgba(0,0,0,0.1)")
+        }
       >
-        <div className="mb-2">{icon}</div>
-        <h6 className="fw-semibold">{title}</h6>
-        <p className="fs-5 fw-bold mb-0">{value}</p>
+        <div className="mb-2" style={{ fontSize: "1.6rem", color: color }}>
+          {icon}
+        </div>
+        <h6 className="fw-semibold text-dark">{title}</h6>
+        <p className="fs-5 fw-bold mb-0 text-dark">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, color, children }) {
+  return (
+    <div className="card shadow-sm mb-3"
+      style={{
+        borderRadius: "10px",
+        backgroundColor: "#fff",
+        borderTop: `4px solid ${color}`,
+      }}>
+      <div className="card-body">
+        <h6 className="text-dark mb-3 text-center">{title}</h6>
+        {children}
       </div>
     </div>
   );
@@ -30,10 +55,12 @@ function StatCard({ title, value, icon }) {
 // ----- Inventory Table Component -----
 function InventoryTable({ inventory }) {
   return (
-    <div className="mt-4">
-      <h5 className="mb-2 text-dark">Reports Submitted</h5>
+    <ChartCard title="Reports Submitted" color="#5A8DEE">
       <div className="table-responsive">
-        <table className="table table-striped table-hover" style={{ backgroundColor: "#F5FAFF", fontSize: "0.85rem" }}>
+        <table
+          className="table table-striped table-hover"
+          style={{ fontSize: "0.85rem" }}
+        >
           <thead style={{ backgroundColor: "#5A8DEE", color: "#fff" }}>
             <tr>
               <th>Timestamp</th>
@@ -58,11 +85,10 @@ function InventoryTable({ inventory }) {
           </tbody>
         </table>
       </div>
-    </div>
+    </ChartCard>
   );
 }
 
-// ----- Main Home Component -----
 export default function Home() {
   const [reports, setReports] = useState([]);
   const [error, setError] = useState(null);
@@ -89,17 +115,17 @@ export default function Home() {
 
   const handleAddReport = (e) => {
     e.preventDefault();
-    setReports((prev) => [...prev, newReport]); // Add locally for now
+    setReports((prev) => [...prev, newReport]);
     const user = getStoredUser();
     fetch("http://127.0.0.1:5000/add_report", {
-                method: 'POST',
-                headers: { 
-                    "Content-Type": "application/json",
-                    "X-User-Email": user?.email || "",
-                    "X-User-Id": user?.lgid || ""
-                 },
-                body: JSON.stringify({ data: newReport })
-    })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Email": user?.email || "",
+        "X-User-Id": user?.lgid || "",
+      },
+      body: JSON.stringify({ data: newReport }),
+    });
     setShowModal(false);
     setNewReport({
       reportId: "",
@@ -114,9 +140,9 @@ export default function Home() {
   };
 
   function getStoredUser() {
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
-}
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  }
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/get_reports")
@@ -161,8 +187,11 @@ export default function Home() {
   return (
     <div className="container-fluid mt-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="text-dark">Lab Assistant Overview</h4>
-        <button className="btn btn-primary px-3 py-2 rounded-2" onClick={() => setShowModal(true)}>
+        <h4 className="text-dark fw-bold">Lab Assistant Overview</h4>
+        <button
+          className="btn btn-primary px-3 py-2 rounded-2"
+          onClick={() => setShowModal(true)}
+        >
           + Add Report
         </button>
       </div>
@@ -197,8 +226,22 @@ export default function Home() {
           >
             <h5 className="mb-3 text-center">Add New Report</h5>
             <form onSubmit={handleAddReport}>
-              <input type="text" name="item" value={newReport.item} onChange={handleInputChange} className="form-control mb-2" placeholder="Item Name" required />
-              <select name="lab" value={newReport.lab} onChange={handleInputChange} className="form-select mb-2" required>
+              <input
+                type="text"
+                name="item"
+                value={newReport.item}
+                onChange={handleInputChange}
+                className="form-control mb-2"
+                placeholder="Item Name"
+                required
+              />
+              <select
+                name="lab"
+                value={newReport.lab}
+                onChange={handleInputChange}
+                className="form-select mb-2"
+                required
+              >
                 <option value="" defaultValue>
                   Select Computer Lab
                 </option>
@@ -208,18 +251,47 @@ export default function Home() {
                   </option>
                 ))}
               </select>
-              <select name="label" value={newReport.label} onChange={handleInputChange} className="form-select mb-2">
+              <select
+                name="label"
+                value={newReport.label}
+                onChange={handleInputChange}
+                className="form-select mb-2"
+              >
                 <option value="Operational">Operational</option>
                 <option value="Not Operational">Not Operational</option>
               </select>
-              <input type="number" name="quantity" value={newReport.quantity} onChange={handleInputChange} className="form-control mb-2" placeholder="Quantity" required />
-              <select name="status" value={newReport.status} onChange={handleInputChange} className="form-select mb-2">
+              <input
+                type="number"
+                name="quantity"
+                value={newReport.quantity}
+                onChange={handleInputChange}
+                className="form-control mb-2"
+                placeholder="Quantity"
+                required
+              />
+              <select
+                name="status"
+                value={newReport.status}
+                onChange={handleInputChange}
+                className="form-select mb-2"
+              >
                 <option value="Missing">Missing</option>
                 <option value="Damage">Damage</option>
               </select>
-              <textarea name="notes" value={newReport.notes} onChange={handleInputChange} className="form-control mb-2" placeholder="Notes" rows={3}></textarea>
+              <textarea
+                name="notes"
+                value={newReport.notes}
+                onChange={handleInputChange}
+                className="form-control mb-2"
+                placeholder="Notes"
+                rows={3}
+              ></textarea>
               <div className="d-flex justify-content-end gap-2 mt-3">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
@@ -231,72 +303,134 @@ export default function Home() {
         </div>
       )}
 
+      {/* ----- Stats Cards ----- */}
       <div className="row justify-content-center gx-2 gy-2 mb-4">
-        <StatCard title="Total Reports" value={totalReports} icon={<FaUsers size={28} />} />
-        <StatCard title="Damaged Items" value={damagedItems.length} icon={<FaExclamationTriangle size={28} />} />
-        <StatCard title="Missing Items" value={missingItems.length} icon={<FaPlug size={28} />} />
-        <StatCard title="Operational" value={operationalItems.length} icon={<FaDesktop size={28} />} />
-        <StatCard title="Not Operational" value={notOperationalItems.length} icon={<FaLaptop size={28} />} />
+        <StatCard
+          title="Total Reports"
+          value={totalReports}
+          icon={<FaUsers size={28} />}
+          color="#4E79A7"
+        />
+        <StatCard
+          title="Damaged Items"
+          value={damagedItems.length}
+          icon={<FaExclamationTriangle size={28} />}
+          color="#E15759"
+        />
+        <StatCard
+          title="Missing Items"
+          value={missingItems.length}
+          icon={<FaPlug size={28} />}
+          color="#F28E2B"
+        />
+        <StatCard
+          title="Operational"
+          value={operationalItems.length}
+          icon={<FaDesktop size={28} />}
+          color="#59A14F"
+        />
+        <StatCard
+          title="Not Operational"
+          value={notOperationalItems.length}
+          icon={<FaLaptop size={28} />}
+          color="#9C27B0"
+        />
       </div>
 
+      {/* ----- Charts in Cards ----- */}
       <div className="row g-3">
         <div className="col-md-6 col-sm-12">
-          <h6 className="text-dark mb-2">Damaged Items Distribution</h6>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie data={damagedChart} dataKey="count" nameKey="item" cx="50%" cy="50%" outerRadius={65} label>
-                {damagedChart.map((entry, index) => (
-                  <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend verticalAlign="bottom" height={30} />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <ChartCard title="Damaged Items Distribution" color="#E15759">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={damagedChart}
+                  dataKey="count"
+                  nameKey="item"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={70}
+                  label
+                >
+                  {damagedChart.map((entry, index) => (
+                    <Cell
+                      key={index}
+                      fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Legend verticalAlign="bottom" height={30} />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
 
         <div className="col-md-6 col-sm-12">
-          <h6 className="text-dark mb-2">Missing Items Trend</h6>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={missingChart}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="item" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" stroke={LINE_COLOR} strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          <ChartCard title="Missing Items Trend" color="#F28E2B">
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={missingChart}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="item" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke={LINE_COLOR}
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
 
         <div className="col-md-6 col-sm-12">
-          <h6 className="text-dark mb-2">Lab-wise Damage & Missing</h6>
-          <ResponsiveContainer width="100%" height={220}>
-            <ScatterChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="category" dataKey="lab" name="Lab" />
-              <YAxis type="number" name="Count" allowDecimals={false} />
-              <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-              <Scatter name="Damaged" data={labData} dataKey="damaged" fill={SCATTER_COLORS.damaged} />
-              <Scatter name="Missing" data={labData} dataKey="missing" fill={SCATTER_COLORS.missing} />
-              <Legend />
-            </ScatterChart>
-          </ResponsiveContainer>
+          <ChartCard title="Lab-wise Damage & Missing" color="#9C27B0">
+            <ResponsiveContainer width="100%" height={220}>
+              <ScatterChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="category" dataKey="lab" name="Lab" />
+                <YAxis type="number" name="Count" allowDecimals={false} />
+                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                <Scatter
+                  name="Damaged"
+                  data={labData}
+                  dataKey="damaged"
+                  fill={SCATTER_COLORS.damaged}
+                />
+                <Scatter
+                  name="Missing"
+                  data={labData}
+                  dataKey="missing"
+                  fill={SCATTER_COLORS.missing}
+                />
+                <Legend />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
 
         <div className="col-md-6 col-sm-12">
-          <h6 className="text-dark mb-2">Operational vs Not Operational</h6>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={[{ status: "Operational", count: operationalItems.length }, { status: "Not Operational", count: notOperationalItems.length }]}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="count">
-                <Cell fill="#4CAF50" />
-                <Cell fill="#F44336" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <ChartCard title="Operational vs Not Operational" color="#59A14F">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart
+                data={[
+                  { status: "Operational", count: operationalItems.length },
+                  { status: "Not Operational", count: notOperationalItems.length },
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="status" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="count">
+                  <Cell fill="#4CAF50" />
+                  <Cell fill="#F44336" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
       </div>
 
