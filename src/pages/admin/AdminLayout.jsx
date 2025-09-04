@@ -18,7 +18,7 @@ function AdminLayout() {
     { icon: <FaHome />, label: "Labs and Computers", path: "/admin/labs", color: "#FFA500" },
     { icon: <FaWarehouse />, label: "Report", path: "/admin/reports", color: "#FFA500" },
     { icon: <FaWarehouse />, label: "Inventory", path: "/admin/inventory", color: "#FFA500" },
-    { icon: <FaWarehouse />, label: "User and Roles", path: "", color: "#FFA500" },
+    { icon: <FaWarehouse />, label: "User and Roles", path: "/admin/users", color: "#FFA500" },
 
 
   ];

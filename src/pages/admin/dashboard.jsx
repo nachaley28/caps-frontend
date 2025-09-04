@@ -1,190 +1,238 @@
-import React, { useEffect, useState } from 'react';
-import { FaLaptop, FaDesktop, FaChair, FaPlug, FaVideo, FaUsers, FaExclamationTriangle } from 'react-icons/fa';
+import React from 'react';
+import { Card, Container, Row, Col } from 'react-bootstrap';
+import { FaLaptop, FaCogs, FaExclamationTriangle, FaQuestionCircle, FaUsers, FaUserCheck, FaUserTimes, FaFileAlt } from 'react-icons/fa';
 import {
-  PieChart, Pie, Cell, Legend, Tooltip,
-  LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer,
-  ScatterChart, Scatter, BarChart, Bar
+  LineChart, PieChart,Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer,
+  BarChart, Bar, RadarChart,Pie, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  RadialBarChart,RadialBar,Cell
 } from 'recharts';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function Dashboard() {
-  const [reports, setReports] = useState({
-    totalSubmitted: 0,
-    damaged: [],
-    missing: [],
-    labDamage: [],
-    inventory: [],
-    operational_stats: []
-  });
+// ----- Dummy Data -----
+const reportsData = [
+  { date: '2025-08-01', submitted: 5 },
+  { date: '2025-08-02', submitted: 3 },
+  { date: '2025-08-03', submitted: 6 },
+  { date: '2025-08-04', submitted: 2 },
+  { date: '2025-08-05', submitted: 8 },
+  { date: '2025-08-06', submitted: 7 },
+  { date: '2025-08-07', submitted: 4 },
+];
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:5000/dashboard_data")
-      .then(res => res.json())
-      .then(data => setReports(data))
-      .catch(err => console.error("Error fetching dashboard data:", err));
-  }, []);
+const stats = {
+  totalLabs: 3,
+  totalEquipments: 60,
+  equipmentsOperation: 50,
+  equipmentsNotOperation: 10,
+  totalUsers: 50,
+  activeUsers: 42,
+  inactiveUsers: 8,
+  reportsSubmitted: 35,
+  damaged: 9,
+  missing: 4,
+};
 
-  const PIE_COLORS = ['#4E79A7', '#A0CBE8', '#59A14F', '#8CD17D'];
-  const LINE_COLOR = '#4374B3';
-  const SCATTER_COLORS = { damaged: '#9C27B0', missing: '#4CAF50' };
+const labEquipments = [
+  { lab: 'Lab A', total: 25, damaged: 4, missing: 1 },
+  { lab: 'Lab B', total: 20, damaged: 3, missing: 2 },
+  { lab: 'Lab C', total: 15, damaged: 2, missing: 1 },
+];
 
-  // Fallbacks to avoid undefined
-  const totalDamaged = reports.damaged?.reduce((a, b) => a + (b.count || 0), 0) || 0;
-  const totalMissing = reports.missing?.reduce((a, b) => a + (b.count || 0), 0) || 0;
+const equipmentDamageStats = [
+  { name: 'PC', damaged: 5, missing: 2 },
+  { name: 'Printer', damaged: 2, missing: 1 },
+  { name: 'Projector', damaged: 2, missing: 1 },
+  { name: 'Monitor', damaged: 3, missing: 1 },
+];
 
-  const operationalData = [
-    {
-      status: 'Operational',
-      count: reports.inventory?.filter(item => item.status?.toLowerCase() === 'operational').length || 0
-    },
-    {
-      status: 'Not Operational',
-      count: reports.inventory?.filter(item => item.status?.toLowerCase() !== 'operational').length || 0
-    }
-  ];
+// Chart Colors
+const PIE_COLORS = ['#4e79a7', '#f28e2b'];
+const BAR_COLORS = ['#76b7b2', '#e15759'];
+const LINE_COLOR = '#59a14f';
+const RADAR_COLORS = { damaged: '#ff9d76', missing: '#76baff' };
+const RADIAL_COLORS = ['#00C49a', '#FF8042'];
 
-  const renderIcon = (icon) => {
-    switch (icon) {
-      case 'laptop': return <FaLaptop color="#4374B3" size={18} />;
-      case 'desktop': return <FaDesktop color="#4374B3" size={18} />;
-      case 'chair': return <FaChair color="#4374B3" size={18} />;
-      case 'plug': return <FaPlug color="#4374B3" size={18} />;
-      case 'video': return <FaVideo color="#4374B3" size={18} />;
-      default: return null;
-    }
-  };
+const summaryItems = [
+  { title: 'Total Labs', value: stats.totalLabs, icon: <FaLaptop size={30} color="#4e79a7" /> },
+  { title: 'Total Equipments', value: stats.totalEquipments, icon: <FaCogs size={30} color="#e15759" /> },
+  { title: 'Damaged', value: stats.damaged, icon: <FaExclamationTriangle size={30} color="#ff9d76" /> },
+  { title: 'Missing', value: stats.missing, icon: <FaQuestionCircle size={30} color="#f28e2b" /> },
+  { title: 'Total Users', value: stats.totalUsers, icon: <FaUsers size={30} color="#76b7b2" /> },
+  { title: 'Active Users', value: stats.activeUsers, icon: <FaUserCheck size={30} color="#59a14f" /> },
+  { title: 'Inactive Users', value: stats.inactiveUsers, icon: <FaUserTimes size={30} color="#e15759" /> },
+  { title: 'Reports Submitted', value: stats.reportsSubmitted, icon: <FaFileAlt size={30} color="#4e79a7" /> },
+];
 
+// Prepare data for Radial Bar Chart
+const userActivityData = [
+  { name: 'Active', value: stats.activeUsers, fill: RADIAL_COLORS[0] },
+  { name: 'Inactive', value: stats.inactiveUsers, fill: RADIAL_COLORS[1] },
+];
+
+export default function AdminDashboard() {
   return (
-    <div className="container-fluid mt-3">
-      <h3 style={{ color: '#333', marginBottom: '15px' }}>Quick Overview</h3>
+    <Container className="my-4">
+      <h2 className="mb-4 text-center" style={{ fontWeight: '700' }}>Admin Dashboard</h2>
 
-      <div className="row g-2 mb-3">
-        {[
-          { title: 'Total Reports Submitted', value: reports.totalSubmitted || 0, icon: <FaUsers size={22} /> },
-          { title: 'Total Damaged Items', value: totalDamaged, icon: <FaExclamationTriangle size={22} /> },
-          { title: 'Total Missing Items', value: totalMissing, icon: <FaPlug size={22} /> },
-        ].map((card, i) => (
-          <div key={i} className="col-12 col-md-4">
-            <div
-              className="card text-center shadow-sm position-relative"
+      {/* ----- Quick Summary Cards with Icons ----- */}
+      <Row className="mb-4 g-4">
+        {summaryItems.map((item, idx) => (
+          <Col xs={12} sm={6} md={3} key={idx}>
+            <Card
+              className="shadow-sm h-100 text-center"
               style={{
-                borderRadius: '12px',
-                padding: '1rem 0.5rem',
-                color: '#fff',
-                background: 'linear-gradient(135deg, #4E79A7, #59A14F)',
-                fontSize: '0.9rem'
+                background: 'linear-gradient(135deg, #f5f7fa, #c3cfe2)',
+                border: '2px solid #d1d9e6',
+                transition: 'transform 0.2s',
               }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <div className="mb-1">{card.icon}</div>
-              <h6 style={{ fontWeight: '600' }}>{card.title}</h6>
-              <p className="fs-5 fw-bold mb-0">{card.value}</p>
-            </div>
-          </div>
+              <Card.Body className="d-flex flex-column align-items-center justify-content-center">
+                <div className="mb-2">{item.icon}</div>
+                <Card.Title style={{ fontWeight: '600' }}>{item.title}</Card.Title>
+                <h3>{item.value}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
 
-      {/* Charts */}
-      <div className="row g-3">
-        {/* Damaged Items - Pie Chart */}
-        <div className="col-md-6 col-sm-12">
-          <h6 style={{ color: '#333', marginBottom: '8px' }}>Damaged Items Distribution</h6>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={reports.damaged || []}
-                dataKey="count"
-                nameKey="item"
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                label
-              >
-                {(reports.damaged || []).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend verticalAlign="bottom" height={30} />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      {/* ----- Charts Grid ----- */}
+      <Row className="g-4">
+        {/* Radial Bar Chart: User Activity */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">User Activity</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="30%"
+                  outerRadius="90%"
+                  barSize={20}
+                  data={userActivityData}
+                  startAngle={180}
+                  endAngle={-180}
+                >
+                  <RadialBar minAngle={15} background clockWise dataKey="value" />
+                  <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" />
+                  <Tooltip />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
 
-        {/* Missing Items - Line Chart */}
-        <div className="col-md-6 col-sm-12">
-          <h6 style={{ color: '#333', marginBottom: '8px' }}>Missing Items Trend</h6>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={reports.missing || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="item" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" stroke={LINE_COLOR} strokeWidth={2} activeDot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Pie Chart: Equipment Status */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">Equipment Status</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Operational', value: stats.equipmentsOperation },
+                      { name: 'Not Operational', value: stats.equipmentsNotOperation },
+                    ]}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    label
+                  >
+                    <Cell fill={PIE_COLORS[0]} />
+                    <Cell fill={PIE_COLORS[1]} />
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
 
-        {/* Lab-wise Damage & Missing - Scatter Chart */}
-        <div className="col-md-6 col-sm-12">
-          <h6 style={{ color: '#333', marginBottom: '8px' }}>Lab-wise Damage & Missing</h6>
-          <ResponsiveContainer width="100%" height={250}>
-            <ScatterChart margin={{ top: 15, right: 15, left: 15, bottom: 15 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="category" dataKey="lab" name="Lab" />
-              <YAxis type="number" name="Count" allowDecimals={false} />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-              <Scatter name="Damaged" data={reports.labDamage || []} dataKey="damaged" fill={SCATTER_COLORS.damaged} />
-              <Scatter name="Missing" data={reports.labDamage || []} dataKey="missing" fill={SCATTER_COLORS.missing} />
-              <Legend />
-            </ScatterChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Line Chart: Reports Submitted */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">Reports Submitted Per Day</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={reportsData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" />
+                  <XAxis dataKey="date" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend verticalAlign="top" />
+                  <Line type="monotone" dataKey="submitted" stroke={LINE_COLOR} strokeWidth={3} name="Reports Submitted" />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
 
-        {/* Operational vs Not Operational - Bar Chart */}
-        <div className="col-md-6 col-sm-12">
-          <h6 style={{ color: '#333', marginBottom: '8px' }}>Operational vs Not Operational Items</h6>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={operationalData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="remarks" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="count">
-                {operationalData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.status === "Operational" ? "#4CAF50" : "#F44336"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        {/* Stacked Bar Chart: Damaged & Missing per Lab */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">Damaged & Missing per Lab</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={labEquipments} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" />
+                  <XAxis dataKey="lab" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend verticalAlign="top" />
+                  <Bar dataKey="damaged" stackId="a" fill={BAR_COLORS[1]} />
+                  <Bar dataKey="missing" stackId="a" fill={BAR_COLORS[0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
 
-      {/* Inventory Table */}
-      <div className="mt-4">
-        <h5 style={{ color: '#333', marginBottom: '10px' }}>Inventory Details</h5>
-        <div className="table-responsive">
-          <table className="table table-striped table-hover" style={{ backgroundColor: '#E6F2FF', fontSize: '0.9rem' }}>
-            <thead style={{ backgroundColor: '#4374B3', color: '#fff' }}>
-              <tr>
-                <th>Item</th>
-                <th>Icon</th>
-                <th>Quantity</th>
-                <th>Location</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(reports.inventory || []).map((item, index) => (
-                <tr key={index}>
-                  <td>{item.title}</td>
-                  <td>{renderIcon(item.icon)}</td>
-                  <td>{item.count}</td>
-                  <td>{item.location}</td>
-                  <td>{item.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        {/* Horizontal Bar Chart: Labs with Most Equipments */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">Labs with Most Equipments</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={labEquipments} layout="vertical" margin={{ top: 20, right: 20, left: 50, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" />
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis type="category" dataKey="lab" />
+                  <Tooltip />
+                  <Legend verticalAlign="top" />
+                  <Bar dataKey="total" fill="#4e79a7" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Radar Chart: Equipments Prone to Damage / Missing */}
+        <Col xs={12} md={6}>
+          <Card className="shadow-sm h-100">
+            <Card.Body>
+              <Card.Title className="text-center">Equipments Prone to Damage / Missing</Card.Title>
+              <ResponsiveContainer width="100%" height={250}>
+                <RadarChart data={equipmentDamageStats}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="name" />
+                  <PolarRadiusAxis />
+                  <Tooltip />
+                  <Radar name="Damaged" dataKey="damaged" stroke={RADAR_COLORS.damaged} fill={RADAR_COLORS.damaged} fillOpacity={0.5} />
+                  <Radar name="Missing" dataKey="missing" stroke={RADAR_COLORS.missing} fill={RADAR_COLORS.missing} fillOpacity={0.5} />
+                  <Legend verticalAlign="bottom" />
+                </RadarChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
