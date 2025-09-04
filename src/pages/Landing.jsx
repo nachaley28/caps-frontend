@@ -24,7 +24,7 @@ function LandingPage() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch("https://de0637a38bfe.ngrok-free.app/login", {
+            const res = await fetch("http://127.0.0.1:5000/login", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: { email: loginEmail, password: loginPassword } })
