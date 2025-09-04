@@ -72,6 +72,7 @@ export default function Home() {
     item: "",
     lab: "",
     label: "Operational",
+    quantity: "",
     status: "Missing",
     notes: "",
     timestamp: new Date().toLocaleString(),
@@ -89,17 +90,33 @@ export default function Home() {
   const handleAddReport = (e) => {
     e.preventDefault();
     setReports((prev) => [...prev, newReport]); // Add locally for now
+    const user = getStoredUser();
+    fetch("http://127.0.0.1:5000/add_report", {
+                method: 'POST',
+                headers: { 
+                    "Content-Type": "application/json",
+                    "X-User-Email": user?.email || "",
+                    "X-User-Id": user?.lgid || ""
+                 },
+                body: JSON.stringify({ data: newReport })
+    })
     setShowModal(false);
     setNewReport({
       reportId: "",
       item: "",
       lab: "",
       label: "Operational",
+      quantity: "",
       status: "Missing",
       notes: "",
       timestamp: new Date().toLocaleString(),
     });
   };
+
+  function getStoredUser() {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+}
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/get_reports")
@@ -195,6 +212,7 @@ export default function Home() {
                 <option value="Operational">Operational</option>
                 <option value="Not Operational">Not Operational</option>
               </select>
+              <input type="number" name="quantity" value={newReport.quantity} onChange={handleInputChange} className="form-control mb-2" placeholder="Quantity" required />
               <select name="status" value={newReport.status} onChange={handleInputChange} className="form-select mb-2">
                 <option value="Missing">Missing</option>
                 <option value="Damage">Damage</option>

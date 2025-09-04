@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaLaptop, FaDesktop, FaPlug, FaEdit, FaTrash, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -65,27 +65,68 @@ function ItemForm({ show, onClose, onSave, name, setName, spec, setSpec, assigne
 }
 
 // ----- Main Component -----
-export default function AdminComputers() {
+export  default function AdminComputers() {
   // --- Dummy Data ---
-  const initialLabs = [
-    { id: 1, name: 'Computer Lab A', location: 'Building 1' },
-    { id: 2, name: 'Computer Lab B', location: 'Building 2' }
-  ];
-  const initialComputers = [
-    { id: 1, name: 'PC-01', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab A (Building 1)' },
-    { id: 2, name: 'PC-02', spec: 'Intel i7, 16GB RAM', lab: 'Computer Lab A (Building 1)' },
-    { id: 3, name: 'PC-03', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab B (Building 2)' }
-  ];
-  const initialAccessories = [
-    { id: 1, name: 'Projector', spec: 'Full HD', lab: 'Computer Lab A (Building 1)' },
-    { id: 2, name: 'Printer', spec: 'LaserJet', lab: 'Computer Lab B (Building 2)' }
-  ];
+  // const initialLabs = [
+  //   { id: 1, name: 'Computer Lab A', location: 'Building 1' },
+  //   { id: 2, name: 'Computer Lab B', location: 'Building 2' }
+  // ];
+
+    // const response = fetch("http://127.0.0.1:5000/get_laboratory");
+    // const initialLabs = response.json();
+    // console.log(initialLabs);
+  // const initialComputers = [
+  //   { id: 1, name: 'PC-01', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab A (Building 1)' },
+  //   { id: 2, name: 'PC-02', spec: 'Intel i7, 16GB RAM', lab: 'Computer Lab A (Building 1)' },
+  //   { id: 3, name: 'PC-03', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab B (Building 2)' }
+  // ];
+  // const initialAccessories = [
+  //   { id: 1, name: 'Projector', spec: 'Full HD', lab: 'Computer Lab A (Building 1)' },
+  //   { id: 2, name: 'Printer', spec: 'LaserJet', lab: 'Computer Lab B (Building 2)' }
+  // ];
 
   // --- State ---
-  const [labs, setLabs] = useState(initialLabs);
-  const [computers, setComputers] = useState(initialComputers);
-  const [accessories, setAccessories] = useState(initialAccessories);
+  // const [labs, setLabs] = useState(initialLabs);
+  const [labs, setLabs] = useState([]);
+  const [computers, setComputers] = useState([]);
+  const [accessories, setAccessories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    async function loadLabs() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/get_laboratory");
+        const data = await response.json();
+        setLabs(data);  // ✅ put real data into state
+      } catch (err) {
+        console.error("Error loading labs:", err);
+      }
+    }
+    loadLabs();
+
+
+    async function loadcoms() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/get_computer");
+        const data = await response.json();
+        setComputers(data);  // ✅ put real data into state
+      } catch (err) {
+        console.error("Error loading labs:", err);
+      }
+    }
+    loadcoms();
+
+    async function loadaccess() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/get_accessories");
+        const data = await response.json();
+        setAccessories(data);  // ✅ put real data into state
+      } catch (err) {
+        console.error("Error loading labs:", err);
+      }
+    }
+    loadaccess();
+  }, [])
 
   // Form toggles
   const [showLabForm, setShowLabForm] = useState(false);
@@ -127,6 +168,11 @@ export default function AdminComputers() {
       setEditingLabId(null);
     } else {
       setLabs([...labs, { id: Date.now(), name: newLabName, location: newLabLocation }]);
+      fetch("http://localhost:5000/add_laboratory",{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { lab_name: newLabName, location: newLabLocation } })
+      })
     }
     setNewLabName('');
     setNewLabLocation('');
@@ -154,6 +200,11 @@ export default function AdminComputers() {
       setEditingComputerId(null);
     } else {
       setComputers([...computers, { id: Date.now(), name: newComputerName, spec: newComputerSpec, lab: assignedLabForComputer }]);
+      fetch("http://localhost:5000/add_computer",{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { name: newComputerName, spec: newComputerSpec, lab_name: assignedLabForComputer } })
+      })
     }
     setNewComputerName('');
     setNewComputerSpec('');
@@ -178,6 +229,11 @@ export default function AdminComputers() {
       setEditingAccessoryId(null);
     } else {
       setAccessories([...accessories, { id: Date.now(), name: newAccessoryName, spec: newAccessorySpec, lab: assignedLabForAccessory }]);
+      fetch("http://localhost:5000/add_accessories",{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { name: newAccessoryName, spec: newAccessorySpec, lab_name: assignedLabForAccessory } })
+      })
     }
     setNewAccessoryName('');
     setNewAccessorySpec('');
@@ -197,9 +253,9 @@ export default function AdminComputers() {
 
   // ----- Filtered Labs -----
   const filterLabs = labs.filter(lab =>
-    lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lab.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  (lab?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+  (lab?.location?.toLowerCase().includes(searchTerm.toLowerCase()))
+);
 
   // ----- Render -----
   return (

@@ -8,39 +8,10 @@ export default function Reports() {
 
   useEffect(() => {
     const fetchReports = async () => {
-      const data = [
-        {
-          id: 1,
-          title: 'Weekly Lab Equipment Maintenance',
-          submittedBy: 'Alice Johnson',
-          role: 'Lab Assistant',
-          date: '2025-08-15T10:30:00',
-          content: 'Completed routine maintenance of microscopes and centrifuges in Chemistry Lab 1. All equipment functioning properly.',
-          remarks: 'Next maintenance scheduled on 2025-08-22.',
-          isRead: false
-        },
-        {
-          id: 2,
-          title: 'New Equipment Request',
-          submittedBy: 'Dr. Robert Smith',
-          role: 'Lab Adviser',
-          date: '2025-08-14T14:45:00',
-          content: 'Requested 3 high-resolution microscopes and additional lab benches for Molecular Biology Lab.',
-          remarks: 'Approval pending from administration.',
-          isRead: true
-        },
-        {
-          id: 3,
-          title: 'Safety Compliance Inspection',
-          submittedBy: 'Charlie Lee',
-          role: 'Lab Assistant',
-          date: '2025-08-16T09:15:00',
-          content: 'Conducted safety inspection for Physics Lab. All equipment compliant.',
-          remarks: 'Minor label updates required on chemical bottles.',
-          isRead: false
-        }
-      ];
-      setReports(data);
+      await fetch('http://localhost:5000/get_reports')
+      .then(res => res.json())
+      .then(data => setReports(data))
+      
     };
 
     fetchReports();
@@ -68,13 +39,15 @@ export default function Reports() {
       const dateObj = new Date(report.date);
       const file = new Blob(
         [
-          `Title: ${report.title}\n`,
-          `Submitted By: ${report.submittedBy}\n`,
-          `Role: ${report.role}\n`,
+          `Item: ${report.item}`,
+          `Status: ${report.report_status}`,
+          `Lab: ${report.lab}\n`,
+          `Label: ${report.label}`,
+          `Submitted By: ${report.submitted_by}\n`,
+          `Status: ${report.status}\n`,
           `Submitted Date: ${dateObj.toLocaleDateString()}\n`,
           `Submitted Time: ${dateObj.toLocaleTimeString()}\n`,
-          `Content: ${report.content}\n`,
-          `Remarks: ${report.remarks}\n`,
+          `Notes: ${report.notes}\n`,
           `Status: ${report.isRead ? 'Read' : 'Unread'}`
         ],
         { type: "text/plain" }
@@ -127,14 +100,15 @@ export default function Reports() {
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
+                
                 <th>Status</th>
-                <th>Title</th>
-                <th>Content</th>
+                <th>Item</th>
+                <th>Lab</th>
+                <th>Label</th>
                 <th>Submitted By</th>
-                <th>Role</th>
-                <th>Submitted Date</th>
-                <th>Submitted Time</th>
-                <th>Remarks</th>
+                <th>Status</th>
+                <th>Submitted Date:</th>
+                <th>Notes</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -144,26 +118,26 @@ export default function Reports() {
                 const submittedDate = dateObj.toLocaleDateString();
                 const submittedTime = dateObj.toLocaleTimeString();
                 return (
-                  <tr key={report.id} style={{ backgroundColor: report.isRead ? 'white' : '#e3f2fd' }}>
+                  <tr key={report.id} style={{ backgroundColor: report.report_status ? 'white' : '#e3f2fd' }}>
                     <td>
-                      <span className={`badge ${report.isRead ? 'bg-secondary' : 'bg-primary'}`}>
-                        {report.isRead ? 'Read' : 'Unread'}
+                      <span className={`badge ${report.report_status ? 'bg-secondary' : 'bg-primary'}`}>
+                        {report.report_status ? 'Read' : 'Unread'}
                       </span>
                     </td>
-                    <td>{report.title}</td>
-                    <td>{report.content}</td>
-                    <td>{report.submittedBy}</td>
-                    <td>{report.role}</td>
-                    <td>{submittedDate}</td>
-                    <td>{submittedTime}</td>
-                    <td>{report.remarks}</td>
+                    <td>{report.item}</td>
+                    <td>{report.lab}</td>
+                    <td>{report.label}</td>
+                    <td>{report.submitted_by}</td>
+                    <td>{report.status}</td>
+                    <td>{submittedDate} - {submittedTime}</td>
+                    <td>{report.notes}</td>
                     <td>
                       <div className="d-flex gap-2">
                         <button
-                          className={`btn btn-sm ${report.isRead ? 'btn-warning' : 'btn-primary'}`}
+                          className={`btn btn-sm ${report.report_status ? 'btn-warning' : 'btn-primary'}`}
                           onClick={() => handleToggleRead(report.id)}
                         >
-                          {report.isRead ? 'Mark Unread' : 'Mark Read'}
+                          {report.report_status ? 'Mark Unread' : 'Mark Read'}
                         </button>
                         <button
                           className="btn btn-sm btn-danger"

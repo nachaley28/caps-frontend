@@ -6,17 +6,34 @@ export default function Inventory() {
   const [inventory, setInventory] = useState([]);
   const [filterStatus, setFilterStatus] = useState('All');
 
+  function getStoredUser() {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+}
+
   useEffect(() => {
     const fetchInventory = async () => {
-      const combinedInventory = [
-        { id: 1, category: 'Computer', name: 'Dell OptiPlex 7090', lab: 'Chemistry Lab 1', specs: 'i7, 16GB RAM, 512GB SSD', quantity: 1, status: 'Operational' },
-        { id: 2, category: 'Computer', name: 'HP EliteDesk 800', lab: 'Physics Lab', specs: 'i5, 8GB RAM, 256GB SSD', quantity: 1, status: 'Damaged' },
-        { id: 3, category: 'Accessory', name: 'Projector', lab: 'Chemistry Lab 1', specs: '-', quantity: 2, status: 'Operational' },
-        { id: 4, category: 'Accessory', name: 'Whiteboard', lab: 'Physics Lab', specs: '-', quantity: 1, status: 'Repaired' },
-        { id: 5, category: 'Other', name: 'Microscope', lab: 'Chemistry Lab 1', specs: '-', quantity: 5, status: 'Operational' },
-        { id: 6, category: 'Other', name: 'Centrifuge', lab: 'Physics Lab', specs: '-', quantity: 2, status: 'Not Operational' },
-      ];
-      setInventory(combinedInventory);
+      const user = getStoredUser();
+      // const combinedInventory = [
+      //   { id: 1, category: 'Computer', name: 'Dell OptiPlex 7090', lab: 'Chemistry Lab 1', specs: 'i7, 16GB RAM, 512GB SSD', quantity: 1, status: 'Operational' },
+      //   { id: 2, category: 'Computer', name: 'HP EliteDesk 800', lab: 'Physics Lab', specs: 'i5, 8GB RAM, 256GB SSD', quantity: 1, status: 'Damaged' },
+      //   { id: 3, category: 'Accessory', name: 'Projector', lab: 'Chemistry Lab 1', specs: '-', quantity: 2, status: 'Operational' },
+      //   { id: 4, category: 'Accessory', name: 'Whiteboard', lab: 'Physics Lab', specs: '-', quantity: 1, status: 'Repaired' },
+      //   { id: 5, category: 'Other', name: 'Microscope', lab: 'Chemistry Lab 1', specs: '-', quantity: 5, status: 'Operational' },
+      //   { id: 6, category: 'Other', name: 'Centrifuge', lab: 'Physics Lab', specs: '-', quantity: 2, status: 'Not Operational' },
+      // ];
+
+      await fetch('http://127.0.0.1:5000/get_inventory',{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Email": user?.email || "",
+          "X-User-Id": user?.lgid || ""
+        }
+      })
+      .then(res => res.json())
+      .then(data => setInventory(data) )
+      // setInventory(combinedInventory);
     };
     fetchInventory();
   }, []);
