@@ -164,7 +164,7 @@ export default function Inventory() {
 
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h2 className="fw-bold text-primary">Inventory </h2>
+        <h2 className="fw-bold text-primary">🛠️ Inventory </h2>
         <div className="d-flex gap-2 flex-wrap">
           <button className="btn btn-success" onClick={handleExportExcel}>
             Export Excel
