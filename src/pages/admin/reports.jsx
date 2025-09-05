@@ -177,7 +177,6 @@ export default function Reports() {
         }
       `}</style>
 
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h2 className="fw-bold text-primary"> Reports Dashboard</h2>
         <div className="d-flex gap-2 flex-wrap">
@@ -190,7 +189,6 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="row mb-4 g-3">
         <div className="col-md-3">
           <input
@@ -325,7 +323,6 @@ export default function Reports() {
             </select>
           </div>
 
-          {/* Page numbers */}
           <nav>
             <ul className="pagination mb-0 justify-content-center">
               <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>

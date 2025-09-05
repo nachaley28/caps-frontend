@@ -9,14 +9,10 @@ export default function UsersRoles() {
   const [filterRole, setFilterRole] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedUser, setSelectedUser] = useState(null);
-  const [modalType, setModalType] = useState(""); // view | edit | add
+  const [modalType, setModalType] = useState("");
 
   useEffect(() => {
     setUsers([
-      { name: "John Doe", email: "john@example.com", role: "Admin", status: "Active", lastLogin: "2025-08-17 10:00" },
-      { name: "Jane Smith", email: "jane@example.com", role: "Lab Assistant", status: "Inactive", lastLogin: "2025-08-15 09:30" },
-      { name: "Mark Cruz", email: "mark@example.com", role: "Faculty", status: "Active", lastLogin: "2025-08-16 12:00" },
-      { name: "Alice Brown", email: "alice@example.com", role: "Guest", status: "Active", lastLogin: "2025-08-14 14:45" },
     ]);
   }, []);
 
@@ -99,7 +95,6 @@ export default function UsersRoles() {
         }
       `}</style>
 
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="fw-bold text-primary">Users & Roles </h2>
         <button className="btn btn-success shadow-sm" onClick={handleAddUser}>
@@ -108,7 +103,6 @@ export default function UsersRoles() {
       </div>
 
 
-      {/* Search & Filters */}
       <div className="row mb-3 g-2">
         <div className="col-md-4">
           <input
@@ -146,7 +140,6 @@ export default function UsersRoles() {
         </div>
       </div>
 
-      {/* User Table */}
       <div className="table-responsive shadow-sm rounded">
         <table className="table table-hover align-middle">
           <thead className="table-light">

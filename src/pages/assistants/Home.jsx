@@ -52,7 +52,6 @@ function ChartCard({ title, color, children }) {
   );
 }
 
-// ----- Inventory Table Component -----
 function InventoryTable({ inventory }) {
   return (
     <ChartCard title="Reports Submitted" color="#5A8DEE">
@@ -63,7 +62,6 @@ function InventoryTable({ inventory }) {
         >
           <thead style={{ backgroundColor: "#5A8DEE", color: "#fff" }}>
             <tr>
-              <th>Timestamp</th>
               <th>Item</th>
               <th>Lab</th>
               <th>Label</th>
@@ -74,7 +72,6 @@ function InventoryTable({ inventory }) {
           <tbody>
             {inventory.map((item, index) => (
               <tr key={index}>
-                <td>{item.timestamp}</td>
                 <td>{item.item}</td>
                 <td>{item.lab}</td>
                 <td>{item.label}</td>
@@ -151,14 +148,12 @@ export default function Home() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // Stats
   const totalReports = reports.length;
   const damagedItems = reports.filter((r) => r.status === "Damage");
   const missingItems = reports.filter((r) => r.status === "Missing");
   const operationalItems = reports.filter((r) => r.label === "Operational");
   const notOperationalItems = reports.filter((r) => r.label !== "Operational");
 
-  // Charts
   const damagedChart = damagedItems.reduce((acc, r) => {
     const existing = acc.find((a) => a.item === r.item);
     if (existing) existing.count += 1;
@@ -196,7 +191,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* ----- Add Report Modal ----- */}
       {showModal && (
         <div
           className="modal-overlay"
@@ -303,7 +297,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* ----- Stats Cards ----- */}
       <div className="row justify-content-center gx-2 gy-2 mb-4">
         <StatCard
           title="Total Reports"
@@ -337,7 +330,6 @@ export default function Home() {
         />
       </div>
 
-      {/* ----- Charts in Cards ----- */}
       <div className="row g-3">
         <div className="col-md-6 col-sm-12">
           <ChartCard title="Damaged Items Distribution" color="#E15759">
