@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {
-  FaTimes, FaHome, FaWarehouse, FaUserCircle
-} from "react-icons/fa";
+  FaTimes, FaHome, FaLaptop, FaUserCircle,FaClipboardList, FaUsers  } from "react-icons/fa";
 
 function AdminLayout() {
   const navigate = useNavigate();
@@ -13,14 +12,12 @@ function AdminLayout() {
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const handleLogout = () => navigate('/');
 
-  const sidebarLinks = [
-    { icon: <FaHome />, label: "Dashboard", path: "", color: "#FFA500" },
-    { icon: <FaHome />, label: "Labs and Computers", path: "/admin/labs", color: "#FFA500" },
-    { icon: <FaWarehouse />, label: "Report", path: "/admin/reports", color: "#FFA500" },
-    { icon: <FaWarehouse />, label: "Inventory", path: "/admin/inventory", color: "#FFA500" },
-    { icon: <FaWarehouse />, label: "User and Roles", path: "/admin/users", color: "#FFA500" },
-
-
+   const sidebarLinks = [
+    { icon: <FaHome />, label: 'Dashboard', path: '/admin', color: '#0d6efd' },
+    { icon: <FaLaptop />, label: 'Labs & Computers', path: '/admin/labs', color: '#0d6efd' },
+    { icon: <FaClipboardList />, label: 'Reports', path: '/admin/reports', color: '#0d6efd' },
+    { icon: <FaLaptop />, label: 'Inventory', path: '/admin/inventory', color: '#0d6efd' },
+    { icon: <FaUsers />, label: 'Users & Roles', path: '/admin/users', color: '#0d6efd' },
   ];
 
   return (
@@ -86,13 +83,15 @@ function AdminLayout() {
           backgroundColor: '#FFFFFF',
           paddingTop: '60px',
           color: '#333',
+          marginTop: '10px',
+          transition: 'all 0.3s ease',
           borderRight: '1px solid #E5E5E5'
         }}>
         <ul className="nav flex-column px-2">
           {sidebarLinks.map((link, i) => {
             const isActive = location.pathname === link.path;
             return (
-              <li key={i} className="nav-item mb-3"> {/* added margin-top here (mb-3) */}
+              <li key={i} className="nav-item mb-2"> {/* added margin-top here (mb-3) */}
                 <button
                   className={`nav-link btn w-100 d-flex align-items-center justify-content-start sidebar-link ${isActive ? 'active' : ''}`}
                   onClick={() => navigate(link.path)}

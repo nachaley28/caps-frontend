@@ -1,13 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaLaptop, FaDesktop, FaPlug, FaEdit, FaTrash, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from "react";
+import {
+  FaLaptop,
+  FaDesktop,
+  FaPlug,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+} from "react-icons/fa";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-// ----- Lab Form Component -----
-function LabForm({ show, onClose, onSave, labName, setLabName, labLocation, setLabLocation, editing }) {
+// ------------------ Glow Colors ------------------
+const glowColors = {
+  labs: "rgba(0,123,255,0.5)",
+  computers: "rgba(40,167,69,0.5)",
+  accessories: "rgba(255,193,7,0.5)",
+};
+
+// ------------------ Utility Functions ------------------
+const getRowHover = (category) => ({
+  style: { transition: "box-shadow 0.3s ease" },
+  onMouseEnter: (e) => (e.currentTarget.style.boxShadow = `0 0 10px ${glowColors[category]}`),
+  onMouseLeave: (e) => (e.currentTarget.style.boxShadow = "none"),
+});
+
+const getBtnHover = (color) => ({
+  style: { transition: "box-shadow 0.3s ease" },
+  onMouseEnter: (e) =>
+    (e.currentTarget.style.boxShadow =
+      color === "primary"
+        ? "0 0 12px rgba(0,123,255,0.7)"
+        : color === "success"
+        ? "0 0 12px rgba(40,167,69,0.7)"
+        : color === "warning"
+        ? "0 0 12px rgba(255,193,7,0.7)"
+        : "0 0 12px rgba(0,0,0,0.5)"),
+  onMouseLeave: (e) => (e.currentTarget.style.boxShadow = "none"),
+});
+
+// ------------------ Lab Form ------------------
+function LabForm({
+  show,
+  onClose,
+  onSave,
+  labName,
+  setLabName,
+  labLocation,
+  setLabLocation,
+  editing,
+}) {
   if (!show) return null;
+
   return (
-    <div className="card shadow-sm p-3 mb-3 border-0">
-      <h5 className="card-title">{editing ? 'Edit Lab' : 'Add New Lab'}</h5>
+    <div
+      className="card shadow-sm p-3 mb-3 border-0"
+      style={{ transition: "box-shadow 0.3s ease" }}
+      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 15px rgba(0,123,255,0.5)")}
+      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+    >
+      <h5 className="card-title">{editing ? "Edit Lab" : "Add New Lab"}</h5>
       <input
         type="text"
         className="form-control mb-2"
@@ -23,25 +73,55 @@ function LabForm({ show, onClose, onSave, labName, setLabName, labLocation, setL
         onChange={(e) => setLabLocation(e.target.value)}
       />
       <div className="d-flex gap-2">
-        <button className="btn btn-primary w-100" onClick={onSave}>
-          {editing ? 'Update Lab' : 'Save Lab'}
+        <button
+          className="btn btn-primary w-100"
+          {...getBtnHover("primary")}
+          onClick={onSave}
+        >
+          {editing ? "Update Lab" : "Save Lab"}
         </button>
-        <button className="btn btn-secondary w-100" onClick={onClose}>Cancel</button>
+        <button
+          className="btn btn-secondary w-100"
+          {...getBtnHover("secondary")}
+          onClick={onClose}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
 }
 
-// ----- Computer / Accessory Form Component -----
-function ItemForm({ show, onClose, onSave, name, setName, spec, setSpec, assignedLab, setAssignedLab, labs, editing, title, btnColor }) {
+// ------------------ Item Form ------------------
+function ItemForm({
+  show,
+  onClose,
+  onSave,
+  name,
+  setName,
+  spec,
+  setSpec,
+  assignedLab,
+  setAssignedLab,
+  labs,
+  editing,
+  title,
+  btnColor,
+}) {
   if (!show) return null;
+
   return (
-    <div className={`card shadow-sm p-3 mb-3 border-0`}>
+    <div
+      className="card shadow-sm p-3 mb-3 border-0"
+      style={{ transition: "box-shadow 0.3s ease" }}
+      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 15px rgba(0,0,0,0.2)")}
+      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+    >
       <h5 className="card-title">{editing ? `Edit ${title}` : `Add ${title}`}</h5>
       <input
         type="text"
         className="form-control mb-2"
-        placeholder={`${title} Name/Unit`}
+        placeholder={`${title} Name`}
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -52,219 +132,118 @@ function ItemForm({ show, onClose, onSave, name, setName, spec, setSpec, assigne
         value={spec}
         onChange={(e) => setSpec(e.target.value)}
       />
-      <select className="form-select mb-3" value={assignedLab} onChange={(e) => setAssignedLab(e.target.value)}>
+      <select
+        className="form-select mb-3"
+        value={assignedLab}
+        onChange={(e) => setAssignedLab(e.target.value)}
+      >
         <option value="">Assign to Lab</option>
-        {labs.map(l => <option key={l.id} value={`${l.name} (${l.location})`}>{l.name} — {l.location}</option>)}
+        {labs.map((l) => (
+          <option key={l.id} value={`${l.name} (${l.location})`}>
+            {l.name} — {l.location}
+          </option>
+        ))}
       </select>
       <div className="d-flex gap-2">
-        <button className={`btn btn-${btnColor} w-100`} onClick={onSave}>{editing ? `Update ${title}` : `Save ${title}`}</button>
-        <button className="btn btn-secondary w-100" onClick={onClose}>Cancel</button>
+        <button className={`btn btn-${btnColor} w-100`} {...getBtnHover(btnColor)} onClick={onSave}>
+          {editing ? `Update ${title}` : `Save ${title}`}
+        </button>
+        <button className="btn btn-secondary w-100" {...getBtnHover("secondary")} onClick={onClose}>
+          Cancel
+        </button>
       </div>
     </div>
   );
 }
 
-// ----- Main Component -----
-export  default function AdminComputers() {
-  // --- Dummy Data ---
-  // const initialLabs = [
-  //   { id: 1, name: 'Computer Lab A', location: 'Building 1' },
-  //   { id: 2, name: 'Computer Lab B', location: 'Building 2' }
-  // ];
-
-    // const response = fetch("http://127.0.0.1:5000/get_laboratory");
-    // const initialLabs = response.json();
-    // console.log(initialLabs);
-  // const initialComputers = [
-  //   { id: 1, name: 'PC-01', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab A (Building 1)' },
-  //   { id: 2, name: 'PC-02', spec: 'Intel i7, 16GB RAM', lab: 'Computer Lab A (Building 1)' },
-  //   { id: 3, name: 'PC-03', spec: 'Intel i5, 8GB RAM', lab: 'Computer Lab B (Building 2)' }
-  // ];
-  // const initialAccessories = [
-  //   { id: 1, name: 'Projector', spec: 'Full HD', lab: 'Computer Lab A (Building 1)' },
-  //   { id: 2, name: 'Printer', spec: 'LaserJet', lab: 'Computer Lab B (Building 2)' }
-  // ];
-
-  // --- State ---
-  // const [labs, setLabs] = useState(initialLabs);
+// ------------------ Main Component ------------------
+export default function AdminComputers() {
   const [labs, setLabs] = useState([]);
   const [computers, setComputers] = useState([]);
   const [accessories, setAccessories] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     async function loadLabs() {
       try {
-        const response = await fetch("http://127.0.0.1:5000/get_laboratory");
-        const data = await response.json();
-        setLabs(data);  // ✅ put real data into state
+        const res = await fetch("http://127.0.0.1:5000/get_laboratory");
+        const data = await res.json();
+        setLabs(data);
       } catch (err) {
-        console.error("Error loading labs:", err);
+        console.error(err);
+      }
+    }
+    async function loadComputers() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/get_computer");
+        const data = await res.json();
+        setComputers(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    async function loadAccessories() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/get_accessories");
+        const data = await res.json();
+        setAccessories(data);
+      } catch (err) {
+        console.error(err);
       }
     }
     loadLabs();
+    loadComputers();
+    loadAccessories();
+  }, []);
 
-
-    async function loadcoms() {
-      try {
-        const response = await fetch("http://127.0.0.1:5000/get_computer");
-        const data = await response.json();
-        setComputers(data);  // ✅ put real data into state
-      } catch (err) {
-        console.error("Error loading labs:", err);
-      }
-    }
-    loadcoms();
-
-    async function loadaccess() {
-      try {
-        const response = await fetch("http://127.0.0.1:5000/get_accessories");
-        const data = await response.json();
-        setAccessories(data);  // ✅ put real data into state
-      } catch (err) {
-        console.error("Error loading labs:", err);
-      }
-    }
-    loadaccess();
-  }, [])
-
-  // Form toggles
+  // ------------------ Forms State ------------------
   const [showLabForm, setShowLabForm] = useState(false);
   const [showComputerForm, setShowComputerForm] = useState(false);
   const [showAccessoryForm, setShowAccessoryForm] = useState(false);
 
-  // Lab form states
-  const [newLabName, setNewLabName] = useState('');
-  const [newLabLocation, setNewLabLocation] = useState('');
+  const [newLabName, setNewLabName] = useState("");
+  const [newLabLocation, setNewLabLocation] = useState("");
   const [editingLabId, setEditingLabId] = useState(null);
 
-  // Computer form states
-  const [newComputerName, setNewComputerName] = useState('');
-  const [newComputerSpec, setNewComputerSpec] = useState('');
-  const [assignedLabForComputer, setAssignedLabForComputer] = useState('');
+  const [newComputerName, setNewComputerName] = useState("");
+  const [newComputerSpec, setNewComputerSpec] = useState("");
+  const [assignedLabForComputer, setAssignedLabForComputer] = useState("");
   const [editingComputerId, setEditingComputerId] = useState(null);
 
-  // Accessory form states
-  const [newAccessoryName, setNewAccessoryName] = useState('');
-  const [newAccessorySpec, setNewAccessorySpec] = useState('');
-  const [assignedLabForAccessory, setAssignedLabForAccessory] = useState('');
+  const [newAccessoryName, setNewAccessoryName] = useState("");
+  const [newAccessorySpec, setNewAccessorySpec] = useState("");
+  const [assignedLabForAccessory, setAssignedLabForAccessory] = useState("");
   const [editingAccessoryId, setEditingAccessoryId] = useState(null);
 
-  // Collapse toggles per lab
-  const [collapsedLabs, setCollapsedLabs] = useState({});
-
-  const toggleCollapse = (labId) => {
-    setCollapsedLabs({ ...collapsedLabs, [labId]: !collapsedLabs[labId] });
-  };
-
-  // ----- CRUD Operations -----
   const addOrUpdateLab = () => {
     if (!newLabName.trim() || !newLabLocation.trim()) return;
     if (editingLabId) {
-      const oldLab = labs.find(l => l.id === editingLabId);
-      setLabs(labs.map(l => l.id === editingLabId ? { ...l, name: newLabName, location: newLabLocation } : l));
-      setComputers(computers.map(c => c.lab === `${oldLab.name} (${oldLab.location})` ? { ...c, lab: `${newLabName} (${newLabLocation})` } : c));
-      setAccessories(accessories.map(a => a.lab === `${oldLab.name} (${oldLab.location})` ? { ...a, lab: `${newLabName} (${newLabLocation})` } : a));
+      setLabs(labs.map((l) => (l.id === editingLabId ? { ...l, name: newLabName, location: newLabLocation } : l)));
       setEditingLabId(null);
     } else {
       setLabs([...labs, { id: Date.now(), name: newLabName, location: newLabLocation }]);
-      fetch("http://localhost:5000/add_laboratory",{
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { lab_name: newLabName, location: newLabLocation } })
-      })
     }
-    setNewLabName('');
-    setNewLabLocation('');
+    setNewLabName("");
+    setNewLabLocation("");
     setShowLabForm(false);
   };
 
-  const editLab = (lab) => {
-    setNewLabName(lab.name);
-    setNewLabLocation(lab.location);
-    setEditingLabId(lab.id);
-    setShowLabForm(true);
-  };
+  const deleteLab = (id) => setLabs(labs.filter((l) => l.id !== id));
 
-  const deleteLab = (labId) => {
-    const lab = labs.find(l => l.id === labId);
-    setLabs(labs.filter(l => l.id !== labId));
-    setComputers(computers.filter(c => c.lab !== `${lab.name} (${lab.location})`));
-    setAccessories(accessories.filter(a => a.lab !== `${lab.name} (${lab.location})`));
-  };
+  const filterLabs = labs.filter(
+    (lab) =>
+      lab?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lab?.location?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const addOrUpdateComputer = () => {
-    if (!newComputerName.trim() || !newComputerSpec.trim() || !assignedLabForComputer) return;
-    if (editingComputerId) {
-      setComputers(computers.map(c => c.id === editingComputerId ? { ...c, name: newComputerName, spec: newComputerSpec, lab: assignedLabForComputer } : c));
-      setEditingComputerId(null);
-    } else {
-      setComputers([...computers, { id: Date.now(), name: newComputerName, spec: newComputerSpec, lab: assignedLabForComputer }]);
-      fetch("http://localhost:5000/add_computer",{
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { name: newComputerName, spec: newComputerSpec, lab_name: assignedLabForComputer } })
-      })
-    }
-    setNewComputerName('');
-    setNewComputerSpec('');
-    setAssignedLabForComputer('');
-    setShowComputerForm(false);
-  };
-
-  const editComputer = (comp) => {
-    setNewComputerName(comp.name);
-    setNewComputerSpec(comp.spec);
-    setAssignedLabForComputer(comp.lab);
-    setEditingComputerId(comp.id);
-    setShowComputerForm(true);
-  };
-
-  const deleteComputer = (compId) => setComputers(computers.filter(c => c.id !== compId));
-
-  const addOrUpdateAccessory = () => {
-    if (!newAccessoryName.trim() || !newAccessorySpec.trim() || !assignedLabForAccessory) return;
-    if (editingAccessoryId) {
-      setAccessories(accessories.map(a => a.id === editingAccessoryId ? { ...a, name: newAccessoryName, spec: newAccessorySpec, lab: assignedLabForAccessory } : a));
-      setEditingAccessoryId(null);
-    } else {
-      setAccessories([...accessories, { id: Date.now(), name: newAccessoryName, spec: newAccessorySpec, lab: assignedLabForAccessory }]);
-      fetch("http://localhost:5000/add_accessories",{
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { name: newAccessoryName, spec: newAccessorySpec, lab_name: assignedLabForAccessory } })
-      })
-    }
-    setNewAccessoryName('');
-    setNewAccessorySpec('');
-    setAssignedLabForAccessory('');
-    setShowAccessoryForm(false);
-  };
-
-  const editAccessory = (acc) => {
-    setNewAccessoryName(acc.name);
-    setNewAccessorySpec(acc.spec);
-    setAssignedLabForAccessory(acc.lab);
-    setEditingAccessoryId(acc.id);
-    setShowAccessoryForm(true);
-  };
-
-  const deleteAccessory = (accId) => setAccessories(accessories.filter(a => a.id !== accId));
-
-  // ----- Filtered Labs -----
-  const filterLabs = labs.filter(lab =>
-  (lab?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-  (lab?.location?.toLowerCase().includes(searchTerm.toLowerCase()))
-);
-
-  // ----- Render -----
   return (
     <div className="container my-5">
       <h2 className="mb-4 text-center fw-bold">Computer Labs Management</h2>
 
-      {/* Search */}
       <div className="input-group mb-4 shadow-sm">
-        <span className="input-group-text bg-white"><FaSearch /></span>
+        <span className="input-group-text bg-white">
+          <FaSearch />
+        </span>
         <input
           type="text"
           className="form-control"
@@ -274,12 +253,31 @@ export  default function AdminComputers() {
         />
       </div>
 
-      {/* Forms Row */}
-      <div className="row mb-4 g-3">
-        <div className="col-md-4">
-          <button className="btn btn-primary w-100 shadow-sm" onClick={() => { setShowLabForm(!showLabForm); if (!showLabForm) { setNewLabName(''); setNewLabLocation(''); setEditingLabId(null); } }}>
-            <FaDesktop className="me-2" /> {editingLabId ? 'Edit Lab' : 'Add New Lab'}
+      <ul className="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+        <li className="nav-item" role="presentation">
+          <button className="nav-link active" id="labs-tab" data-bs-toggle="tab" data-bs-target="#labs" type="button" role="tab">
+            <FaDesktop className="me-2" /> Labs
           </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button className="nav-link" id="computers-tab" data-bs-toggle="tab" data-bs-target="#computers" type="button" role="tab">
+            <FaLaptop className="me-2" /> Computers
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button className="nav-link" id="accessories-tab" data-bs-toggle="tab" data-bs-target="#accessories" type="button" role="tab">
+            <FaPlug className="me-2" /> Accessories
+          </button>
+        </li>
+      </ul>
+
+      <div className="tab-content" id="adminTabsContent">
+        {/* Labs Tab */}
+        <div className="tab-pane fade show active" id="labs" role="tabpanel">
+          <button className="btn btn-primary mb-3" {...getBtnHover("primary")} onClick={() => setShowLabForm(!showLabForm)}>
+            <FaDesktop className="me-2" /> Add Lab
+          </button>
+
           <LabForm
             show={showLabForm}
             onClose={() => setShowLabForm(false)}
@@ -290,105 +288,167 @@ export  default function AdminComputers() {
             setLabLocation={setNewLabLocation}
             editing={editingLabId}
           />
+
+          <table className="table table-bordered table-hover shadow-sm">
+            <thead className="table-light">
+              <tr>
+                <th>Lab Name</th>
+                <th>Location</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filterLabs.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="text-center text-muted">
+                    No labs found.
+                  </td>
+                </tr>
+              ) : (
+                filterLabs.map((lab) => (
+                  <tr key={lab.id} {...getRowHover("labs")}>
+                    <td>{lab.name}</td>
+                    <td>{lab.location}</td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-sm btn-light me-2"
+                        {...getBtnHover("secondary")}
+                        onClick={() => {
+                          setNewLabName(lab.name);
+                          setNewLabLocation(lab.location);
+                          setEditingLabId(lab.id);
+                          setShowLabForm(true);
+                        }}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button className="btn btn-sm btn-danger" {...getBtnHover("warning")} onClick={() => deleteLab(lab.id)}>
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <div className="col-md-4">
-          <button className="btn btn-success w-100 shadow-sm" onClick={() => { setShowComputerForm(!showComputerForm); if (!showComputerForm) { setNewComputerName(''); setNewComputerSpec(''); setAssignedLabForComputer(''); setEditingComputerId(null); } }}>
-            <FaLaptop className="me-2" /> {editingComputerId ? 'Edit Computer' : 'Add New Computer'}
+        {/* Computers Tab */}
+        <div className="tab-pane fade" id="computers" role="tabpanel">
+          <button className="btn btn-success mb-3" {...getBtnHover("success")} onClick={() => setShowComputerForm(!showComputerForm)}>
+            <FaLaptop className="me-2" /> Add Computer
           </button>
+
           <ItemForm
             show={showComputerForm}
             onClose={() => setShowComputerForm(false)}
-            onSave={addOrUpdateComputer}
-            name={newComputerName} setName={setNewComputerName}
-            spec={newComputerSpec} setSpec={setNewComputerSpec}
-            assignedLab={assignedLabForComputer} setAssignedLab={setAssignedLabForComputer}
+            onSave={() => {}}
+            name={newComputerName}
+            setName={setNewComputerName}
+            spec={newComputerSpec}
+            setSpec={setNewComputerSpec}
+            assignedLab={assignedLabForComputer}
+            setAssignedLab={setAssignedLabForComputer}
             labs={labs}
             editing={editingComputerId}
             title="Computer"
             btnColor="success"
           />
+
+          <table className="table table-bordered table-hover shadow-sm">
+            <thead className="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Specification</th>
+                <th>Assigned Lab</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {computers.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center text-muted">
+                    No computers found.
+                  </td>
+                </tr>
+              ) : (
+                computers.map((c) => (
+                  <tr key={c.id} {...getRowHover("computers")}>
+                    <td>{c.name}</td>
+                    <td>{c.spec}</td>
+                    <td>{c.lab}</td>
+                    <td className="text-center">
+                      <button className="btn btn-sm btn-light me-2" {...getBtnHover("secondary")}>
+                        <FaEdit />
+                      </button>
+                      <button className="btn btn-sm btn-danger" {...getBtnHover("warning")}>
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <div className="col-md-4">
-          <button className="btn btn-warning w-100 shadow-sm" onClick={() => { setShowAccessoryForm(!showAccessoryForm); if (!showAccessoryForm) { setNewAccessoryName(''); setNewAccessorySpec(''); setAssignedLabForAccessory(''); setEditingAccessoryId(null); } }}>
-            <FaPlug className="me-2" /> {editingAccessoryId ? 'Edit Accessory' : 'Add Accessory/Equipment'}
+        {/* Accessories Tab */}
+        <div className="tab-pane fade" id="accessories" role="tabpanel">
+          <button className="btn btn-warning mb-3" {...getBtnHover("warning")} onClick={() => setShowAccessoryForm(!showAccessoryForm)}>
+            <FaPlug className="me-2" /> Add Accessory
           </button>
+
           <ItemForm
             show={showAccessoryForm}
             onClose={() => setShowAccessoryForm(false)}
-            onSave={addOrUpdateAccessory}
-            name={newAccessoryName} setName={setNewAccessoryName}
-            spec={newAccessorySpec} setSpec={setNewAccessorySpec}
-            assignedLab={assignedLabForAccessory} setAssignedLab={setAssignedLabForAccessory}
+            onSave={() => {}}
+            name={newAccessoryName}
+            setName={setNewAccessoryName}
+            spec={newAccessorySpec}
+            setSpec={setNewAccessorySpec}
+            assignedLab={assignedLabForAccessory}
+            setAssignedLab={setAssignedLabForAccessory}
             labs={labs}
             editing={editingAccessoryId}
             title="Accessory"
             btnColor="warning"
           />
-        </div>
-      </div>
 
-      {/* Labs Overview */}
-      <div className="row">
-        <div className="col-12">
-          <h4 className="fw-bold mb-3">Labs Overview</h4>
-          {filterLabs.length === 0 && <p className="text-muted">No labs match your search.</p>}
-          {filterLabs.map(lab => {
-            const labComputers = computers.filter(c => c.lab === `${lab.name} (${lab.location})` && c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const labAccessories = accessories.filter(a => a.lab === `${lab.name} (${lab.location})` && a.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const collapsed = collapsedLabs[lab.id];
-
-            return (
-              <div key={lab.id} className="card mb-3 shadow-sm">
-                <div className="card-header d-flex justify-content-between align-items-center bg-info text-white rounded-top">
-                  <div className="fw-bold"><FaDesktop className="me-2" /> {lab.name} — <small>{lab.location}</small></div>
-                  <div className="d-flex gap-1">
-                    <button className="btn btn-light btn-sm" onClick={() => editLab(lab)}><FaEdit /></button>
-                    <button className="btn btn-danger btn-sm" onClick={() => deleteLab(lab.id)}><FaTrash /></button>
-                    <button className="btn btn-light btn-sm" onClick={() => toggleCollapse(lab.id)}>
-                      {collapsed ? <FaChevronDown /> : <FaChevronUp />}
-                    </button>
-                  </div>
-                </div>
-                {!collapsed && (
-                  <div className="card-body">
-                    {/* Computers */}
-                    <h6 className="fw-bold">Computers</h6>
-                    {labComputers.length === 0 ? <p className="text-muted"><small>No computers match search.</small></p> :
-                      <ul className="list-group mb-3 shadow-sm">
-                        {labComputers.map(comp => (
-                          <li key={comp.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div>{comp.name} — <small>{comp.spec}</small></div>
-                            <div className="d-flex gap-1">
-                              <button className="btn btn-light btn-sm" onClick={() => editComputer(comp)}><FaEdit /></button>
-                              <button className="btn btn-danger btn-sm" onClick={() => deleteComputer(comp.id)}><FaTrash /></button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    }
-
-                    {/* Accessories */}
-                    <h6 className="fw-bold">Accessories/Equipment</h6>
-                    {labAccessories.length === 0 ? <p className="text-muted"><small>No accessories match search.</small></p> :
-                      <ul className="list-group shadow-sm">
-                        {labAccessories.map(acc => (
-                          <li key={acc.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div>{acc.name} — <small>{acc.spec}</small></div>
-                            <div className="d-flex gap-1">
-                              <button className="btn btn-light btn-sm" onClick={() => editAccessory(acc)}><FaEdit /></button>
-                              <button className="btn btn-danger btn-sm" onClick={() => deleteAccessory(acc.id)}><FaTrash /></button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    }
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          <table className="table table-bordered table-hover shadow-sm">
+            <thead className="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Specification</th>
+                <th>Assigned Lab</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {accessories.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center text-muted">
+                    No accessories found.
+                  </td>
+                </tr>
+              ) : (
+                accessories.map((a) => (
+                  <tr key={a.id} {...getRowHover("accessories")}>
+                    <td>{a.name}</td>
+                    <td>{a.spec}</td>
+                    <td>{a.lab}</td>
+                    <td className="text-center">
+                      <button className="btn btn-sm btn-light me-2" {...getBtnHover("secondary")}>
+                        <FaEdit />
+                      </button>
+                      <button className="btn btn-sm btn-danger" {...getBtnHover("warning")}>
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
