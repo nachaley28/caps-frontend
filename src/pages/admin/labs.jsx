@@ -228,7 +228,18 @@ export default function AdminComputers() {
     setShowLabForm(false);
   };
 
-  const deleteLab = (id) => setLabs(labs.filter((l) => l.id !== id));
+  const deleteLab = async (id) => {
+  if (!window.confirm("Delete this lab?")) return;
+  try {
+    const res = await fetch(`http://127.0.0.1:5000/delete_lab/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to delete lab");
+    setLabs(labs.filter((l) => l.id !== id));
+  } catch (err) {
+    console.error("Error deleting lab:", err);
+  }
+};
 
   const filterLabs = labs.filter(
     (lab) =>

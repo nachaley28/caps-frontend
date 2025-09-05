@@ -1,27 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrash, FaUserPlus, FaCheck, FaTimes, FaEye } from "react-icons/fa";
+import { FaEdit, FaTrash, FaUserPlus, FaEye } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function UsersRoles() {
   const [users, setUsers] = useState([]);
-  const [roles] = useState(["Admin", "Lab Assistant", "Faculty", "Guest"]);
+  const [roles] = useState([
+    "Admin",
+    "Lab Assistant",
+    "Faculty",
+    "Guest",
+    "Lab Adviser",
+  ]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("All");
-  const [filterStatus, setFilterStatus] = useState("All");
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalType, setModalType] = useState(""); // view | edit | add
 
   useEffect(() => {
-    setUsers([
-      { name: "John Doe", email: "john@example.com", role: "Admin", status: "Active", lastLogin: "2025-08-17 10:00" },
-      { name: "Jane Smith", email: "jane@example.com", role: "Lab Assistant", status: "Inactive", lastLogin: "2025-08-15 09:30" },
-      { name: "Mark Cruz", email: "mark@example.com", role: "Faculty", status: "Active", lastLogin: "2025-08-16 12:00" },
-      { name: "Alice Brown", email: "alice@example.com", role: "Guest", status: "Active", lastLogin: "2025-08-14 14:45" },
-    ]);
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/get_users");
+        if (!res.ok) throw new Error("Failed to fetch users");
+        const data = await res.json();
+
+        // Transform backend users → frontend shape
+        const transformed = data.map((u) => ({
+          name: u.name?.trim(),
+          email: u.email,
+          role: u.role?.trim(),
+        }));
+
+        setUsers(transformed);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+    fetchUsers();
   }, []);
 
   const handleAddUser = () => {
-    setSelectedUser({ name: "", email: "", role: "", status: "Active" });
+    setSelectedUser({ name: "", email: "", role: "" });
     setModalType("add");
   };
 
@@ -35,19 +53,19 @@ export default function UsersRoles() {
     setModalType("view");
   };
 
-  const handleDeleteUser = (user) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((u) => u !== user));
+  const handleDeleteUser = async (user) => {
+  if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
+    try {
+      const res = await fetch(`http://localhost:5000/delete_user/${encodeURIComponent(user.email)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete user");
+      setUsers(users.filter((u) => u.email !== user.email));
+    } catch (err) {
+      console.error("Error deleting user:", err);
     }
-  };
-
-  const handleToggleStatus = (user) => {
-    const updatedUsers = users.map((u) => {
-      if (u === user) u.status = u.status === "Active" ? "Inactive" : "Active";
-      return u;
-    });
-    setUsers(updatedUsers);
-  };
+  }
+};
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -63,54 +81,88 @@ export default function UsersRoles() {
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
     const matchesRole = filterRole === "All" || user.role === filterRole;
-    const matchesStatus = filterStatus === "All" || user.status === filterStatus;
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole;
   });
 
   return (
     <div className="container mt-4">
-      <style>{`
-        tbody tr { transition: all 0.25s ease-in-out; }
-        tbody tr:hover { transform: scale(1.01); cursor: pointer; }
+      {/* Custom Styles */}
+      <style>
+        {`
+          /* Highlighted rows */
+          .row-damage {
+            background-color: #343a40 !important;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          .row-missing {
+            background-color: #dc3545 !important;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          .row-pending {
+            background-color: #ffc107 !important;
+            animation: fadeIn 0.5s ease-in-out;
+          }
 
-        /* Status hover glow */
-        .row-active:hover { box-shadow: 0px 0px 14px rgba(25,135,84,0.8); }
-        .row-inactive:hover { box-shadow: 0px 0px 14px rgba(220,53,69,0.8); }
+          /* Hover glow for rows */
+          .row-damage:hover,
+          .row-missing:hover,
+          .row-pending:hover {
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.7);
+            transform: scale(1.01);
+            transition: 0.2s ease-in-out;
+          }
 
-        /* Role-based row colors */
-        .role-admin { background-color: #f8d7da !important; }
-        .role-admin:hover { box-shadow: 0px 0px 16px rgba(220,53,69,0.9); }
+          /* Pagination glow */
+          .pagination .page-item .page-link {
+            transition: all 0.2s ease-in-out;
+          }
+          .pagination .page-item .page-link:hover {
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.7);
+            transform: scale(1.05);
+          }
+          .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.9);
+          }
 
-        .role-lab-assistant { background-color: #d1e7dd !important; }
-        .role-lab-assistant:hover { box-shadow: 0px 0px 16px rgba(25,135,84,0.9); }
+          /* Rows per page selector glow */
+          .rows-select {
+            transition: all 0.2s ease-in-out;
+          }
+          .rows-select:hover {
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+          }
 
-        .role-faculty { background-color: #cfe2ff !important; }
-        .role-faculty:hover { box-shadow: 0px 0px 16px rgba(13,110,253,0.9); }
+          /* Fade-in animation */
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-5px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
 
-        .role-guest { background-color: #e2e3e5 !important; }
-        .role-guest:hover { box-shadow: 0px 0px 16px rgba(108,117,125,0.9); }
-
-        /* Modal overlay */
-        .modal-overlay {
-          background: rgba(0,0,0,0.5);
-          position: fixed;
-          inset: 0;
-          z-index: 1050;
-        }
-      `}</style>
-
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="fw-bold text-primary">Users & Roles </h2>
+        <h2 className="fw-bold text-primary">Users & Roles</h2>
         <button className="btn btn-success shadow-sm" onClick={handleAddUser}>
           <FaUserPlus /> Add User
         </button>
       </div>
 
-
-      {/* Search & Filters */}
+      {/* Search & Filter */}
       <div className="row mb-3 g-2">
-        <div className="col-md-4">
+        <div className="col-md-6">
           <input
             type="text"
             className="form-control shadow-sm"
@@ -133,17 +185,6 @@ export default function UsersRoles() {
             ))}
           </select>
         </div>
-        <div className="col-md-3">
-          <select
-            className="form-select shadow-sm"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="All">All Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
       </div>
 
       {/* User Table */}
@@ -154,26 +195,19 @@ export default function UsersRoles() {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Status</th>
-              <th>Last Login</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center py-3">
+                <td colSpan="4" className="text-center py-3">
                   No users found.
                 </td>
               </tr>
             ) : (
               filteredUsers.map((user, idx) => (
-                <tr
-                  key={idx}
-                  className={`row-${user.status.toLowerCase()} role-${user.role
-                    .toLowerCase()
-                    .replace(" ", "-")}`}
-                >
+                <tr key={idx}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>
@@ -191,16 +225,6 @@ export default function UsersRoles() {
                       {user.role}
                     </span>
                   </td>
-                  <td>
-                    <span
-                      className={`badge bg-${
-                        user.status === "Active" ? "success" : "secondary"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
-                  </td>
-                  <td>{user.lastLogin}</td>
                   <td className="d-flex gap-1">
                     <button
                       className="btn btn-sm btn-primary"
@@ -222,19 +246,6 @@ export default function UsersRoles() {
                       onClick={() => handleDeleteUser(user)}
                     >
                       <FaTrash />
-                    </button>
-                    <button
-                      className={`btn btn-sm ${
-                        user.status === "Active"
-                          ? "btn-secondary"
-                          : "btn-success"
-                      }`}
-                      title={
-                        user.status === "Active" ? "Deactivate" : "Activate"
-                      }
-                      onClick={() => handleToggleStatus(user)}
-                    >
-                      {user.status === "Active" ? <FaTimes /> : <FaCheck />}
                     </button>
                   </td>
                 </tr>
@@ -274,12 +285,6 @@ export default function UsersRoles() {
                     </p>
                     <p>
                       <strong>Role:</strong> {selectedUser.role}
-                    </p>
-                    <p>
-                      <strong>Status:</strong> {selectedUser.status}
-                    </p>
-                    <p>
-                      <strong>Last Login:</strong> {selectedUser.lastLogin}
                     </p>
                   </div>
                 ) : (
@@ -333,22 +338,6 @@ export default function UsersRoles() {
                             {role}
                           </option>
                         ))}
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">Status</label>
-                      <select
-                        className="form-select"
-                        value={selectedUser.status}
-                        onChange={(e) =>
-                          setSelectedUser({
-                            ...selectedUser,
-                            status: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
                       </select>
                     </div>
                     <button type="submit" className="btn btn-primary">

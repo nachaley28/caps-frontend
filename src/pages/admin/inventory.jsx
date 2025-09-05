@@ -68,13 +68,34 @@ export default function Inventory() {
 
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    setInventory((prev) => prev.filter((item) => item.id !== id));
+      try {
+        const res = fetch(`http://localhost:5000/delete_inventory/${id}`, {
+          method: "DELETE",
+        });
+        setInventory((prev) => prev.filter((item) => item.id !== id));
+        if (!res.ok) throw new Error("Failed to delete report");
+
+        
+      } catch (err) {
+        console.error("Error deleting report:", err);
+      }
+    
   };
 
   const handleDeleteAll = () => {
-    if (!window.confirm("Are you sure you want to delete all inventory?"))
-      return;
-    setInventory([]);
+    if (!window.confirm("Are you sure you want to delete all inventory?")) return;
+    try {
+        const res = fetch(`http://localhost:5000/delete_inventory/ALL`, {
+          method: "DELETE",
+        });
+        setInventory([]);
+        if (!res.ok) throw new Error("Failed to delete report");
+
+        
+      } catch (err) {
+        console.error("Error deleting report:", err);
+      }
+    
   };
 
   const handleExportExcel = () => {

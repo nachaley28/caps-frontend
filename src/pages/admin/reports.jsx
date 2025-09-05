@@ -7,33 +7,65 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 export default function Reports() {
   const [reports, setReports] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [labFilter, setLabFilter] = useState("All Labs");
-  const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [labFilter, setLabFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [sortOption, setSortOption] = useState("Newest");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage, setReportsPerPage] = useState(10);
 
+  // Fetch reports from backend
   useEffect(() => {
     const fetchReports = async () => {
-      await fetch("http://localhost:5000/get_reports")
-        .then((res) => res.json())
-        .then((data) => setReports(data));
+      try {
+        const res = await fetch("http://localhost:5000/get_reports");
+        if (!res.ok) throw new Error("Failed to fetch reports");
+        const data = await res.json();
+        setReports(data);
+      } catch (err) {
+        console.error("Error fetching reports:", err);
+      }
     };
     fetchReports();
   }, []);
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this report?")) return;
-    setReports((prev) => prev.filter((r) => r.id !== id));
-  };
+  // Delete single report (frontend only)
+  const handleDelete = async (id) => {
+  if (!window.confirm("Delete this report?")) return;
 
+  try {
+    const res = await fetch(`http://localhost:5000/delete_report/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Failed to delete report");
+
+    setReports((prev) => prev.filter((r) => r.id !== id));
+  } catch (err) {
+    console.error("Error deleting report:", err);
+  }
+};
+
+  // Delete all reports (frontend only)
   const handleDeleteAll = () => {
     if (!window.confirm("Delete ALL reports?")) return;
-    setReports([]);
+    
+    try {
+      const res = fetch(`http://localhost:5000/delete_report/ALL`, {
+        method: "DELETE",
+      });
+      setReports([]);
+      if (!res.ok) throw new Error("Failed to delete report");
+
+      
+    } catch (err) {
+      console.error("Error deleting report:", err);
+    }
+    
   };
 
+  // Export to Excel
   const handleExportExcel = () => {
     if (reports.length === 0) {
       alert("No reports to export.");
@@ -48,7 +80,9 @@ export default function Reports() {
         Label: report.label,
         "Submitted By": report.submitted_by,
         Status: report.status,
-        Date: `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`,
+        Date: isNaN(dateObj)
+          ? report.date
+          : `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`,
         Notes: report.notes || "",
       };
     });
@@ -68,24 +102,33 @@ export default function Reports() {
     saveAs(blob, "reports.xlsx");
   };
 
+  // Filtering
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
-      report.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.lab.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.submitted_by.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.lab?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.submitted_by?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesLab = labFilter === "All" || report.lab === labFilter;
-    const matchesStatus = statusFilter === "All" || report.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "All" || report.status === statusFilter;
 
     const reportDate = new Date(report.date);
     const matchesDateFrom = !dateFrom || reportDate >= new Date(dateFrom);
     const matchesDateTo = !dateTo || reportDate <= new Date(dateTo);
 
-    return matchesSearch && matchesLab && matchesStatus && matchesDateFrom && matchesDateTo;
+    return (
+      matchesSearch &&
+      matchesLab &&
+      matchesStatus &&
+      matchesDateFrom &&
+      matchesDateTo
+    );
   });
 
+  // Sorting
   const sortedReports = [...filteredReports].sort((a, b) => {
     if (sortOption === "Newest") return new Date(b.date) - new Date(a.date);
     if (sortOption === "Oldest") return new Date(a.date) - new Date(b.date);
@@ -93,9 +136,13 @@ export default function Reports() {
     return 0;
   });
 
+  // Pagination
   const totalPages = Math.ceil(sortedReports.length / reportsPerPage);
   const startIndex = (currentPage - 1) * reportsPerPage;
-  const currentReports = sortedReports.slice(startIndex, startIndex + reportsPerPage);
+  const currentReports = sortedReports.slice(
+    startIndex,
+    startIndex + reportsPerPage
+  );
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -103,74 +150,49 @@ export default function Reports() {
     }
   };
 
+  // Unique labs and statuses for filter dropdowns
   const uniqueLabs = ["All", ...new Set(reports.map((r) => r.lab))];
   const uniqueStatuses = ["All", ...new Set(reports.map((r) => r.status))];
 
+  // Status config
   const statusConfig = {
     Success: { class: "bg-success", icon: "✅" },
     Completed: { class: "bg-success", icon: "✔️" },
     Pending: { class: "bg-warning text-dark", icon: "⏳" },
-    Failed: { class: "bg-danger" },
-    Damage: { class: "bg-dark text-white"},
-    Missing: { class: "bg-danger", },
-    Default: { class: "bg-secondary"},
+    Failed: { class: "bg-danger", icon: "❌" },
+    Damage: { class: "bg-dark text-white", icon: "⚠️" },
+    Missing: { class: "bg-danger", icon: "❓" },
+    Default: { class: "bg-secondary", icon: "" },
   };
 
   return (
     <div className="container mt-5">
       {/* Inline styles */}
       <style>{`
-        /* Highlighted rows */
-        .row-damage {
-          background-color: #343a40 !important;
-          color: white;
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        .row-missing {
-          background-color: #dc3545 !important;
-          color: white;
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        .row-pending {
-          background-color: #ffc107 !important;
-          animation: fadeIn 0.5s ease-in-out;
-        }
+        .row-damage { background-color: #343a40 !important; color: white; animation: fadeIn 0.5s ease-in-out; }
+        .row-missing { background-color: #dc3545 !important; color: white; animation: fadeIn 0.5s ease-in-out; }
+        .row-pending { background-color: #ffc107 !important; animation: fadeIn 0.5s ease-in-out; }
 
-        /* Hover glow for rows */
-        .row-damage:hover,
-        .row-missing:hover,
-        .row-pending:hover {
-          box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.7);
+        .row-damage:hover, .row-missing:hover, .row-pending:hover {
+          box-shadow: 0px 0px 12px rgba(0,0,0,0.7);
           transform: scale(1.01);
           transition: 0.2s ease-in-out;
         }
 
-        /* Pagination glow */
-        .pagination .page-item .page-link {
-          transition: all 0.2s ease-in-out;
-        }
+        .pagination .page-item .page-link { transition: all 0.2s ease-in-out; }
         .pagination .page-item .page-link:hover {
-          background-color: #0d6efd;
-          color: white;
-          box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.7);
+          background-color: #0d6efd; color: white;
+          box-shadow: 0px 0px 10px rgba(13,110,253,0.7);
           transform: scale(1.05);
         }
         .pagination .page-item.active .page-link {
-          background-color: #0d6efd;
-          border-color: #0d6efd;
-          box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.9);
+          background-color: #0d6efd; border-color: #0d6efd;
+          box-shadow: 0px 0px 10px rgba(13,110,253,0.9);
         }
 
-        /* Rows per page selector glow */
-        .rows-select {
-          transition: all 0.2s ease-in-out;
-        }
-        .rows-select:hover {
-          box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-          transform: scale(1.05);
-        }
+        .rows-select { transition: all 0.2s ease-in-out; }
+        .rows-select:hover { box-shadow: 0px 0px 10px rgba(0,0,0,0.3); transform: scale(1.05); }
 
-        /* Fade-in animation */
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-5px); }
           to { opacity: 1; transform: translateY(0); }
@@ -179,13 +201,13 @@ export default function Reports() {
 
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h2 className="fw-bold text-primary"> Reports Dashboard</h2>
+        <h2 className="fw-bold text-primary">Reports Dashboard</h2>
         <div className="d-flex gap-2 flex-wrap">
           <button className="btn btn-success" onClick={handleExportExcel}>
             Export to Excel
           </button>
           <button className="btn btn-danger" onClick={handleDeleteAll}>
-          Delete All
+            Delete All
           </button>
         </div>
       </div>
@@ -240,8 +262,6 @@ export default function Reports() {
         </div>
       </div>
 
-      
-
       {/* Table */}
       {currentReports.length === 0 ? (
         <div className="text-center text-muted">
@@ -273,7 +293,7 @@ export default function Reports() {
                 if (report.status === "Pending") rowClass = "row-pending";
 
                 return (
-                  <tr key={report.id} className={rowClass}>
+                  <tr key={report.id || report.report_id} className={rowClass}>
                     <td>{report.item}</td>
                     <td>{report.lab}</td>
                     <td>{report.label}</td>
@@ -284,15 +304,19 @@ export default function Reports() {
                       </span>
                     </td>
                     <td>
-                      {dateObj.toLocaleDateString()} {dateObj.toLocaleTimeString()}
+                      {isNaN(dateObj)
+                        ? report.date
+                        : `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`}
                     </td>
                     <td>{report.notes || "—"}</td>
                     <td>
                       <button
                         className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(report.id)}
+                        onClick={() =>
+                          handleDelete(report.id || report.report_id)
+                        }
                       >
-                         Delete
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -306,7 +330,6 @@ export default function Reports() {
       {/* Pagination */}
       {sortedReports.length > 0 && (
         <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
-          {/* Rows per page selector */}
           <div className="d-flex align-items-center gap-2">
             <label className="fw-bold">Rows per page:</label>
             <select
@@ -325,26 +348,40 @@ export default function Reports() {
             </select>
           </div>
 
-          {/* Page numbers */}
           <nav>
             <ul className="pagination mb-0 justify-content-center">
               <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                <button className="page-link" onClick={() => goToPage(currentPage - 1)}>
+                <button
+                  className="page-link"
+                  onClick={() => goToPage(currentPage - 1)}
+                >
                   Previous
                 </button>
               </li>
               {Array.from({ length: totalPages }, (_, i) => (
                 <li
                   key={i + 1}
-                  className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+                  className={`page-item ${
+                    currentPage === i + 1 ? "active" : ""
+                  }`}
                 >
-                  <button className="page-link" onClick={() => goToPage(i + 1)}>
+                  <button
+                    className="page-link"
+                    onClick={() => goToPage(i + 1)}
+                  >
                     {i + 1}
                   </button>
                 </li>
               ))}
-              <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                <button className="page-link" onClick={() => goToPage(currentPage + 1)}>
+              <li
+                className={`page-item ${
+                  currentPage === totalPages ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => goToPage(currentPage + 1)}
+                >
                   Next
                 </button>
               </li>
