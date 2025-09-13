@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Container, Row, Col } from "react-bootstrap";
 import {
   FaLaptop,
@@ -34,43 +34,6 @@ import {
 } from "recharts";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// ----- Dummy Data -----
-const reportsData = [
-  { date: "2025-08-01", submitted: 5 },
-  { date: "2025-08-02", submitted: 3 },
-  { date: "2025-08-03", submitted: 6 },
-  { date: "2025-08-04", submitted: 2 },
-  { date: "2025-08-05", submitted: 8 },
-  { date: "2025-08-06", submitted: 7 },
-  { date: "2025-08-07", submitted: 4 },
-];
-
-const stats = {
-  totalLabs: 3,
-  totalEquipments: 60,
-  equipmentsOperation: 50,
-  equipmentsNotOperation: 10,
-  totalUsers: 50,
-  activeUsers: 42,
-  inactiveUsers: 8,
-  reportsSubmitted: 35,
-  damaged: 9,
-  missing: 4,
-};
-
-const labEquipments = [
-  { lab: "Lab A", total: 25, damaged: 4, missing: 1 },
-  { lab: "Lab B", total: 20, damaged: 3, missing: 2 },
-  { lab: "Lab C", total: 15, damaged: 2, missing: 1 },
-];
-
-const equipmentDamageStats = [
-  { name: "PC", damaged: 5, missing: 2 },
-  { name: "Printer", damaged: 2, missing: 1 },
-  { name: "Projector", damaged: 2, missing: 1 },
-  { name: "Monitor", damaged: 3, missing: 1 },
-];
-
 // Chart Colors
 const COLORS = {
   primary: "#4e79a7",
@@ -85,64 +48,81 @@ const PIE_COLORS = [COLORS.primary, COLORS.danger];
 const BAR_COLORS = [COLORS.secondary, COLORS.success];
 const LINE_COLOR = COLORS.success;
 
-const summaryItems = [
-  {
-    title: "Total Labs",
-    value: stats.totalLabs,
-    icon: <FaLaptop size={30} />,
-    color: COLORS.primary,
-  },
-  {
-    title: "Total Equipments",
-    value: stats.totalEquipments,
-    icon: <FaCogs size={30} />,
-    color: COLORS.secondary,
-  },
-  {
-    title: "Damaged",
-    value: stats.damaged,
-    icon: <FaExclamationTriangle size={30} />,
-    color: COLORS.warning,
-  },
-  {
-    title: "Missing",
-    value: stats.missing,
-    icon: <FaQuestionCircle size={30} />,
-    color: COLORS.info,
-  },
-  {
-    title: "Total Users",
-    value: stats.totalUsers,
-    icon: <FaUsers size={30} />,
-    color: COLORS.primary,
-  },
-  {
-    title: "Active Users",
-    value: stats.activeUsers,
-    icon: <FaUserCheck size={30} />,
-    color: COLORS.success,
-  },
-  {
-    title: "Inactive Users",
-    value: stats.inactiveUsers,
-    icon: <FaUserTimes size={30} />,
-    color: COLORS.danger,
-  },
-  {
-    title: "Reports Submitted",
-    value: stats.reportsSubmitted,
-    icon: <FaFileAlt size={30} />,
-    color: COLORS.secondary,
-  },
-];
-
-// Prepare data for Radial Bar Chart
-const userActivityData = [
-  { name: "Active", value: stats.activeUsers, fill: COLORS.success },
-  { name: "Inactive", value: stats.inactiveUsers, fill: COLORS.danger },
-];
-
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({});
+  const [reportsData, setReportsData] = useState([]);
+  const [labEquipments, setLabEquipments] = useState([]);
+  const [equipmentDamageStats, setEquipmentDamageStats] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/get_data")
+      .then((res) => res.json())
+      .then((data) => {
+        setStats(data.stats);
+        setReportsData(data.reportsData || []); // only if backend provides daily trend
+        setLabEquipments(data.labEquipments || []);
+        setEquipmentDamageStats(data.equipmentDamageStats || []);
+      })
+      .catch((err) => console.error("Error fetching dashboard data:", err));
+  }, []);
+
+  const summaryItems = [
+    {
+      title: "Total Labs",
+      value: stats.totalLabs,
+      icon: <FaLaptop size={30} />,
+      color: COLORS.primary,
+    },
+    {
+      title: "Total Equipments",
+      value: stats.totalEquipments,
+      icon: <FaCogs size={30} />,
+      color: COLORS.secondary,
+    },
+    {
+      title: "Damaged",
+      value: stats.damaged,
+      icon: <FaExclamationTriangle size={30} />,
+      color: COLORS.warning,
+    },
+    {
+      title: "Missing",
+      value: stats.missing,
+      icon: <FaQuestionCircle size={30} />,
+      color: COLORS.info,
+    },
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: <FaUsers size={30} />,
+      color: COLORS.primary,
+    },
+    {
+      title: "Active Users",
+      value: stats.activeUsers,
+      icon: <FaUserCheck size={30} />,
+      color: COLORS.success,
+    },
+    {
+      title: "Inactive Users",
+      value: stats.inactiveUsers,
+      icon: <FaUserTimes size={30} />,
+      color: COLORS.danger,
+    },
+    {
+      title: "Reports Submitted",
+      value: stats.reportsSubmitted,
+      icon: <FaFileAlt size={30} />,
+      color: COLORS.secondary,
+    },
+  ];
+
+  // Radial Bar Chart data
+  const userActivityData = [
+    { name: "Active", value: stats.activeUsers, fill: COLORS.success },
+    { name: "Inactive", value: stats.inactiveUsers, fill: COLORS.danger },
+  ];
+
   return (
     <Container className="my-4">
       <style>{`
@@ -181,7 +161,6 @@ export default function AdminDashboard() {
 
       <h2 className="text-center dashboard-title">Admin Dashboard</h2>
 
-      {/* ----- Quick Summary Cards ----- */}
       <Row className="mb-4 g-4">
         {summaryItems.map((item, idx) => (
           <Col xs={12} sm={6} md={3} key={idx}>
@@ -201,9 +180,7 @@ export default function AdminDashboard() {
         ))}
       </Row>
 
-      {/* ----- Charts Grid ----- */}
       <Row className="g-4">
-        {/* Radial Bar Chart: User Activity */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>
@@ -228,7 +205,6 @@ export default function AdminDashboard() {
           </Card>
         </Col>
 
-        {/* Pie Chart: Equipment Status */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>
@@ -259,7 +235,6 @@ export default function AdminDashboard() {
           </Card>
         </Col>
 
-        {/* Line Chart: Reports Submitted */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>
@@ -278,7 +253,6 @@ export default function AdminDashboard() {
           </Card>
         </Col>
 
-        {/* Stacked Bar Chart: Damaged & Missing per Lab */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>
@@ -298,7 +272,6 @@ export default function AdminDashboard() {
           </Card>
         </Col>
 
-        {/* Horizontal Bar Chart: Labs with Most Equipments */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>
@@ -317,7 +290,6 @@ export default function AdminDashboard() {
           </Card>
         </Col>
 
-        {/* Radar Chart: Equipments Prone to Damage / Missing */}
         <Col xs={12} md={6}>
           <Card className="chart-card shadow-sm h-100">
             <Card.Body>

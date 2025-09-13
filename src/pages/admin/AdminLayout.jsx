@@ -1,103 +1,247 @@
-import React, { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaTimes, FaHome, FaLaptop, FaUserCircle,FaClipboardList, FaUsers  } from "react-icons/fa";
+  FaTimes,
+  FaBars,
+  FaHome,
+  FaNetworkWired,
+  FaUserCircle,
+  FaClipboardList,
+  FaUsers,
+} from "react-icons/fa";
 
 function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showSidebar, setShowSidebar] = useState(false);
 
-  const toggleSidebar = () => setShowSidebar(!showSidebar);
-  const handleLogout = () => navigate('/');
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
-   const sidebarLinks = [
-    { icon: <FaHome />, label: 'Dashboard', path: '/admin', color: '#0d6efd' },
-    { icon: <FaLaptop />, label: 'Labs & Computers', path: '/admin/labs', color: '#0d6efd' },
-    { icon: <FaClipboardList />, label: 'Reports', path: '/admin/reports', color: '#0d6efd' },
-    { icon: <FaLaptop />, label: 'Inventory', path: '/admin/inventory', color: '#0d6efd' },
-    { icon: <FaUsers />, label: 'Users & Roles', path: '/admin/users', color: '#0d6efd' },
+  // Watch for window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setSidebarOpen(window.innerWidth >= 768); // auto-open on desktop
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const toggleProfileSidebar = () => setShowProfileSidebar(!showProfileSidebar);
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const handleLogout = () => navigate("/");
+
+  const sidebarLinks = [
+    { icon: <FaHome />, label: "Dashboard", path: "/admin" },
+    { icon: <FaNetworkWired />, label: "Labs & Computers", path: "/admin/labs" },
+    { icon: <FaClipboardList />, label: "Reports", path: "/admin/reports" },
+    { icon: <FaUsers />, label: "Users & Roles", path: "/admin/users" },
   ];
 
   return (
-    <div className="d-flex flex-column"
-      style={{ height: '100vh', fontFamily: 'Inter, sans-serif', color: '#333', backgroundColor: '#FDF6F0' }}>
-
+    <div
+      style={{
+        height: "100vh",
+        fontFamily: "Inter, sans-serif",
+        color: "#2c3e50",
+        backgroundColor: "#f6f8fa",
+        overflowX: "hidden",
+      }}
+    >
+      {/* HEADER */}
       <header
-  className="fixed-top d-flex justify-content-between align-items-center px-4"
-  style={{
-    height: "60px",
-    backgroundColor: "#FFFFFF",
-    color: "#333",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    zIndex: 1000,
-  }}
->
-  <img
-    src="/public/img/Inventory.png" // replace with your logo path
-    alt="Admin Logo"
-    style={{ height: "80px", width: "auto" }}
-  />
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "60px",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0 1rem",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+          zIndex: 1000,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {isMobile && (
+            <FaBars
+              size={22}
+              style={{ cursor: "pointer" }}
+              onClick={toggleSidebar}
+            />
+          )}
+          <img
+            src="/public/img/claims.png"
+            alt="Admin Logo"
+            style={{ height: "40px", width: "auto" }}
+          />
+          {!isMobile && (
+            <h3 style={{ margin: 0, color: "#0d6efd", fontWeight: "600" }}>
+              Admin Panel
+            </h3>
+          )}
+        </div>
 
-        <FaUserCircle size={36} color="#FFA500" style={{ cursor: 'pointer' }} onClick={toggleSidebar} />
+        <FaUserCircle
+          size={34}
+          color="#0d6efd"
+          style={{ cursor: "pointer" }}
+          onClick={toggleProfileSidebar}
+        />
       </header>
 
-      <div className="position-fixed top-0 end-0 h-100 shadow"
+      {/* PROFILE SIDEBAR */}
+      <div
         style={{
-          backgroundColor: '#FFF5E6',
-          top: '60px',
-          width: '260px',
-          transition: 'transform 0.3s ease, opacity 0.3s ease',
+          position: "fixed",
+          top: "60px",
+          right: showProfileSidebar ? 0 : "-260px",
+          height: isMobile ? "calc(100% - 60px)" : "100%",
+          width: isMobile ? "100%" : "260px",
+          backgroundColor: "#ffffff",
+          boxShadow: showProfileSidebar ? "-4px 0 12px rgba(0,0,0,0.1)" : "none",
+          transition: "all 0.3s ease",
+          padding: "1rem",
+          color: "#333",
           zIndex: 1050,
-          borderLeft: '1px solid #FFA500',
-          display: showSidebar ? 'block' : 'none',
-          opacity: showSidebar ? 1 : 0,
-          padding: '1rem',
-          color: '#333'
-        }}>
-        <div className="d-flex justify-content-end mb-3">
-          <FaTimes size={24} style={{ cursor: 'pointer', color: '#FFA500' }} onClick={toggleSidebar} />
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "1rem",
+          }}
+        >
+          <FaTimes
+            size={22}
+            style={{ cursor: "pointer" }}
+            onClick={toggleProfileSidebar}
+          />
         </div>
-        <h5 className="mb-3" style={{ color: '#FFA500' }}>Natalie Jenh Alarcon</h5>
-        <ul className="list-group list-group-flush">
-          {["View Profile", "Edit Profile", "Help", "Data & Privacy"].map((item, i) => (
-            <li key={i}
-              className="list-group-item rounded mb-1 sidebar-item"
-              onClick={() => navigate('/' + item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-'))}
-            >
-              {item}
-            </li>
-          ))}
-          <li className="list-group-item rounded sidebar-item logout"
-            onClick={handleLogout}>
+
+        <h5
+          style={{
+            color: "#0d6efd",
+            marginBottom: "1rem",
+            fontWeight: "600",
+          }}
+        >
+          Natalie Jenh Alarcon
+        </h5>
+
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {["View Profile", "Edit Profile", "Help", "Data & Privacy"].map(
+            (item, i) => (
+              <li
+                key={i}
+                style={{
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "6px",
+                  marginBottom: "0.3rem",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#f3f6fa")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
+                onClick={() =>
+                  navigate(
+                    "/" +
+                      item
+                        .toLowerCase()
+                        .replace(/ & /g, "-")
+                        .replace(/ /g, "-")
+                  )
+                }
+              >
+                {item}
+              </li>
+            )
+          )}
+          <li
+            style={{
+              padding: "0.6rem 0.8rem",
+              borderRadius: "6px",
+              marginTop: "0.6rem",
+              cursor: "pointer",
+              color: "#e63946",
+              fontWeight: "500",
+            }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = "#ffe5e5")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+            onClick={handleLogout}
+          >
             Logout
           </li>
         </ul>
       </div>
 
-      {/* Left Sidebar Navigation */}
-      <aside className="position-fixed top-0 start-0 h-100 shadow"
+      {/* MAIN SIDEBAR */}
+      <aside
         style={{
-          width: '220px',
-          backgroundColor: '#FFFFFF',
-          paddingTop: '60px',
-          color: '#333',
-          marginTop: '10px',
-          transition: 'all 0.3s ease',
-          borderRight: '1px solid #E5E5E5'
-        }}>
-        <ul className="nav flex-column px-2">
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : isMobile ? "-220px" : "0",
+          height: "100%",
+          width: "220px",
+          backgroundColor: "#ffffff",
+          borderRight: "1px solid #e6e9ef",
+          paddingTop: "60px",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
+          transition: "all 0.3s ease",
+          zIndex: 900,
+        }}
+      >
+        <ul style={{ listStyle: "none", padding: "0.75rem", margin: 0 }}>
           {sidebarLinks.map((link, i) => {
             const isActive = location.pathname === link.path;
             return (
-              <li key={i} className="nav-item mb-2"> {/* added margin-top here (mb-3) */}
+              <li key={i} style={{ marginBottom: "0.4rem" }}>
                 <button
-                  className={`nav-link btn w-100 d-flex align-items-center justify-content-start sidebar-link ${isActive ? 'active' : ''}`}
-                  onClick={() => navigate(link.path)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    padding: "0.7rem 1rem",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: isActive ? "#e9f2ff" : "transparent",
+                    color: isActive ? "#0d6efd" : "#444",
+                    fontWeight: isActive ? "600" : "500",
+                    fontSize: "0.95rem",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.3s ease",
+                  }}
+                  onClick={() => {
+                    navigate(link.path);
+                    if (isMobile) setSidebarOpen(false);
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.backgroundColor = "#f3f6fa";
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  {React.cloneElement(link.icon, { className: "me-2" })}
-                  {link.label}
+                  {React.cloneElement(link.icon, { size: 18 })}
+                  {!isMobile && link.label}
                 </button>
               </li>
             );
@@ -105,50 +249,19 @@ function AdminLayout() {
         </ul>
       </aside>
 
-      <main className="flex-grow-1" style={{
-        marginLeft: '220px',
-        marginTop: '60px',
-        padding: '25px',
-        backgroundColor: '#FDF6F0',
-        minHeight: '100vh',
-        transition: 'all 0.3s ease',
-        color: '#333'
-      }}>
+      {/* MAIN CONTENT */}
+      <main
+        style={{
+          marginLeft: isMobile ? "0" : "220px",
+          marginTop: "60px",
+          padding: "25px",
+          minHeight: "100vh",
+          backgroundColor: "#f6f8fa",
+          transition: "all 0.3s ease",
+        }}
+      >
         <Outlet />
       </main>
-
-      <style>{`
-        .sidebar-link {
-          background-color: transparent;
-          color: #333;
-          font-weight: 500;
-          font-size: 0.95rem;
-          border-radius: 8px;
-          padding: 0.5rem 1rem;
-          transition: background-color 0.2s, color 0.2s;
-        }
-        .sidebar-link:hover {
-          background-color: #FFE5B4;
-        }
-        .sidebar-link.active {
-          background-color: #FFE5B4;
-          color: #FFA500 !important;
-        }
-        .sidebar-item {
-          cursor: pointer;
-          background: transparent;
-          transition: background-color 0.2s;
-        }
-        .sidebar-item:hover {
-          background-color: #FFE5B4;
-        }
-        .sidebar-item.logout {
-          color: #FF6B6B;
-        }
-        .sidebar-item.logout:hover {
-          background-color: #FFD6D6;
-        }
-      `}</style>
     </div>
   );
 }

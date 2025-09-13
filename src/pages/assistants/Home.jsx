@@ -62,6 +62,7 @@ function InventoryTable({ inventory }) {
         >
           <thead style={{ backgroundColor: "#5A8DEE", color: "#fff" }}>
             <tr>
+              <th>TimeStamp</th>
               <th>Item</th>
               <th>Lab</th>
               <th>Label</th>
@@ -72,6 +73,7 @@ function InventoryTable({ inventory }) {
           <tbody>
             {inventory.map((item, index) => (
               <tr key={index}>
+                  <td>{item.timestamp}</td>
                 <td>{item.item}</td>
                 <td>{item.lab}</td>
                 <td>{item.label}</td>

@@ -68,13 +68,34 @@ export default function Inventory() {
 
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    setInventory((prev) => prev.filter((item) => item.id !== id));
+      try {
+        const res = fetch(`http://localhost:5000/delete_inventory/${id}`, {
+          method: "DELETE",
+        });
+        setInventory((prev) => prev.filter((item) => item.id !== id));
+        if (!res.ok) throw new Error("Failed to delete report");
+
+        
+      } catch (err) {
+        console.error("Error deleting report:", err);
+      }
+    
   };
 
   const handleDeleteAll = () => {
-    if (!window.confirm("Are you sure you want to delete all inventory?"))
-      return;
-    setInventory([]);
+    if (!window.confirm("Are you sure you want to delete all inventory?")) return;
+    try {
+        const res = fetch(`http://localhost:5000/delete_inventory/ALL`, {
+          method: "DELETE",
+        });
+        setInventory([]);
+        if (!res.ok) throw new Error("Failed to delete report");
+
+        
+      } catch (err) {
+        console.error("Error deleting report:", err);
+      }
+    
   };
 
   const handleExportExcel = () => {
@@ -117,7 +138,6 @@ export default function Inventory() {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredInventory.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentItems = filteredInventory.slice(
@@ -133,7 +153,6 @@ export default function Inventory() {
 
   return (
     <div className="container mt-5">
-      {/* Embedded Styling */}
       <style>{`
         tbody tr {
           transition: all 0.25s ease-in-out;
@@ -162,9 +181,8 @@ export default function Inventory() {
         }
       `}</style>
 
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h2 className="fw-bold text-primary">🛠️ Inventory </h2>
+        <h2 className="fw-bold text-primary"> Inventory </h2>
         <div className="d-flex gap-2 flex-wrap">
           <button className="btn btn-success" onClick={handleExportExcel}>
             Export Excel
@@ -178,7 +196,6 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="row mb-4 g-3">
         <div className="col-md-4">
           <input
@@ -208,7 +225,6 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="table-responsive shadow-sm rounded">
         <table className="table table-striped table-hover align-middle mb-0">
           <thead className="table-light">

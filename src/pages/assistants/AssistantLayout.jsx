@@ -28,7 +28,7 @@ function AssistantLayout() {
   }}
 >
   <img
-    src="/public/img/Inventory.png" 
+    src="/public/img/claims.png" 
     alt="Admin Logo"
     style={{ height: "80px", width: "auto" }}
   />
@@ -71,16 +71,16 @@ function AssistantLayout() {
      
    
       <main className="flex-grow-1" style={{
-  marginTop: '60px',  
-  padding: '25px',
-  backgroundColor: '#FDF6F0',
-  minHeight: 'auto', 
-  height:"auto",
-  transition: 'all 0.3s ease',
-  color: '#333'
-}}>
-  <Outlet />
-</main>
+        marginTop: '60px',  
+        padding: '25px',
+        backgroundColor: '#FDF6F0',
+        minHeight: 'auto', 
+        height:"auto",
+        transition: 'all 0.3s ease',
+        color: '#333'
+      }}>
+        <Outlet />
+      </main>
 
      
     </div>
