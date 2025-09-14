@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
@@ -6,24 +6,14 @@ export default function Reports() {
   const [activeTab, setActiveTab] = useState("admin");
 
   // Dummy Admin Reports (auto-generated from system updates)
-  const [adminReports] = useState([
-    {
-      id: 1,
-      item: "PC-01",
-      lab: "Lab A",
-      status: "Damaged",
-      date: "2025-09-10T10:30:00",
-      notes: "Monitor replaced",
-    },
-    {
-      id: 2,
-      item: "PC-05",
-      lab: "Lab B",
-      status: "Operational",
-      date: "2025-09-11T14:45:00",
-      notes: "System reboot successful",
-    },
-  ]);
+  const [adminReports, setAdminReports] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/get_admin_computer_reports")
+      .then((res) => res.json())
+      .then((data) => setAdminReports(data))
+      .catch((err) => console.error("Error fetching reports:", err));
+  }, []);
 
   // Dummy Student Reports (pending admin review)
   const [studentReports, setStudentReports] = useState([

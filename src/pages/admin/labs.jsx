@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaDesktop,
   FaMouse,
@@ -26,7 +26,7 @@ const dummyLabs = [
 const dummyComputers = Array.from({ length: 10 }, (_, i) => ({
   id: i + 1,
   pcNumber: String(i + 1).padStart(3, "0"),
-  lab: i < 5 ? "CITE Lab A" : "CITE Lab B",
+  lab: i < 4 ? "CITE Lab A" : "CITE Lab B",
   parts: {
     monitor: `M${i + 1}001`,
     systemUnit: `S${i + 1}001`,
@@ -61,6 +61,8 @@ function StatusButtons({ part, compId, status, setStatus }) {
           onMouseEnter={() => setHovered(s)}
           onMouseLeave={() => setHovered(null)}
           title={statusColors[s].label}
+
+          
         />
       ))}
     </div>
@@ -140,10 +142,22 @@ function AddLabModal({ addLab, onClose }) {
   const [location, setLocation] = useState("");
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    addLab({ id: Date.now(), name, location });
-    onClose();
-  };
+  e.preventDefault();
+
+  fetch("http://localhost:5000/add_laboratory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: { lab_name: name, location: location },
+    }),
+  })
+    .then((res) => res.json())
+    .then((newLab) => {
+      addLab(newLab);
+      onClose();
+    })
+    .catch((err) => console.error("Error adding lab:", err));
+};
 
   return (
     <div className="modal-backdrop">
@@ -210,14 +224,25 @@ function AddComputerModal({ lab, addComputer, onClose }) {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    addComputer({
-      id: Date.now(),
-      pcNumber,
-      lab: lab.name,
-      parts,
-    });
-    onClose();
+  e.preventDefault();
+
+    fetch("http://localhost:5000/computer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: {
+          name: pcNumber,
+          lab_name: lab.name,
+          spec: JSON.stringify(parts),
+        },
+      }),
+    })
+      .then((res) => res.json())
+      .then((newComputer) => {
+        addComputer(newComputer);
+        onClose();
+      })
+      .catch((err) => console.error("Error adding computer:", err));
   };
 
   const partIcons = {
@@ -299,6 +324,29 @@ function LabDetail({ lab, computers, back, addComputer }) {
   const [selectedPC, setSelectedPC] = useState(null);
   const [showAddComputer, setShowAddComputer] = useState(false);
 
+  useEffect(() => {
+    fetch("http://localhost:5000/get_computer_statuses")
+      .then((res) => res.json())
+      .then((data) => {
+        const newStatuses = {};
+        data.forEach((row) => {
+          newStatuses[row.com_id] = {
+            hdmi: row.hdmi,
+            headphone: row.headphone,
+            keyboard: row.keyboard,
+            monitor: row.monitor,
+            mouse: row.mouse,
+            power: row.power,
+            systemUnit: row.systemUnit,
+            wifi: row.wifi,
+          };
+        });
+        setStatuses(newStatuses);
+      })
+      .catch((err) => console.error("Error fetching statuses:", err));
+  }, []);
+  
+  console.log(statuses);
   const labComputers = computers.filter((c) => c.lab === lab.name);
   const partIcons = {
     monitor: FaDesktop,
@@ -314,11 +362,30 @@ function LabDetail({ lab, computers, back, addComputer }) {
   const getStatusStyle = (compId, part) =>
     statusColors[statuses[compId]?.[part] || "operational"];
   const setStatus = (compId, part, status) =>
+    
     setStatuses((prev) => ({
+      
       ...prev,
       [compId]: { ...prev[compId], [part]: status },
+      
     }));
 
+    function handleStatusChange (compId, part, newStatus){
+      setStatus(compId, part, newStatus);
+
+      fetch("http://localhost:5000/update_computer_status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          compId: compId,
+          part: part,
+          status: newStatus
+        })
+      })
+      .then(res => res.json())
+      .then(data => console.log("Updated:", data))
+      .catch(err => console.error("Error updating status:", err));
+    };
   const getPCColor = (pc) => {
     const partStatuses = Object.keys(pc.parts).map(
       (p) => statuses[pc.id]?.[p] || "operational"
@@ -428,7 +495,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
                         part={part}
                         compId={selectedPC.id}
                         status={statuses[selectedPC.id]?.[part] || "operational"}
-                        setStatus={setStatus}
+                        setStatus={handleStatusChange}
                       />
                     </div>
                   );
@@ -469,11 +536,11 @@ function LabDetail({ lab, computers, back, addComputer }) {
             </div>
             <div className="modal-footer">
               <button
-                onClick={() => setSelectedPC(null)}
-                className="btn btn-success"
-              >
-                Save
-              </button>
+              onClick={() => setSelectedPC(null)}
+              className="btn btn-success"
+            >
+              Save
+            </button>
             </div>
           </div>
         </div>
@@ -492,12 +559,25 @@ function LabDetail({ lab, computers, back, addComputer }) {
 
 export default function App() {
   const [selectedLab, setSelectedLab] = useState(null);
-  const [labs, setLabs] = useState(dummyLabs);
-  const [computers, setComputers] = useState(dummyComputers);
+  const [labs, setLabs] = useState([]);
+  const [computers, setComputers] = useState([]);
   const [showAddLab, setShowAddLab] = useState(false);
 
+   useEffect(() => {
+    fetch("http://localhost:5000/get_laboratory")
+      .then((res) => res.json())
+      .then((data) => setLabs(data))
+      .catch((err) => console.error("Error fetching labs:", err));
+
+    fetch("http://localhost:5000/get_computers")
+      .then((res) => res.json())
+      .then((data) => setComputers(data))
+      .catch((err) => console.error("Error fetching computers:", err));
+      
+  }, []);
   const addLab = (lab) => setLabs((prev) => [...prev, lab]);
   const addComputer = (comp) => setComputers((prev) => [...prev, comp]);
+  
 
   return (
     <div style={{ padding: 40, background: "#f1f3f6", minHeight: "100vh" }}>
