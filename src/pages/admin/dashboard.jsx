@@ -48,10 +48,22 @@ export default function AdminDashboard() {
       .then((data) => {
         setStats(data.stats || {});
         setTopUsers(data.topUsers || []);
-        setLabsComputers(data.labsComputers || []);
-        setDamageMissing(data.damageMissingPerLab || []);
-      })
-      .catch((err) => console.error("Fetch error:", err));
+        setLabsComputers(data.labEquipments || []);
+        setLabsComputers(
+        data.labEquipments.map(lab => ({
+          lab: lab.lab,
+          computers: lab.total
+        }))
+      );
+
+      setDamageMissing(
+        data.labEquipments.map(lab => ({
+          lab: lab.lab,
+          damaged: lab.damaged,
+          missing: lab.missing
+        }))
+      );
+    })
   }, []);
 
   const summaryItems = [

@@ -555,11 +555,16 @@ function LabDetail({ lab, computers, back, addComputer }) {
                         {selectedPC.parts[part]}
                       </div>
                       <StatusButtons
-                        part={part}
-                        compId={selectedPC.id}
-                        status={statuses[selectedPC.id]?.[part] || "operational"}
-                        setStatus={handleStatusChange}
-                      />
+                          part={part}
+                          compId={selectedPC.id}
+                          status={statuses[selectedPC.id]?.[part] || "operational"}
+                          setStatus={(compId, part, newStatus) => {
+                            setStatuses(prev => ({
+                              ...prev,
+                              [compId]: { ...prev[compId], [part]: newStatus }
+                            }));
+                          }}
+                        />
                     </div>
                   );
                 })}
@@ -601,19 +606,34 @@ function LabDetail({ lab, computers, back, addComputer }) {
             <div className="modal-footer">
              <button
               onClick={() => {
-                setSelectedPC(null);
-                setSaveMsg("Status updated successfully!");
-                setTimeout(() => setSaveMsg(""), 4000);
-              }}
-              className="btn"
-              style={{
-                backgroundColor: "#28a745",
-                color: "white",
-                fontWeight: "600",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                border: "none",
-              }}
+    const compStatuses = statuses[selectedPC.id]; // all part statuses for this computer
+
+    fetch("http://localhost:5000/update_computer_status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        compId: selectedPC.id,
+        statuses: compStatuses, // send ALL statuses at once
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Saved:", data);
+        setSelectedPC(null); // close modal
+        setSaveMsg("Status updated successfully!");
+        setTimeout(() => setSaveMsg(""), 4000);
+      })
+      .catch((err) => console.error("Error saving statuses:", err));
+  }}
+  className="btn"
+  style={{
+    backgroundColor: "#28a745",
+    color: "white",
+    fontWeight: "600",
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "none",
+  }}
             >
               Save
             </button>
