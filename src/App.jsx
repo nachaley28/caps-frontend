@@ -4,13 +4,10 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { motion, AnimatePresence } from 'framer-motion'; 
 import './App.css';
 import LandingPage from "./pages/Landing";
-import Home from "./pages/assistants/Home";
-import AssistantLayout from "./pages/assistants/AssistantLayout";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/dashboard";
 import Laboratory from "./pages/admin/labs";  
-import Reports from "./pages/admin/reports"; 
-import Inventory from "./pages/admin/inventory";  
+import Reports from "./pages/admin/reports";  
 import UserRoles from "./pages/admin/users";  
 
 
@@ -32,10 +29,7 @@ function RouteWithTransitions() {
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
 
-          {/* /assistants */}
-          <Route path="/assistants" element={<AssistantLayout />}>
-            <Route index element={<Home />} />          
-          </Route>
+    
 
 
           {/* Admin Routes */}
@@ -43,7 +37,6 @@ function RouteWithTransitions() {
             <Route index element={<Dashboard/>} />
             <Route path="/admin/labs" element={<Laboratory />} />
             <Route path="/admin/reports" element={<Reports />} />
-            <Route path="/admin/inventory" element={<Inventory />} />
             <Route path="/admin/users" element={<UserRoles />} />
 
 

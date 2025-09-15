@@ -23,12 +23,12 @@ function LandingPage() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        if (data.user.role === "Lab Assistant") {
-          navigate("/assistants");
-        } else if (data.user.role === "Admin") {
-          navigate("/admin");
+        if (data.user.role !== "Admin") {
+          alert("Only Admins can log in.");
+          return;
         }
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/admin");
       } else {
         alert(data.msg || "Login failed");
       }

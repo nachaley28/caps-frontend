@@ -8,8 +8,11 @@ import {
   FaPlug,
   FaWifi,
   FaTimes,
+  FaTrashAlt,
+  FaEdit,
 } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./labs.css";  
 
 const statusColors = {
   operational: { color: "#28a745", label: "Operational", priority: 0 },
@@ -17,27 +20,6 @@ const statusColors = {
   damaged: { color: "#dc3545", label: "Damaged", priority: 2 },
   missing: { color: "#6c757d", label: "Missing", priority: 3 },
 };
-
-const dummyLabs = [
-  { id: 1, name: "CITE Lab A", location: "Building 1" },
-  { id: 2, name: "CITE Lab B", location: "Building 2" },
-];
-
-const dummyComputers = Array.from({ length: 10 }, (_, i) => ({
-  id: i + 1,
-  pcNumber: String(i + 1).padStart(3, "0"),
-  lab: i < 4 ? "CITE Lab A" : "CITE Lab B",
-  parts: {
-    monitor: `M${i + 1}001`,
-    systemUnit: `S${i + 1}001`,
-    keyboard: `K${i + 1}001`,
-    mouse: `MS${i + 1}001`,
-    headphone: `H${i + 1}001`,
-    hdmi: `HD${i + 1}001`,
-    power: `P${i + 1}001`,
-    wifi: `W${i + 1}001`,
-  },
-}));
 
 function StatusButtons({ part, compId, status, setStatus }) {
   const statuses = ["operational", "notOperational", "damaged", "missing"];
@@ -77,6 +59,7 @@ function LabGrid({ labs, selectLab }) {
           key={lab.id}
           onClick={() => selectLab(lab)}
           style={{
+            position: "relative",
             background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
             borderRadius: 16,
             border: "1px solid #dee2e6",
@@ -102,6 +85,43 @@ function LabGrid({ labs, selectLab }) {
               "linear-gradient(135deg, #f8f9fa, #e9ecef)";
           }}
         >
+          {/* action icons top-right */}
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              display: "flex",
+              gap: "10px",
+            }}
+            onClick={(e) => e.stopPropagation()} // prevent selectLab
+          >
+            <FaTrashAlt
+              size={18}
+              color="red"
+              style={{ cursor: "pointer" }}
+              title="Delete"
+              onClick={() => {
+                fetch(`http://localhost:5000/delete_lab/${lab.id}`, {
+                  method: "DELETE",
+                })
+                  .then(() => window.location.reload())
+                  .catch((err) => console.error("Delete error:", err));
+              }}
+            />
+            <FaEdit
+              size={18}
+              color="orange"
+              style={{ cursor: "pointer" }}
+              title="Edit"
+              onClick={() => {
+                // open edit modal or navigate to edit page
+                openEditLab(lab);
+              }}
+            />
+          </div>
+
+          
           <div
             style={{
               backgroundColor: "#0d6efd20",
@@ -116,7 +136,7 @@ function LabGrid({ labs, selectLab }) {
           >
             <FaDesktop size={28} color="#0d6efd" />
           </div>
-          <h5 style={{ color: "#0d6efd", fontWeight: "600", marginBottom: 6 }}>
+          <h5 style={{ color: "#0d6efd", fontWeight: 600, marginBottom: 6 }}>
             {lab.name}
           </h5>
           <span
@@ -126,7 +146,7 @@ function LabGrid({ labs, selectLab }) {
               padding: "3px 10px",
               borderRadius: 12,
               fontSize: "0.85rem",
-              fontWeight: "500",
+              fontWeight: 500,
             }}
           >
             {lab.location}
@@ -136,6 +156,7 @@ function LabGrid({ labs, selectLab }) {
     </div>
   );
 }
+
 
 function AddLabModal({ addLab, onClose }) {
   const [name, setName] = useState("");
@@ -323,6 +344,8 @@ function LabDetail({ lab, computers, back, addComputer }) {
   const [statuses, setStatuses] = useState({});
   const [selectedPC, setSelectedPC] = useState(null);
   const [showAddComputer, setShowAddComputer] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+
 
   useEffect(() => {
     fetch("http://localhost:5000/get_computer_statuses")
@@ -360,7 +383,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
   };
 
   const getStatusStyle = (compId, part) =>
-    statusColors[statuses[compId]?.[part] || "operational"];
+  statusColors[statuses[compId]?.[part] || "operational"];
   const setStatus = (compId, part, status) =>
     
     setStatuses((prev) => ({
@@ -408,6 +431,17 @@ function LabDetail({ lab, computers, back, addComputer }) {
           + Add Computer
         </button>
       </div>
+      {saveMsg && (
+  <div
+    style={{backgroundColor: "#28a745",color: "white",padding: "5px 10px",
+      borderRadius: "6px",marginBottom: "15px",
+      textAlign: "center",
+      fontWeight: "500",
+    }}
+  >
+    {saveMsg}
+  </div>
+)}
       <h3 style={{ color: "#0d6efd", marginBottom: 15 }}>
         {lab.name} – {lab.location}
       </h3>
@@ -446,7 +480,36 @@ function LabDetail({ lab, computers, back, addComputer }) {
             <h6 style={{ marginTop: 10, color: "#0d6efd" }}>PC {pc.pcNumber}</h6>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "#6c757d" }}>
               {pc.lab}
-            </p>
+            </p><div
+            
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              display: "flex",
+              gap: "10px",
+            }}
+            onClick={(e) => e.stopPropagation()} // prevent selectLab
+          >
+            <FaTrashAlt
+              size={18}
+              color="red"
+              style={{ cursor: "pointer" }}
+              title="Delete"
+              onClick={() => {
+                fetch(`http://localhost:5000/delete_computer/${pc.id}`, {
+                  method: "DELETE",
+                })
+                  .then(() => window.location.reload())
+                  .catch((err) => console.error("Delete error:", err));
+              }}
+            />
+           
+          </div>
+
+
+
+            
           </div>
         ))}
       </div>
@@ -500,6 +563,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
                     </div>
                   );
                 })}
+                
               </div>
               <div
                 style={{
@@ -535,12 +599,25 @@ function LabDetail({ lab, computers, back, addComputer }) {
               </div>
             </div>
             <div className="modal-footer">
-              <button
-              onClick={() => setSelectedPC(null)}
-              className="btn btn-success"
+             <button
+              onClick={() => {
+                setSelectedPC(null);
+                setSaveMsg("Status updated successfully!");
+                setTimeout(() => setSaveMsg(""), 4000);
+              }}
+              className="btn"
+              style={{
+                backgroundColor: "#28a745",
+                color: "white",
+                fontWeight: "600",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                border: "none",
+              }}
             >
               Save
             </button>
+             
             </div>
           </div>
         </div>
@@ -608,57 +685,7 @@ export default function App() {
         <AddLabModal addLab={addLab} onClose={() => setShowAddLab(false)} />
       )}
 
-      <style>{`
-        .modal-backdrop {
-          position: fixed;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          background-color: rgba(0,0,0,0.5);
-          display: flex; justify-content: center; align-items: center;
-          z-index: 1050;
-          padding: 20px;
-        }
-        .modal-card {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-          width: 100%;
-          max-width: 480px;
-          animation: fadeIn 0.3s ease;
-        }
-        .modal-card.large { max-width: 800px; }
-        .modal-header {
-          padding: 15px 20px;
-          border-bottom: 1px solid #dee2e6;
-          font-weight: 600;
-          font-size: 1.1rem;
-          display: flex; justify-content: space-between; align-items: center;
-          background: #0d6efd;
-          color: white;
-          border-top-left-radius: 12px;
-          border-top-right-radius: 12px;
-        }
-        .modal-body { padding: 20px; }
-        .modal-footer {
-          display: flex; justify-content: flex-end; gap: 10px;
-          padding: 15px 20px;
-          border-top: 1px solid #dee2e6;
-          background: #f8f9fa;
-          border-bottom-left-radius: 12px;
-          border-bottom-right-radius: 12px;
-        }
-        .btn-close {
-          background: none;
-          border: none;
-          font-size: 1.2rem;
-          cursor: pointer;
-          color: #fff;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+     
     </div>
   );
 }

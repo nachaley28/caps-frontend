@@ -1,0 +1,34 @@
+.dashboard-title {
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #4e79a7;
+  border-bottom: 3px solid #f28e2b;
+  display: inline-block;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  border: none;
+  border-radius: 12px;
+  transition: all 0.25s ease-in-out;
+  background: #f5f6fa;
+}
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.chart-card {
+  border: none;
+  border-radius: 12px;
+}
+.chart-card .card-body {
+  padding: 1rem 1.25rem;
+}

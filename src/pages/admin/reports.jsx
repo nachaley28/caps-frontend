@@ -5,7 +5,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 export default function Reports() {
   const [activeTab, setActiveTab] = useState("admin");
 
-  // Dummy Admin Reports (auto-generated from system updates)
   const [adminReports, setAdminReports] = useState([]);
 
   useEffect(() => {
@@ -15,29 +14,7 @@ export default function Reports() {
       .catch((err) => console.error("Error fetching reports:", err));
   }, []);
 
-  // Dummy Student Reports (pending admin review)
-  const [studentReports, setStudentReports] = useState([
-    {
-      id: 101,
-      submitted_by: "John Doe",
-      item: "Keyboard X",
-      lab: "Lab C",
-      status: "Not Working",
-      date: "2025-09-12T09:15:00",
-      notes: "Keys unresponsive",
-      label: null,
-    },
-    {
-      id: 102,
-      submitted_by: "Jane Smith",
-      item: "Mouse Y",
-      lab: "Lab A",
-      status: "Missing",
-      date: "2025-09-13T08:45:00",
-      notes: "",
-      label: null,
-    },
-  ]);
+ 
 
   const updateStudentReportLabel = (id, label) => {
     setStudentReports((prev) =>
@@ -51,7 +28,6 @@ export default function Reports() {
     <div className="container mt-5">
       <h2 className="fw-bold text-primary mb-4">Reports Dashboard</h2>
 
-      {/* Tabs */}
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
@@ -71,13 +47,12 @@ export default function Reports() {
         </li>
       </ul>
 
-      {/* Admin Reports Tab */}
       {activeTab === "admin" && (
         <div className="table-responsive shadow-sm rounded">
           <table className="table table-hover align-middle">
             <thead className="table-light">
               <tr>
-                <th>Item</th>
+                <th>PC Number</th>
                 <th>Lab</th>
                 <th>Status</th>
                 <th>Date</th>
@@ -97,17 +72,21 @@ export default function Reports() {
                     <td>{r.item}</td>
                     <td>{r.lab}</td>
                     <td>
-                      <span
-                        className={`badge ${
-                          r.status === "Operational"
-                            ? "bg-success"
-                            : r.status === "Damaged"
-                            ? "bg-danger"
-                            : "bg-warning text-dark"
-                        }`}
-                      >
-                        {r.status}
-                      </span>
+                     <span
+                      className={`badge ${
+                        r.status === "Operational"
+                          ? "bg-success"      
+                          : r.status === "Notoperational"
+                          ? "bg-warning text-dark" 
+                          : r.status === "Damaged"
+                          ? "bg-danger"       
+                          : r.status === "Missing"
+                          ? "bg-secondary"    
+                          : "bg-light text-dark"
+                      }`}
+                    >
+                      {r.status}
+                    </span>
                     </td>
                     <td>{new Date(r.date).toLocaleString()}</td>
                     <td>{r.notes || "—"}</td>
@@ -119,80 +98,87 @@ export default function Reports() {
         </div>
       )}
 
-      {/* Student Reports Tab */}
+      
       {activeTab === "student" && (
-        <div className="table-responsive shadow-sm rounded">
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>Submitted By</th>
-                <th>Item</th>
-                <th>Lab</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th>Admin Label</th>
-              </tr>
-            </thead>
-            <tbody>
-              {studentReports.length === 0 ? (
+          <div className="table-responsive shadow-sm rounded">
+            <table className="table table-hover align-middle">
+              <thead className="table-light">
                 <tr>
-                  <td colSpan="7" className="text-center text-muted">
-                    No student reports found.
-                  </td>
+                  <th>Submitted By</th>
+                  <th>Item</th>
+                  <th>Lab</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                  <th>Admin Label</th>
                 </tr>
-              ) : (
-                studentReports.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.submitted_by}</td>
-                    <td>{r.item}</td>
-                    <td>{r.lab}</td>
-                    <td>
-                      <span className="badge bg-warning text-dark">
-                        {r.status}
-                      </span>
-                    </td>
-                    <td>{new Date(r.date).toLocaleString()}</td>
-                    <td>{r.notes || "—"}</td>
-                    <td>
-                      {r.label ? (
-                        <span
-                          className={`badge ${
-                            r.label === "Recorded"
-                              ? "bg-success"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {r.label}
-                        </span>
-                      ) : (
-                        <div className="btn-group">
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() =>
-                              updateStudentReportLabel(r.id, "Recorded")
-                            }
-                          >
-                            Mark Recorded
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() =>
-                              updateStudentReportLabel(r.id, "Not Recorded")
-                            }
-                          >
-                            Not Recorded
-                          </button>
-                        </div>
-                      )}
+              </thead>
+              <tbody>
+                {studentReports.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center">
+                      <span className="badge bg-secondary">There are no reports here</span>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ) : (
+                  studentReports.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.submitted_by}</td>
+                      <td>{r.item}</td>
+                      <td>{r.lab}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            r.status === "Operational"
+                              ? "bg-success"
+                              : r.status === "Warning"
+                              ? "bg-warning text-dark"
+                              : r.status === "Damaged"
+                              ? "bg-danger"
+                              : r.status === "Missing"
+                              ? "bg-secondary"
+                              : "bg-light text-dark"
+                          }`}
+                        >
+                          {r.status}
+                        </span>
+                      </td>
+                      <td>{new Date(r.date).toLocaleString()}</td>
+                      <td>{r.notes || "—"}</td>
+                      <td>
+                        {r.label ? (
+                          <span
+                            className={`badge ${
+                              r.label === "Recorded" ? "bg-success" : "bg-danger"
+                            }`}
+                          >
+                            {r.label}
+                          </span>
+                        ) : (
+                          <div className="btn-group">
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => updateStudentReportLabel(r.id, "Recorded")}
+                            >
+                              Mark Recorded
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => updateStudentReportLabel(r.id, "Not Recorded")}
+                            >
+                              Not Recorded
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
     </div>
   );
 }
