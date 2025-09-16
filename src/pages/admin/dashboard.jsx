@@ -1,44 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import {
-  FaLaptop,
-  FaUsers,
-  FaUserCheck,
-  FaUserTimes,
-  FaExclamationTriangle,
-  FaQuestionCircle,
-  FaFileAlt,
-  FaCogs,
-} from "react-icons/fa";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
+import {FaLaptop,FaUsers,FaUserCheck,FaUserTimes,FaExclamationTriangle,FaQuestionCircle,FaFileAlt,FaCogs,} from "react-icons/fa";
+import {PieChart,Pie,Cell,Tooltip,Legend,BarChart,Bar,XAxis,YAxis,CartesianGrid,ResponsiveContainer,LineChart,Line,AreaChart,Area,
 } from "recharts";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./dashboard.css";
 
 const COLORS = {
-  primary: "#4e79a7",
-  secondary: "#f28e2b",
+  primary: "#0D6EFD",
+  secondary: "#4e79a7",
   success: "#59a14f",
   danger: "#e15759",
   info: "#9c6ade",
   warning: "#ff9d76",
-  light: "#f5f6fa",
 };
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({});
-  const [topUsers, setTopUsers] = useState([]);
+  const [computerPartStatus, setcomputerPartStatus] = useState([]);
   const [labsComputers, setLabsComputers] = useState([]);
   const [damageMissing, setDamageMissing] = useState([]);
 
@@ -47,141 +26,249 @@ export default function AdminDashboard() {
       .then((res) => res.json())
       .then((data) => {
         setStats(data.stats || {});
-        setTopUsers(data.topUsers || []);
-        setLabsComputers(data.labEquipments || []);
+        setcomputerPartStatus(data.computerPartStatus || []);
         setLabsComputers(
-        data.labEquipments.map(lab => ({
-          lab: lab.lab,
-          computers: lab.total
-        }))
-      );
-
-      setDamageMissing(
-        data.labEquipments.map(lab => ({
-          lab: lab.lab,
-          damaged: lab.damaged,
-          missing: lab.missing
-        }))
-      );
-    })
+          data.labEquipments.map((lab) => ({
+            lab: lab.lab,
+            computers: lab.total,
+          }))
+        );
+        setDamageMissing(
+          data.labEquipments.map((lab) => ({
+            lab: lab.lab,
+            damaged: lab.damaged,
+            missing: lab.missing,
+          }))
+        );
+      });
   }, []);
 
   const summaryItems = [
-    { title: "Total Labs", value: stats.totalLabs, icon: <FaLaptop size={30} />, color: COLORS.primary },
-    { title: "Total Computers", value: stats.totalComputers, icon: <FaCogs size={30} />, color: COLORS.secondary },
-    { title: "Operational", value: stats.operational, icon: <FaUserCheck size={30} />, color: COLORS.success },
-    { title: "Not Operational", value: stats.notOperational, icon: <FaUserTimes size={30} />, color: COLORS.danger },
-    { title: "Total Users", value: stats.totalUsers, icon: <FaUsers size={30} />, color: COLORS.primary },
-    { title: "Reports Submitted", value: stats.reportsSubmitted, icon: <FaFileAlt size={30} />, color: COLORS.info },
-    { title: "Damaged Equipments", value: stats.damaged, icon: <FaExclamationTriangle size={30} />, color: COLORS.warning },
-    { title: "Missing Equipments", value: stats.missing, icon: <FaQuestionCircle size={30} />, color: COLORS.danger },
+    { title: "Total Labs", value: stats.totalLabs, icon: <FaLaptop />, color: "#0D6EFD", bg: "#eaf2ff" },
+    { title: "Total Computers", value: stats.totalComputers, icon: <FaCogs />, color: "#4e79a7", bg: "#edf2f9" },
+    { title: "Operational", value: stats.operational, icon: <FaUserCheck />, color: "#59a14f", bg: "#eaf7ef" },
+    { title: "Not Operational", value: stats.notOperational, icon: <FaUserTimes />, color: "#e15759", bg: "#fdecec" },
+    { title: "Total Users", value: stats.totalUsers, icon: <FaUsers />, color: "#0D6EFD", bg: "#eaf2ff" },
+    { title: "Reports Submitted", value: stats.reportsSubmitted, icon: <FaFileAlt />, color: "#9c6ade", bg: "#f4ecfb" },
+    { title: "Damaged Equipments", value: stats.damaged, icon: <FaExclamationTriangle />, color: "#ff9d76", bg: "#fff2eb" },
+    { title: "Missing Equipments", value: stats.missing, icon: <FaQuestionCircle />, color: "#e15759", bg: "#fdecec" },
   ];
 
   return (
-    <Container className="my-4">
-      <h2 className="text-center dashboard-title">Admin Dashboard</h2>
-
-      <Row className="mb-4 g-4">
+    <Container fluid className="my-4">
+      <h2 className="dashboard-title">Admin Dashboard</h2>
+      <div className="kpi-row mb-4">
         {summaryItems.map((item, idx) => (
-          <Col xs={12} sm={6} md={3} key={idx}>
-            <Card
-              className="summary-card h-100 text-center shadow-sm"
-              style={{ borderTop: `5px solid ${item.color}` }}
-            >
-              <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                <div className="mb-2" style={{ color: item.color }}>{item.icon}</div>
-                <Card.Title>{item.title}</Card.Title>
-                <div className="summary-value">{item.value}</div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      <Row className="g-4">
-        {/* Computer Status */}
-        <Col xs={12} md={6}>
-          <Card className="chart-card shadow-sm h-100">
+          <Card
+            key={idx}
+            className="kpi-card shadow-sm"
+            style={{ backgroundColor: item.bg }}
+          >
             <Card.Body>
-              <Card.Title className="text-center mb-3">Computer Status</Card.Title>
-              <ResponsiveContainer width="100%" height={250}>
+              <div className="kpi-icon" style={{ color: item.color }}>
+                {item.icon}
+              </div>
+              <h6 className="kpi-title">{item.title}</h6>
+              <div className="kpi-value">{item.value ?? 0}</div>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
+
+      
+      <Row className="g-4">
+       
+      <Col xs={12} md={6} lg={6}>
+        <Card className="chart-card shadow-sm">
+            <Card.Body>
+              <Card.Title>Computer Status</Card.Title>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
                     data={[
                       { name: "Operational", value: stats.operational },
                       { name: "Not Operational", value: stats.notOperational },
                     ]}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={90}
+                    outerRadius={110} // bigger pie
                     label
                   >
                     <Cell fill={COLORS.success} />
                     <Cell fill={COLORS.danger} />
                   </Pie>
                   <Tooltip />
-                  <Legend verticalAlign="bottom" />
+                  <Legend layout="vertical" verticalAlign="middle" align="right" />
                 </PieChart>
               </ResponsiveContainer>
             </Card.Body>
-          </Card>
-        </Col>
+        </Card>
+      </Col>
 
-        {/* Top Users (Reports) */}
-        <Col xs={12} md={6}>
-          <Card className="chart-card shadow-sm h-100">
-            <Card.Body>
-              <Card.Title className="text-center mb-3">Top Users (Reports Sent)</Card.Title>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={topUsers} layout="vertical" margin={{ left: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="name" type="category" />
-                  <Tooltip />
-                  <Bar dataKey="reports" fill={COLORS.primary} radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card.Body>
-          </Card>
-        </Col>
+      <Col xs={12} md={6} lg={6}>
+        <Card className="chart-card shadow-sm">
+          <Card.Body>
+            <Card.Title>Computer Parts Status</Card.Title>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={computerPartStatus}
+                margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                barCategoryGap="30%"  
+                barGap={8}             
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="name"
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                />
+                <YAxis
+                    allowDecimals={false}     // integers only
+                    domain={[0, 'auto']}      // start from 0 up to automatic max
+                    tickCount={Math.max(
+                      2,
+                      Math.ceil(
+                        Math.max(...computerPartStatus.map(d =>
+                          Math.max(d.operational, d.notOperational, d.missing, d.damaged)
+                        )) + 1
+                      )
+                    )}
+                    interval={0}              // force all ticks to show
+                  />
+                <Tooltip />
+                <Legend verticalAlign="top" align="center" />
+                <Bar dataKey="operational"    fill="green"   barSize={20} />
+                <Bar dataKey="notOperational" fill="#FFC107" barSize={20} />
+                <Bar dataKey="missing"        fill="#DC3545" barSize={20} />
+                <Bar dataKey="damaged"        fill="#6C757D" barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card.Body>
+        </Card>
+      </Col>
 
-        <Col xs={12} md={6}>
-          <Card className="chart-card shadow-sm h-100">
-            <Card.Body>
-              <Card.Title className="text-center mb-3">Labs & Number of Computers</Card.Title>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={labsComputers} layout="vertical" margin={{ left: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="lab" type="category" />
-                  <Tooltip />
-                  <Bar dataKey="computers" fill={COLORS.secondary} radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card.Body>
-          </Card>
-        </Col>
 
-        <Col xs={12} md={6}>
-          <Card className="chart-card shadow-sm h-100">
-            <Card.Body>
-              <Card.Title className="text-center mb-3">Damage vs Missing per Lab</Card.Title>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={damageMissing}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="lab" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="damaged" fill={COLORS.danger} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="missing" fill={COLORS.info} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card.Body>
-          </Card>
-        </Col>
+
+        {/* Labs & Computers */}
+      <Col xs={12} md={6} lg={6}>
+        <Card className="chart-card shadow-sm">
+          <Card.Body>
+            <Card.Title>Labs & Computers</Card.Title>
+            <ResponsiveContainer width="100%" height={340}>
+              <LineChart
+                data={labsComputers}
+                margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+              >
+                <defs>
+                  {/* Gradient for line stroke */}
+                  <linearGradient id="lineColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0D6EFD" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#0D6EFD" stopOpacity={0.2} />
+                  </linearGradient>
+
+                  {/* Gradient for the fill under the line */}
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0D6EFD" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#0D6EFD" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis
+                  dataKey="lab"
+                  interval={0}
+                  angle={-30}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #ccc",
+                    borderRadius: "6px",
+                  }}
+                />
+                <Legend verticalAlign="top" align="center" />
+
+                <Line
+                  type="monotone"
+                  dataKey="computers"
+                  stroke="url(#lineColor)"
+                  strokeWidth={3.5}
+                  fill="url(#areaFill)"
+                  fillOpacity={1}
+                  dot={{ r: 6, stroke: "#0D6EFD", strokeWidth: 2, fill: "#fff" }}
+                  activeDot={{ r: 8, fill: "#0D6EFD" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card.Body>
+        </Card>
+      </Col>
+
+
+        {/* Damage vs Missing */}
+      <Col xs={12} md={6} lg={6}>
+        <Card className="chart-card shadow-sm">
+          <Card.Body>
+            <Card.Title>Damage vs Missing per Lab</Card.Title>
+            <ResponsiveContainer width="100%" height={340}>
+              <AreaChart
+                data={damageMissing}
+                margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+              >
+                <defs>
+                  <linearGradient id="damagedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#e15759" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#e15759" stopOpacity={0.2} />
+                  </linearGradient>
+                  <linearGradient id="missingGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0D6EFD" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#0D6EFD" stopOpacity={0.2} />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis
+                  dataKey="lab"
+                  interval={0}
+                  angle={-30}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#fff", borderRadius: "6px" }}
+                />
+                <Legend verticalAlign="top" align="center" />
+
+                <Area
+                  type="monotone"
+                  dataKey="damaged"
+                  stroke="#e15759"
+                  fill="url(#damagedGradient)"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="missing"
+                  stroke="#0D6EFD"
+                  fill="url(#missingGradient)"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card.Body>
+        </Card>
+      </Col>
+
       </Row>
     </Container>
   );

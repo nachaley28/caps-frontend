@@ -408,18 +408,18 @@ function LabDetail({ lab, computers, back, addComputer }) {
       .then(res => res.json())
       .then(data => console.log("Updated:", data))
       .catch(err => console.error("Error updating status:", err));
+      };
+    const getPCColor = (pc) => {
+      const partStatuses = Object.keys(pc.parts).map(
+        (p) => statuses[pc.id]?.[p] || "operational"
+      );
+      const worst = partStatuses.reduce(
+        (max, curr) =>
+          statusColors[curr].priority > statusColors[max].priority ? curr : max,
+        "operational"
+      );
+      return statusColors[worst].color;
     };
-  const getPCColor = (pc) => {
-    const partStatuses = Object.keys(pc.parts).map(
-      (p) => statuses[pc.id]?.[p] || "operational"
-    );
-    const worst = partStatuses.reduce(
-      (max, curr) =>
-        statusColors[curr].priority > statusColors[max].priority ? curr : max,
-      "operational"
-    );
-    return statusColors[worst].color;
-  };
 
   return (
     <div>
@@ -432,16 +432,16 @@ function LabDetail({ lab, computers, back, addComputer }) {
         </button>
       </div>
       {saveMsg && (
-  <div
-    style={{backgroundColor: "#28a745",color: "white",padding: "5px 10px",
-      borderRadius: "6px",marginBottom: "15px",
-      textAlign: "center",
-      fontWeight: "500",
-    }}
-  >
-    {saveMsg}
-  </div>
-)}
+        <div
+          style={{backgroundColor: "#28a745",color: "white",padding: "5px 10px",
+            borderRadius: "6px",marginBottom: "15px",
+            textAlign: "center",
+            fontWeight: "500",
+          }}
+        >
+          {saveMsg}
+        </div>
+      )}
       <h3 style={{ color: "#0d6efd", marginBottom: 15 }}>
         {lab.name} – {lab.location}
       </h3>
@@ -489,7 +489,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
               display: "flex",
               gap: "10px",
             }}
-            onClick={(e) => e.stopPropagation()} // prevent selectLab
+            onClick={(e) => e.stopPropagation()} 
           >
             <FaTrashAlt
               size={18}
@@ -555,16 +555,11 @@ function LabDetail({ lab, computers, back, addComputer }) {
                         {selectedPC.parts[part]}
                       </div>
                       <StatusButtons
-                          part={part}
-                          compId={selectedPC.id}
-                          status={statuses[selectedPC.id]?.[part] || "operational"}
-                          setStatus={(compId, part, newStatus) => {
-                            setStatuses(prev => ({
-                              ...prev,
-                              [compId]: { ...prev[compId], [part]: newStatus }
-                            }));
-                          }}
-                        />
+                        part={part}
+                        compId={selectedPC.id}
+                        status={statuses[selectedPC.id]?.[part] || "operational"}
+                        setStatus={handleStatusChange}
+                      />
                     </div>
                   );
                 })}
@@ -606,34 +601,19 @@ function LabDetail({ lab, computers, back, addComputer }) {
             <div className="modal-footer">
              <button
               onClick={() => {
-    const compStatuses = statuses[selectedPC.id]; // all part statuses for this computer
-
-    fetch("http://localhost:5000/update_computer_status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        compId: selectedPC.id,
-        statuses: compStatuses, // send ALL statuses at once
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Saved:", data);
-        setSelectedPC(null); // close modal
-        setSaveMsg("Status updated successfully!");
-        setTimeout(() => setSaveMsg(""), 4000);
-      })
-      .catch((err) => console.error("Error saving statuses:", err));
-  }}
-  className="btn"
-  style={{
-    backgroundColor: "#28a745",
-    color: "white",
-    fontWeight: "600",
-    padding: "8px 16px",
-    borderRadius: "6px",
-    border: "none",
-  }}
+                setSelectedPC(null);
+                setSaveMsg("Status updated successfully!");
+                setTimeout(() => setSaveMsg(""), 4000);
+              }}
+              className="btn"
+              style={{
+                backgroundColor: "#28a745",
+                color: "white",
+                fontWeight: "600",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                border: "none",
+              }}
             >
               Save
             </button>

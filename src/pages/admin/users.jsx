@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaUserPlus, FaEye } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./users.css";
 
 export default function UsersRoles() {
   const [users, setUsers] = useState([]);
@@ -23,7 +24,6 @@ export default function UsersRoles() {
         if (!res.ok) throw new Error("Failed to fetch users");
         const data = await res.json();
 
-        // Transform backend users → frontend shape
         const transformed = data.map((u) => ({
           name: u.name?.trim(),
           email: u.email,
@@ -85,82 +85,15 @@ export default function UsersRoles() {
   });
 
   return (
-    <div className="container mt-4">
-      {/* Custom Styles */}
-      <style>
-        {`
-          /* Highlighted rows */
-          .row-damage {
-            background-color: #343a40 !important;
-            color: white;
-            animation: fadeIn 0.5s ease-in-out;
-          }
-          .row-missing {
-            background-color: #dc3545 !important;
-            color: white;
-            animation: fadeIn 0.5s ease-in-out;
-          }
-          .row-pending {
-            background-color: #ffc107 !important;
-            animation: fadeIn 0.5s ease-in-out;
-          }
-
-          /* Hover glow for rows */
-          .row-damage:hover,
-          .row-missing:hover,
-          .row-pending:hover {
-            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.7);
-            transform: scale(1.01);
-            transition: 0.2s ease-in-out;
-          }
-
-          /* Pagination glow */
-          .pagination .page-item .page-link {
-            transition: all 0.2s ease-in-out;
-          }
-          .pagination .page-item .page-link:hover {
-            background-color: #0d6efd;
-            color: white;
-            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.7);
-            transform: scale(1.05);
-          }
-          .pagination .page-item.active .page-link {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.9);
-          }
-
-          /* Rows per page selector glow */
-          .rows-select {
-            transition: all 0.2s ease-in-out;
-          }
-          .rows-select:hover {
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-            transform: scale(1.05);
-          }
-
-          /* Fade-in animation */
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(-5px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}
-      </style>
-
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="fw-bold text-primary">Users & Roles</h2>
-        <button className="btn btn-success shadow-sm" onClick={handleAddUser}>
-          <FaUserPlus /> Add User
-        </button>
-      </div>
-
-      {/* Search & Filter */}
+    <div className="container mt-4 ">
+     
+      <h2 className="fw text-primary" style={{ textAlign: "center" }}>
+        Users & Roles</h2>
+     <div className="d-flex justify-content-end mb-3">
+  <button className="btn btn-success shadow-sm" onClick={handleAddUser}>
+    <FaUserPlus /> Add User
+  </button>
+</div>
       <div className="row mb-3 g-2">
         <div className="col-md-6">
           <input
@@ -254,7 +187,6 @@ export default function UsersRoles() {
         </table>
       </div>
 
-      {/* Modal */}
       {modalType && (
         <div className="modal show d-block modal-overlay">
           <div className="modal-dialog modal-dialog-centered">

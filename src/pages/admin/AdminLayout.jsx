@@ -49,7 +49,6 @@ function AdminLayout() {
         overflowX: "hidden",
       }}
     >
-      {/* HEADER */}
       <header
         style={{
           position: "fixed",
@@ -94,7 +93,6 @@ function AdminLayout() {
         />
       </header>
 
-      {/* PROFILE SIDEBAR */}
       <div
         style={{
           position: "fixed",
@@ -189,7 +187,6 @@ function AdminLayout() {
         </ul>
       </div>
 
-      {/* MAIN SIDEBAR */}
       <aside
         style={{
           position: "fixed",
@@ -249,7 +246,6 @@ function AdminLayout() {
         </ul>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main
         style={{
           marginLeft: isMobile ? "0" : "220px",

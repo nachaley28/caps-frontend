@@ -1,0 +1,59 @@
+
+          
+          .row-damage {
+            background-color: #343a40 !important;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          .row-missing {
+            background-color: #dc3545 !important;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          .row-pending {
+            background-color: #ffc107 !important;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+
+          .row-damage:hover,
+          .row-missing:hover,
+          .row-pending:hover {
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.7);
+            transform: scale(1.01);
+            transition: 0.2s ease-in-out;
+          }
+
+          .pagination .page-item .page-link {
+            transition: all 0.2s ease-in-out;
+          }
+          .pagination .page-item .page-link:hover {
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.7);
+            transform: scale(1.05);
+          }
+          .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.9);
+          }
+
+          .rows-select {
+            transition: all 0.2s ease-in-out;
+          }
+          .rows-select:hover {
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+          }
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-5px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+       
