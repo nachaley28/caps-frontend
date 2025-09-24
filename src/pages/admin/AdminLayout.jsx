@@ -18,11 +18,10 @@ function AdminLayout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
-  // Watch for window resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      setSidebarOpen(window.innerWidth >= 768); // auto-open on desktop
+      setSidebarOpen(window.innerWidth >= 768);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -36,7 +35,6 @@ function AdminLayout() {
     { icon: <FaHome />, label: "Dashboard", path: "/admin" },
     { icon: <FaNetworkWired />, label: "Labs & Computers", path: "/admin/labs" },
     { icon: <FaClipboardList />, label: "Reports", path: "/admin/reports" },
-    { icon: <FaUsers />, label: "Users & Roles", path: "/admin/users" },
   ];
 
   return (
@@ -44,11 +42,12 @@ function AdminLayout() {
       style={{
         height: "100vh",
         fontFamily: "Inter, sans-serif",
-        color: "#2c3e50",
         backgroundColor: "#f6f8fa",
+        color: "#2c3e50",
         overflowX: "hidden",
       }}
-    >
+      >
+      
       <header
         style={{
           position: "fixed",
@@ -56,7 +55,7 @@ function AdminLayout() {
           left: 0,
           width: "100%",
           height: "60px",
-          backgroundColor: "#ffffff",
+          backgroundColor: "#006633",          
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -69,30 +68,27 @@ function AdminLayout() {
           {isMobile && (
             <FaBars
               size={22}
-              style={{ cursor: "pointer" }}
+              style={{ cursor: "pointer", color: "#ffffff" }}
               onClick={toggleSidebar}
             />
           )}
-          <img
-            src="/public/img/claims.png"
-            alt="Admin Logo"
-            style={{ height: "40px", width: "auto" }}
-          />
+        
           {!isMobile && (
-            <h3 style={{ margin: 0, color: "#0d6efd", fontWeight: "600" }}>
-              Admin Panel
+            <h3 style={{ margin: 0, color: "#FFCC00", fontWeight: "600" }}>
+             CLAIMS
             </h3>
           )}
         </div>
 
         <FaUserCircle
           size={34}
-          color="#0d6efd"
+          color="#FFCC00"    
           style={{ cursor: "pointer" }}
           onClick={toggleProfileSidebar}
         />
       </header>
 
+      
       <div
         style={{
           position: "fixed",
@@ -117,14 +113,14 @@ function AdminLayout() {
         >
           <FaTimes
             size={22}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", color: "#006633" }}
             onClick={toggleProfileSidebar}
           />
         </div>
 
         <h5
           style={{
-            color: "#0d6efd",
+            color: "#006633",
             marginBottom: "1rem",
             fontWeight: "600",
           }}
@@ -146,7 +142,7 @@ function AdminLayout() {
                   transition: "all 0.2s ease",
                 }}
                 onMouseOver={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#f3f6fa")
+                  (e.currentTarget.style.backgroundColor = "#f5f9f5")
                 }
                 onMouseOut={(e) =>
                   (e.currentTarget.style.backgroundColor = "transparent")
@@ -187,6 +183,7 @@ function AdminLayout() {
         </ul>
       </div>
 
+     
       <aside
         style={{
           position: "fixed",
@@ -194,8 +191,7 @@ function AdminLayout() {
           left: sidebarOpen ? 0 : isMobile ? "-220px" : "0",
           height: "100%",
           width: "220px",
-          backgroundColor: "#ffffff",
-          borderRight: "1px solid #e6e9ef",
+          backgroundColor: "#006633",  
           paddingTop: "60px",
           boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
           transition: "all 0.3s ease",
@@ -216,9 +212,9 @@ function AdminLayout() {
                     padding: "0.7rem 1rem",
                     borderRadius: "8px",
                     border: "none",
-                    backgroundColor: isActive ? "#e9f2ff" : "transparent",
-                    color: isActive ? "#0d6efd" : "#444",
-                    fontWeight: isActive ? "600" : "500",
+                    backgroundColor: isActive ? "#FFCC00" : "transparent",
+                    color: isActive ? "#006633" : "#ffffff",
+                    fontWeight: isActive ? "700" : "500",
                     fontSize: "0.95rem",
                     cursor: "pointer",
                     textAlign: "left",
@@ -230,7 +226,7 @@ function AdminLayout() {
                   }}
                   onMouseOver={(e) => {
                     if (!isActive)
-                      e.currentTarget.style.backgroundColor = "#f3f6fa";
+                      e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)";
                   }}
                   onMouseOut={(e) => {
                     if (!isActive)
@@ -246,6 +242,7 @@ function AdminLayout() {
         </ul>
       </aside>
 
+      
       <main
         style={{
           marginLeft: isMobile ? "0" : "220px",

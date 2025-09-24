@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import {FaLaptop,FaUsers,FaUserCheck,FaUserTimes,FaExclamationTriangle,FaQuestionCircle,FaFileAlt,FaCogs,} from "react-icons/fa";
-import {PieChart,Pie,Cell,Tooltip,Legend,BarChart,Bar,XAxis,YAxis,CartesianGrid,ResponsiveContainer,LineChart,Line,AreaChart,Area,
+import {PieChart,Pie,Cell,Tooltip,Legend,BarChart,Bar,XAxis,YAxis,CartesianGrid,ResponsiveContainer,AreaChart,Area,
 } from "recharts";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./dashboard.css";
 
 const COLORS = {
-  primary: "#0D6EFD",
+  primary: "#006633",
   secondary: "#4e79a7",
   success: "#59a14f",
   danger: "#e15759",
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   const summaryItems = [
     { title: "Total Labs", value: stats.totalLabs, icon: <FaLaptop />, color: "#0D6EFD", bg: "#eaf2ff" },
     { title: "Total Computers", value: stats.totalComputers, icon: <FaCogs />, color: "#4e79a7", bg: "#edf2f9" },
-    { title: "Operational", value: stats.operational, icon: <FaUserCheck />, color: "#59a14f", bg: "#eaf7ef" },
+    { title: "Operational Parts", value: stats.operational, icon: <FaUserCheck />, color: "#59a14f", bg: "#eaf7ef" },
     { title: "Not Operational", value: stats.notOperational, icon: <FaUserTimes />, color: "#e15759", bg: "#fdecec" },
     { title: "Total Users", value: stats.totalUsers, icon: <FaUsers />, color: "#0D6EFD", bg: "#eaf2ff" },
     { title: "Reports Submitted", value: stats.reportsSubmitted, icon: <FaFileAlt />, color: "#9c6ade", bg: "#f4ecfb" },
@@ -56,7 +56,6 @@ export default function AdminDashboard() {
 
   return (
     <Container fluid className="my-4">
-      <h2 className="dashboard-title">Admin Dashboard</h2>
       <div className="kpi-row mb-4">
         {summaryItems.map((item, idx) => (
           <Card
@@ -81,7 +80,7 @@ export default function AdminDashboard() {
       <Col xs={12} md={6} lg={6}>
         <Card className="chart-card shadow-sm">
             <Card.Body>
-              <Card.Title>Computer Status</Card.Title>
+              <Card.Title  className="fw-bold text-center mb-3">Computer Status</Card.Title>
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
@@ -94,7 +93,7 @@ export default function AdminDashboard() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={110} // bigger pie
+                    outerRadius={110} 
                     label
                   >
                     <Cell fill={COLORS.success} />
@@ -111,7 +110,7 @@ export default function AdminDashboard() {
       <Col xs={12} md={6} lg={6}>
         <Card className="chart-card shadow-sm">
           <Card.Body>
-            <Card.Title>Computer Parts Status</Card.Title>
+            <Card.Title  className="fw-bold text-center mb-3">Computer Parts Status</Card.Title>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
                 data={computerPartStatus}
@@ -127,8 +126,8 @@ export default function AdminDashboard() {
                   textAnchor="end"
                 />
                 <YAxis
-                    allowDecimals={false}     // integers only
-                    domain={[0, 'auto']}      // start from 0 up to automatic max
+                    allowDecimals={false}   
+                    domain={[0, 'auto']}     
                     tickCount={Math.max(
                       2,
                       Math.ceil(
@@ -137,7 +136,7 @@ export default function AdminDashboard() {
                         )) + 1
                       )
                     )}
-                    interval={0}              // force all ticks to show
+                    interval={0}             
                   />
                 <Tooltip />
                 <Legend verticalAlign="top" align="center" />
@@ -153,70 +152,64 @@ export default function AdminDashboard() {
 
 
 
-        {/* Labs & Computers */}
-      <Col xs={12} md={6} lg={6}>
-        <Card className="chart-card shadow-sm">
+    {/* Labs & Computers */}
+        <Col xs={12} md={6} lg={6}>
+        <Card className="chart-card shadow-lg rounded-3">
           <Card.Body>
-            <Card.Title>Labs & Computers</Card.Title>
+            <Card.Title className="fw-bold text-center mb-3">
+              Labs & Computers
+            </Card.Title>
             <ResponsiveContainer width="100%" height={340}>
-              <LineChart
+              <BarChart
                 data={labsComputers}
-                margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                layout="vertical"
+                margin={{ top: 30, right: 30, left: 60, bottom: 30 }}
               >
-                <defs>
-                  {/* Gradient for line stroke */}
-                  <linearGradient id="lineColor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0D6EFD" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#0D6EFD" stopOpacity={0.2} />
-                  </linearGradient>
-
-                  {/* Gradient for the fill under the line */}
-                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0D6EFD" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#0D6EFD" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis
+                <CartesianGrid strokeDasharray="2 4" stroke="#d6d6d6" />
+                <YAxis
                   dataKey="lab"
+                  type="category"
                   interval={0}
-                  angle={-30}
-                  textAnchor="end"
-                  height={60}
+                  width={120}
+                  tick={{ fill: "#333", fontSize: 14 }}
                 />
-                <YAxis allowDecimals={false} />
+                <XAxis
+                  type="number"
+                  allowDecimals={false}
+                  tick={{ fill: "#333", fontSize: 14 }}
+                />
                 <Tooltip
+                  cursor={{ fill: "rgba(0,0,0,0.05)" }}
                   contentStyle={{
-                    backgroundColor: "#fff",
+                    backgroundColor: "#f9f9f9",
                     border: "1px solid #ccc",
-                    borderRadius: "6px",
+                    borderRadius: "8px",
+                    fontSize: 14
                   }}
                 />
-                <Legend verticalAlign="top" align="center" />
-
-                <Line
-                  type="monotone"
-                  dataKey="computers"
-                  stroke="url(#lineColor)"
-                  strokeWidth={3.5}
-                  fill="url(#areaFill)"
-                  fillOpacity={1}
-                  dot={{ r: 6, stroke: "#0D6EFD", strokeWidth: 2, fill: "#fff" }}
-                  activeDot={{ r: 8, fill: "#0D6EFD" }}
+                <Legend
+                  verticalAlign="top"
+                  align="center"
+                  wrapperStyle={{ fontSize: 14, marginBottom: 10 }}
                 />
-              </LineChart>
+                <Bar
+                  dataKey="computers"
+                  fill="#36A420"         
+                  barSize={28}          
+                  radius={[6, 6, 6, 6]}   
+                />
+              </BarChart>
             </ResponsiveContainer>
           </Card.Body>
         </Card>
       </Col>
 
 
-        {/* Damage vs Missing */}
+      {/* Damage vs Missing */}
       <Col xs={12} md={6} lg={6}>
         <Card className="chart-card shadow-sm">
           <Card.Body>
-            <Card.Title>Damage vs Missing per Lab</Card.Title>
+            <Card.Title className="fw-bold text-center mb-3">Damage vs Missing per Lab</Card.Title>
             <ResponsiveContainer width="100%" height={340}>
               <AreaChart
                 data={damageMissing}

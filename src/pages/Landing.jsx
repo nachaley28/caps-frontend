@@ -19,7 +19,6 @@ function LandingPage() {
           data: { email: loginEmail, password: loginPassword },
         }),
       });
-
       const data = await res.json();
 
       if (res.ok) {
@@ -40,43 +39,39 @@ function LandingPage() {
   return (
     <div
       className="d-flex align-items-center justify-content-center min-vh-100 px-3"
-      style={{ backgroundColor: "#FDF6F0", fontFamily: "Cambria, Georgia, serif" }}
+      style={{
+        backgroundColor: "#f8f9f5", 
+        fontFamily: "Cambria, Georgia, serif",
+      }}
     >
       <div
         className="row rounded-4 overflow-hidden bg-white"
         style={{
+          backgroundColor:"#3a4f26",
           maxWidth: "900px",
           width: "100%",
-          boxShadow: "0 1rem 3rem rgba(0,0,0,0.175)",
-          transition: "transform 0.3s, boxShadow 0.3s",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow =
-            "0 0 10px #0A2E4D, 0 0 20px #1E4D75, 0 0 30px rgba(10,46,77,0.3)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 1rem 3rem rgba(0,0,0,0.175)";
+          boxShadow: "0 1rem 3rem rgba(0,0,0,0.15)",
+          transition: "all 0.3s ease",
         }}
       >
+      
         <div className="col-12 col-md-6 p-0">
           <img
             src="/img/image.png"
-            alt="Welcome to LabGuard"
+           
             className="w-100 h-100"
             style={{ objectFit: "fit" }}
           />
         </div>
 
+      
         <div className="col-12 col-md-6 d-flex align-items-center p-4">
           <div className="w-100">
             <form onSubmit={handleLogin}>
               <h2
-                className="mb-2 text-center"
+                className="mb-3 text-center"
                 style={{
-                  color: "#0A2E4D",
+                  color: "#006633", 
                   fontFamily: "'Share Tech Mono', monospace",
                   letterSpacing: "2px",
                   textTransform: "uppercase",
@@ -85,8 +80,15 @@ function LandingPage() {
               >
                 CLAIMS
               </h2>
-              <p className="mb-4 text-center text-muted">Log in to continue</p>
 
+              <p
+                className="mb-4 text-center fw-semibold"
+                style={{ color: "#FFCC00" }} 
+              >
+                Log in to continue
+              </p>
+
+              
               <input
                 type="email"
                 className="form-control mb-3"
@@ -94,8 +96,20 @@ function LandingPage() {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 required
+                style={{
+                  borderColor: "#006633",
+                  boxShadow: "0 0 4px rgba(0,102,51,0.15)",
+                  transition: "box-shadow 0.2s",
+                }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow = "0 0 6px #FFCC00AA")
+                }
+                onBlur={(e) =>
+                  (e.target.style.boxShadow = "0 0 4px rgba(0,102,51,0.15)")
+                }
               />
 
+           
               <div className="position-relative mb-3">
                 <input
                   type={showLoginPassword ? "text" : "password"}
@@ -104,33 +118,55 @@ function LandingPage() {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
+                  style={{
+                    borderColor: "#006633",
+                    boxShadow: "0 0 4px rgba(0,102,51,0.15)",
+                    transition: "box-shadow 0.2s",
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = "0 0 6px #FFCC00AA")
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.boxShadow = "0 0 4px rgba(0,102,51,0.15)")
+                  }
                 />
                 <span
                   className="position-absolute end-0 top-50 translate-middle-y pe-3"
-                  style={{ cursor: "pointer", color: "#1E4D75" }}
+                  style={{ cursor: "pointer", color: "#006633" }}
                   onClick={() => setShowLoginPassword(!showLoginPassword)}
                 >
                   {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
 
+            
               <button
                 type="submit"
-                className="btn w-100 mb-2"
+                className="btn w-100 mb-3"
                 style={{
-                  background: "linear-gradient(90deg, #0A2E4D, #1E4D75)",
-                  color: "#fff",
+                  backgroundColor: "#006633",
+                  color: "#ffffff",
                   fontWeight: "bold",
+                  transition: "background-color 0.3s, box-shadow 0.3s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#004d26";
+                  e.currentTarget.style.boxShadow = "0 0 10px #FFCC00AA";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#006633";
+                  e.currentTarget.style.boxShadow = "none";
                 }}
               >
                 Login
               </button>
 
+              
               <p
                 className="mt-2 text-center"
                 style={{
                   cursor: "pointer",
-                  color: "#1E4D75",
+                  color: "#FFCC00",
                   textDecoration: "underline",
                 }}
                 onClick={() => navigate("/forgot-password")}

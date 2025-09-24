@@ -8,7 +8,6 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/dashboard";
 import Laboratory from "./pages/admin/labs";  
 import Reports from "./pages/admin/reports";  
-import UserRoles from "./pages/admin/users";  
 
 
 
@@ -37,7 +36,6 @@ function RouteWithTransitions() {
             <Route index element={<Dashboard/>} />
             <Route path="/admin/labs" element={<Laboratory />} />
             <Route path="/admin/reports" element={<Reports />} />
-            <Route path="/admin/users" element={<UserRoles />} />
 
 
 

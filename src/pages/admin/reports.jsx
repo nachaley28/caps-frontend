@@ -1,297 +1,120 @@
 import React, { useState, useEffect } from "react";
+import DataTable from "react-data-table-component";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState("admin");
   const [adminReports, setAdminReports] = useState([]);
-  const [studentReports, setStudentReports] = useState([]);
-
-  const [adminPage, setAdminPage] = useState(1);
-  const [studentPage, setStudentPage] = useState(1);
-  const pageSize = 10; 
+  const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:5000/get_admin_computer_reports")
       .then((res) => res.json())
       .then((data) => setAdminReports(data))
-      .catch((err) => console.error("Error fetching admin reports:", err));
-
-    fetch("http://localhost:5000/get_student_reports")
-      .then((res) => res.json())
-      .then((data) => setStudentReports(data))
-      .catch((err) => console.error("Error fetching student reports:", err));
+      .catch((err) => console.error(err));
   }, []);
 
-  const updateStudentReportLabel = (id, label) => {
-    setStudentReports((prev) =>
-      prev.map((report) =>
-        report.id === id ? { ...report, label } : report
-      )
-    );
-  };
+  // Filtered data based on search
+  const filteredReports = adminReports.filter((r) =>
+  (r.item || "").toLowerCase().includes(filterText.toLowerCase()) ||
+  (r.lab || "").toLowerCase().includes(filterText.toLowerCase()) ||
+  (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
+  (r.notes || "").toLowerCase().includes(filterText.toLowerCase())
+);
 
-  const paginate = (arr, page) =>
-    arr.slice((page - 1) * pageSize, page * pageSize);
+  const columns = [
+    {
+      name: "PC Number",
+      selector: (row) => row.item,
+      sortable: true,
+    },
+    {
+      name: "Lab",
+      selector: (row) => row.lab,
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => row.status,
+      sortable: true,
+      cell: (row) => (
+        <span
+          style={{
+            backgroundColor:
+              row.status === "Operational"
+                ? "#006633"
+                : row.status === "Notoperational" || row.status === "Warning"
+                ? "#FFCC00"
+                : row.status === "Damaged"
+                ? "#dc3545"
+                : row.status === "Missing"
+                ? "#6c757d"
+                : "#f8f9fa",
+            color:
+              row.status === "Notoperational" || row.status === "Warning"
+                ? "#000"
+                : "#fff",
+            padding: "3px 7px",
+            borderRadius: "5px",
+          }}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+    {
+      name: "Date",
+      selector: (row) => new Date(row.date).toLocaleString(),
+      sortable: true,
+    },
+    {
+      name: "Notes",
+      selector: (row) => row.notes || "—",
+    },
+  ];
 
-  const AdminTable = () => {
-    const totalPages = Math.ceil(adminReports.length / pageSize) || 1;
-    const data = paginate(adminReports, adminPage);
-
-    return (
-      <>
-        <div className="table-responsive">
-          <table className="table table-hover align-middle">
-            <thead className="table-primary text-white" style={{ backgroundColor: "#0d6efd" }}>
-              <tr>
-                <th>PC Number</th>
-                <th>Lab</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center text-muted">
-                    No admin reports found.
-                  </td>
-                </tr>
-              ) : (
-                data.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.item}</td>
-                    <td>{r.lab}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          r.status === "Operational"
-                            ? "bg-success"
-                            : r.status === "Notoperational"
-                            ? "bg-warning text-dark"
-                            : r.status === "Damaged"
-                            ? "bg-danger"
-                            : r.status === "Missing"
-                            ? "bg-secondary"
-                            : "bg-light text-dark"
-                        }`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-                    <td>{new Date(r.date).toLocaleString()}</td>
-                    <td>{r.notes || "—"}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <nav>
-          <ul className="pagination justify-content-center">
-            <li className={`page-item ${adminPage === 1 ? "disabled" : ""}`}>
-              <button
-                className="page-link text-primary"
-                onClick={() => setAdminPage((p) => p - 1)}
-              >
-                Previous
-              </button>
-            </li>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <li
-                key={i + 1}
-                className={`page-item ${adminPage === i + 1 ? "active" : ""}`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => setAdminPage(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              </li>
-            ))}
-            <li
-              className={`page-item ${adminPage === totalPages ? "disabled" : ""}`}
-            >
-              <button
-                className="page-link text-primary"
-                onClick={() => setAdminPage((p) => p + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </>
-    );
-  };
-
-  const StudentTable = () => {
-    const totalPages = Math.ceil(studentReports.length / pageSize) || 1;
-    const data = paginate(studentReports, studentPage);
-
-    return (
-      <>
-        <div className="table-responsive">
-          <table className="table table-hover align-middle">
-            <thead className="table-primary text-white" style={{ backgroundColor: "#0d6efd" }}>
-              <tr>
-                <th>Submitted By</th>
-                <th>Item</th>
-                <th>Lab</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th>Admin Label</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted">
-                    No student reports found.
-                  </td>
-                </tr>
-              ) : (
-                data.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.submitted_by}</td>
-                    <td>{r.item}</td>
-                    <td>{r.lab}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          r.status === "Operational"
-                            ? "bg-success"
-                            : r.status === "Warning"
-                            ? "bg-warning text-dark"
-                            : r.status === "Damaged"
-                            ? "bg-danger"
-                            : r.status === "Missing"
-                            ? "bg-secondary"
-                            : "bg-light text-dark"
-                        }`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-                    <td>{new Date(r.date).toLocaleString()}</td>
-                    <td>{r.notes || "—"}</td>
-                    <td>
-                      {r.label ? (
-                        <span
-                          className={`badge ${
-                            r.label === "Recorded"
-                              ? "bg-success"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {r.label}
-                        </span>
-                      ) : (
-                        <div className="btn-group">
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() =>
-                              updateStudentReportLabel(r.id, "Recorded")
-                            }
-                          >
-                            Mark Recorded
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() =>
-                              updateStudentReportLabel(r.id, "Not Recorded")
-                            }
-                          >
-                            Not Recorded
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <nav>
-          <ul className="pagination justify-content-center">
-            <li className={`page-item ${studentPage === 1 ? "disabled" : ""}`}>
-              <button
-                className="page-link text-primary"
-                onClick={() => setStudentPage((p) => p - 1)}
-              >
-                Previous
-              </button>
-            </li>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <li
-                key={i + 1}
-                className={`page-item ${studentPage === i + 1 ? "active" : ""}`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => setStudentPage(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              </li>
-            ))}
-            <li
-              className={`page-item ${studentPage === totalPages ? "disabled" : ""}`}
-            >
-              <button
-                className="page-link text-primary"
-                onClick={() => setStudentPage((p) => p + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </>
-    );
+  const customStyles = {
+    header: {
+      style: {
+        fontSize: "22px",
+        fontWeight: "bold",
+        color: "#006633",
+      },
+    },
+    headRow: {
+      style: {
+        backgroundColor: "#006633",
+        color: "#fff",
+      },
+    },
   };
 
   return (
     <div className="container py-5">
-      <div className="text-center mb-4">
-        <h1 className="fw text-primary">Reports Dashboard</h1>
-  
+      <h1 className="text-center mb-4" style={{ color: "#006633" }}>
+        Admin Reports Dashboard
+      </h1>
+
+    
+      <div className="mb-3 text-end">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search reports..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          style={{ maxWidth: "300px", display: "inline-block" }}
+        />
       </div>
 
-      <ul className="nav nav-pills justify-content-center mb-4">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "admin" ? "active bg-primary text-white" : "text-primary"}`}
-            onClick={() => setActiveTab("admin")}
-          >
-            Admin Reports
-          </button>
-        </li>
-        <li className="nav-item ms-2">
-          <button
-            className={`nav-link ${activeTab === "student" ? "active bg-primary text-white" : "text-primary"}`}
-            onClick={() => setActiveTab("student")}
-          >
-            Student Reports
-          </button>
-        </li>
-      </ul>
-
-      <div className="row justify-content-center">
-        <div className="col-lg-10">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              {activeTab === "admin" ? <AdminTable /> : <StudentTable />}
-            </div>
-          </div>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredReports}
+        pagination
+        highlightOnHover
+        responsive
+        customStyles={customStyles}
+        defaultSortFieldId={1} 
+      />
     </div>
   );
 }

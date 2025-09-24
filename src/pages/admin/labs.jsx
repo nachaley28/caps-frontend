@@ -15,8 +15,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./labs.css";  
 
 const statusColors = {
-  operational: { color: "#28a745", label: "Operational", priority: 0 },
-  notOperational: { color: "#ffc107", label: "Not Operational", priority: 1 },
+  operational: { color: "#006633", label: "Operational", priority: 0 },
+  notOperational: { color: "#FFCC00", label: "Not Operational", priority: 1 },
   damaged: { color: "#dc3545", label: "Damaged", priority: 2 },
   missing: { color: "#6c757d", label: "Missing", priority: 3 },
 };
@@ -43,18 +43,40 @@ function StatusButtons({ part, compId, status, setStatus }) {
           onMouseEnter={() => setHovered(s)}
           onMouseLeave={() => setHovered(null)}
           title={statusColors[s].label}
-
-          
         />
       ))}
     </div>
   );
 }
 
-function LabGrid({ labs, selectLab }) {
+
+function LabGrid({ labs, selectLab, openEditLab }) {
+  // ✅ PC counts for each lab
+  const [pcCount, setPcCount] = useState({});
+
+  useEffect(() => {
+    if (!labs || labs.length === 0) return;
+
+    // Fetch all lab counts in one request
+    fetch("http://localhost:5000/labs-pc-count")
+      .then((res) => res.json())
+      .then((data) => {
+        // Convert list of { lab, count } to object { labName: count }
+        const counts = {};
+        data.forEach((item) => {
+          counts[item.lab] = item.count;
+        });
+        setPcCount(counts);
+      })
+      .catch((err) => console.error("Error fetching lab counts:", err));
+  }, [labs]);
+
   return (
     <div className="d-flex flex-wrap gap-3 justify-content-center">
-      {labs.map((lab) => (
+    {labs
+      .slice()
+      .sort((a, b) => a.name - b.name) // sort by lab number
+      .map((lab) => (
         <div
           key={lab.id}
           onClick={() => selectLab(lab)}
@@ -74,7 +96,7 @@ function LabGrid({ labs, selectLab }) {
           onMouseOver={(e) => {
             e.currentTarget.style.transform = "translateY(-6px)";
             e.currentTarget.style.boxShadow =
-              "0 8px 18px rgba(0, 123, 255, 0.25)";
+              "0 8px 18px rgba(0, 102, 51, 0.25)";
             e.currentTarget.style.background =
               "linear-gradient(135deg, #ffffff, #f1f3f6)";
           }}
@@ -85,7 +107,24 @@ function LabGrid({ labs, selectLab }) {
               "linear-gradient(135deg, #f8f9fa, #e9ecef)";
           }}
         >
-          {/* action icons top-right */}
+         
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              backgroundColor: "#006633",
+              color: "#FFCC00",
+              padding: "4px 8px",
+              borderRadius: "50%",
+              fontWeight: 600,
+              fontSize: "0.85rem",
+            }}
+          >
+            {pcCount[lab.name] ?? 0}
+          </div>
+
+          
           <div
             style={{
               position: "absolute",
@@ -94,7 +133,7 @@ function LabGrid({ labs, selectLab }) {
               display: "flex",
               gap: "10px",
             }}
-            onClick={(e) => e.stopPropagation()} // prevent selectLab
+            onClick={(e) => e.stopPropagation()}
           >
             <FaTrashAlt
               size={18}
@@ -111,20 +150,17 @@ function LabGrid({ labs, selectLab }) {
             />
             <FaEdit
               size={18}
-              color="orange"
+              color="#FFCC00"
               style={{ cursor: "pointer" }}
               title="Edit"
-              onClick={() => {
-                // open edit modal or navigate to edit page
-                openEditLab(lab);
-              }}
+              onClick={() => openEditLab(lab)}
             />
           </div>
 
-          
+        
           <div
             style={{
-              backgroundColor: "#0d6efd20",
+              backgroundColor: "#00663320",
               borderRadius: "50%",
               width: 60,
               height: 60,
@@ -134,15 +170,16 @@ function LabGrid({ labs, selectLab }) {
               margin: "0 auto 12px auto",
             }}
           >
-            <FaDesktop size={28} color="#0d6efd" />
+            <FaDesktop size={28} color="#006633" />
           </div>
-          <h5 style={{ color: "#0d6efd", fontWeight: 600, marginBottom: 6 }}>
-            {lab.name}
+
+          <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 6 }}>
+            Computer Lab {lab.name}
           </h5>
           <span
             style={{
-              backgroundColor: "#e7f1ff",
-              color: "#0d6efd",
+              backgroundColor: "#FFCC00",
+              color: "#006633",
               padding: "3px 10px",
               borderRadius: 12,
               fontSize: "0.85rem",
@@ -153,9 +190,13 @@ function LabGrid({ labs, selectLab }) {
           </span>
         </div>
       ))}
-    </div>
+  </div>
   );
 }
+
+
+
+
 
 
 function AddLabModal({ addLab, onClose }) {
@@ -163,27 +204,26 @@ function AddLabModal({ addLab, onClose }) {
   const [location, setLocation] = useState("");
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-
-  fetch("http://localhost:5000/add_laboratory", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      data: { lab_name: name, location: location },
-    }),
-  })
-    .then((res) => res.json())
-    .then((newLab) => {
-      addLab(newLab);
-      onClose();
+    e.preventDefault();
+    fetch("http://localhost:5000/add_laboratory", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: { lab_name: name, location: location },
+      }),
     })
-    .catch((err) => console.error("Error adding lab:", err));
-};
+      .then((res) => res.json())
+      .then((newLab) => {
+        addLab(newLab);
+        onClose();
+      })
+      .catch((err) => console.error("Error adding lab:", err));
+  };
 
   return (
     <div className="modal-backdrop">
       <div className="modal-card">
-        <div className="modal-header">
+        <div className="modal-header" style={{ backgroundColor: "#006633", color: "white" }}>
           <h5 className="mb-0">Add Laboratory</h5>
           <button onClick={onClose} className="btn-close text-white">
             <FaTimes />
@@ -191,11 +231,11 @@ function AddLabModal({ addLab, onClose }) {
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="mb-3">
-            <label className="form-label fw-bold">Laboratory Name</label>
+            <label className="form-label fw-bold">Laboratory Number</label>
             <input
-              type="text"
+              type="number"
               className="form-control"
-              placeholder="Enter Laboratory Name"
+              placeholder="Enter Laboratory Number"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -216,7 +256,7 @@ function AddLabModal({ addLab, onClose }) {
             <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-success">
+            <button type="submit" className="btn" style={{ backgroundColor: "#006633", color: "white" }}>
               Add Lab
             </button>
           </div>
@@ -225,6 +265,9 @@ function AddLabModal({ addLab, onClose }) {
     </div>
   );
 }
+
+
+
 
 
 function AddComputerModal({ lab, addComputer, onClose }) {
@@ -245,8 +288,7 @@ function AddComputerModal({ lab, addComputer, onClose }) {
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-
+    e.preventDefault();
     fetch("http://localhost:5000/computer", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -267,26 +309,25 @@ function AddComputerModal({ lab, addComputer, onClose }) {
   };
 
   const partIcons = {
-    monitor: <FaDesktop className="text-primary" />,
-    systemUnit: <FaServer className="text-primary" />,
-    keyboard: <FaKeyboard className="text-primary" />,
-    mouse: <FaMouse className="text-primary" />,
-    headphone: <FaHeadphones className="text-primary" />,
-    hdmi: <FaPlug className="text-primary" />,
-    power: <FaPlug className="text-primary" />,
-    wifi: <FaWifi className="text-primary" />,
+    monitor: <FaDesktop className="text-success" />,
+    systemUnit: <FaServer className="text-success" />,
+    keyboard: <FaKeyboard className="text-success" />,
+    mouse: <FaMouse className="text-success" />,
+    headphone: <FaHeadphones className="text-success" />,
+    hdmi: <FaPlug className="text-success" />,
+    power: <FaPlug className="text-success" />,
+    wifi: <FaWifi className="text-success" />,
   };
 
   return (
     <div className="modal-backdrop">
       <div className="modal-card large">
-        <div className="modal-header">
-          <h5 className="mb-0">Add Computer – {lab.name}</h5>
+        <div className="modal-header" style={{ backgroundColor: "#006633", color: "white" }}>
+          <h5 className="mb-0">Add Computer – Computer Lab {lab.name}</h5>
           <button onClick={onClose} className="btn-close text-white">
             <FaTimes />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="mb-3">
             <label className="form-label fw-bold">PC Number</label>
@@ -303,8 +344,7 @@ function AddComputerModal({ lab, addComputer, onClose }) {
               />
             </div>
           </div>
-
-          <h6 className="fw-bold text-primary mt-3 mb-3">Parts Serial Numbers</h6>
+          <h6 className="fw-bold mt-3 mb-3" style={{ color: "#006633" }}>Parts Serial Numbers</h6>
           <div className="row g-3">
             {Object.keys(parts).map((p) => (
               <div key={p} className="col-md-6">
@@ -325,12 +365,11 @@ function AddComputerModal({ lab, addComputer, onClose }) {
               </div>
             ))}
           </div>
-
           <div className="modal-footer">
             <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-success">
+            <button type="submit" className="btn" style={{ backgroundColor: "#006633", color: "white" }}>
               Add Computer
             </button>
           </div>
@@ -340,12 +379,19 @@ function AddComputerModal({ lab, addComputer, onClose }) {
   );
 }
 
+
+
+
+
+
+
+
 function LabDetail({ lab, computers, back, addComputer }) {
   const [statuses, setStatuses] = useState({});
   const [selectedPC, setSelectedPC] = useState(null);
   const [showAddComputer, setShowAddComputer] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-
+  
 
   useEffect(() => {
     fetch("http://localhost:5000/get_computer_statuses")
@@ -369,7 +415,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
       .catch((err) => console.error("Error fetching statuses:", err));
   }, []);
   
-  console.log(statuses);
+
   const labComputers = computers.filter((c) => c.lab === lab.name);
   const partIcons = {
     monitor: FaDesktop,
@@ -383,43 +429,25 @@ function LabDetail({ lab, computers, back, addComputer }) {
   };
 
   const getStatusStyle = (compId, part) =>
-  statusColors[statuses[compId]?.[part] || "operational"];
+    statusColors[statuses[compId]?.[part] || "operational"];
   const setStatus = (compId, part, status) =>
-    
     setStatuses((prev) => ({
-      
       ...prev,
       [compId]: { ...prev[compId], [part]: status },
-      
     }));
 
-    function handleStatusChange (compId, part, newStatus){
-      setStatus(compId, part, newStatus);
-
-      fetch("http://localhost:5000/update_computer_status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          compId: compId,
-          part: part,
-          status: newStatus
-        })
-      })
-      .then(res => res.json())
-      .then(data => console.log("Updated:", data))
-      .catch(err => console.error("Error updating status:", err));
-      };
-    const getPCColor = (pc) => {
-      const partStatuses = Object.keys(pc.parts).map(
-        (p) => statuses[pc.id]?.[p] || "operational"
-      );
-      const worst = partStatuses.reduce(
-        (max, curr) =>
-          statusColors[curr].priority > statusColors[max].priority ? curr : max,
-        "operational"
-      );
-      return statusColors[worst].color;
-    };
+  const getPCColor = (pc) => {
+    const partStatuses = Object.keys(pc.parts).map(
+      (p) => statuses[pc.id]?.[p] || "operational"
+    );
+    const worst = partStatuses.reduce(
+      (max, curr) =>
+        statusColors[curr].priority > statusColors[max].priority ? curr : max,
+      "operational"
+    );
+    return statusColors[worst].color;
+  };
+ 
 
   return (
     <div>
@@ -427,14 +455,18 @@ function LabDetail({ lab, computers, back, addComputer }) {
         <button onClick={back} className="btn btn-secondary btn-sm">
           ← Back to Labs
         </button>
-        <button onClick={() => setShowAddComputer(true)} className="btn btn-primary">
+        <button onClick={() => setShowAddComputer(true)} className="btn" style={{ backgroundColor: "#006633", color: "white" }}>
           + Add Computer
         </button>
       </div>
       {saveMsg && (
         <div
-          style={{backgroundColor: "#28a745",color: "white",padding: "5px 10px",
-            borderRadius: "6px",marginBottom: "15px",
+          style={{
+            backgroundColor: "#006633",
+            color: "white",
+            padding: "5px 10px",
+            borderRadius: "6px",
+            marginBottom: "15px",
             textAlign: "center",
             fontWeight: "500",
           }}
@@ -442,10 +474,9 @@ function LabDetail({ lab, computers, back, addComputer }) {
           {saveMsg}
         </div>
       )}
-      <h3 style={{ color: "#0d6efd", marginBottom: 15 }}>
-        {lab.name} – {lab.location}
-      </h3>
 
+      <h3 style={{ color: "#006633", marginBottom: 15 }}>Computer Lab{lab.name}– {lab.location}</h3>
+     
       <div
         style={{
           display: "grid",
@@ -455,159 +486,260 @@ function LabDetail({ lab, computers, back, addComputer }) {
       >
         {labComputers.map((pc) => (
           <div
-            key={pc.id}
-            onClick={() => setSelectedPC(pc)}
-            style={{
-              background: "#fff",
-              border: "1px solid #e0e6ed",
-              borderRadius: 10,
-              padding: "20px 10px",
-              textAlign: "center",
-              cursor: "pointer",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <FaDesktop size={50} color={getPCColor(pc)} />
-            <h6 style={{ marginTop: 10, color: "#0d6efd" }}>PC {pc.pcNumber}</h6>
-            <p style={{ margin: 0, fontSize: "0.85rem", color: "#6c757d" }}>
-              {pc.lab}
-            </p><div
-            
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              display: "flex",
-              gap: "10px",
-            }}
-            onClick={(e) => e.stopPropagation()} 
-          >
-            <FaTrashAlt
-              size={18}
-              color="red"
-              style={{ cursor: "pointer" }}
-              title="Delete"
-              onClick={() => {
-                fetch(`http://localhost:5000/delete_computer/${pc.id}`, {
-                  method: "DELETE",
-                })
-                  .then(() => window.location.reload())
-                  .catch((err) => console.error("Delete error:", err));
+              key={pc.id}
+              onClick={() => setSelectedPC(pc)}
+              style={{
+                background: getPCColor(pc),
+                border: "1px solid #e0e6ed",
+                borderRadius: 10,
+                padding: "20px 10px",
+                textAlign: "center",
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                position: "relative",
+                overflow: "visible",
               }}
-            />
-           
-          </div>
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "translateY(-5px)";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.15)";
+                
+                const summary = e.currentTarget.querySelector(".part-summary");
+                if (summary) {
+                  const rect = summary.getBoundingClientRect();
+                  const screenWidth = window.innerWidth;
 
+                  // Adjust left position if it overflows the screen
+                  if (rect.left < 0) {
+                    summary.style.left = `${-rect.left + rect.width / 2}px`;
+                  } else if (rect.right > screenWidth) {
+                    summary.style.left = `calc(50% - ${rect.right - screenWidth}px)`;
+                  } else {
+                    summary.style.left = "50%";
+                  }
 
+                  summary.style.opacity = 1;
+                  summary.style.transform = "translateX(-50%) translateY(0)";
+                }
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
+                
+                const summary = e.currentTarget.querySelector(".part-summary");
+                if (summary) {
+                  summary.style.opacity = 0;
+                  summary.style.transform = "translateX(-50%) translateY(-10px)";
+                }
+              }}
+            >
+              <FaDesktop size={50} color="#fff" />
+              <h6 style={{ marginTop: 10, color: "#fff" }}>PC {pc.pcNumber}</h6>
+              
 
-            
-          </div>
+              <div
+                className="part-summary"
+                style={{
+                  position: "absolute",
+                  top: -10,
+                  left: "50%",
+                  transform: "translateX(-50%) translateY(-10px)",
+                  display: "flex",
+                  gap: 10,
+                  background: "rgba(0,0,0,0.85)",
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  opacity: 0,
+                  pointerEvents: "none",
+                  transition: "opacity 0.25s ease, transform 0.25s ease, left 0.25s ease",
+                  zIndex: 10,
+                }}
+              >
+                {Object.keys(pc.parts).map((part) => {
+                  const Icon = partIcons[part];
+                  const status = statuses[pc.id]?.[part] || "operational";
+                  const color = statusColors[status].color;
+                  return <Icon key={part} size={18} color={color} title={part} />;
+                })}
+
+                
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: -6,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 0,
+                    height: 0,
+                    borderLeft: "6px solid transparent",
+                    borderRight: "6px solid transparent",
+                    borderTop: "6px solid rgba(0,0,0,0.85)",
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  display: "flex",
+                  gap: "10px",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaTrashAlt
+                  size={18}
+                  color=""
+                  style={{ cursor: "pointer" }}
+                  title="Delete"
+                  onClick={() => {
+                    fetch(`http://localhost:5000/delete_computer/${pc.id}`, {
+                      method: "DELETE",
+                    })
+                      .then(() => window.location.reload())
+                      .catch((err) => console.error("Delete error:", err));
+                  }}
+                />
+              </div>
+            </div>
         ))}
       </div>
 
-      {selectedPC && (
-        <div className="modal-backdrop">
-          <div className="modal-card large">
-            <div className="modal-header">
-              <span>PC {selectedPC.pcNumber} – Update Status</span>
-              <button
-                onClick={() => setSelectedPC(null)}
-                className="btn-close text-white"
-              >
-                <FaTimes />
-              </button>
-            </div>
-            <div className="modal-body">
+     {selectedPC && (
+      <div className="modal-backdrop">
+        <div className="modal-card large">
+          <div
+            className="modal-header"
+            style={{ backgroundColor: "#006633", color: "white" }}
+          >
+            <span>PC {selectedPC.pcNumber} – Update Status</span>
+            <button
+              onClick={() => setSelectedPC(null)}
+              className="btn-close text-white"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+      <div className="modal-body">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 12,
+          }}
+        >
+          {Object.keys(selectedPC.parts).map((part) => {
+            const Icon = partIcons[part];
+            const style = getStatusStyle(selectedPC.id);
+
+            const value = selectedPC.parts[part];
+            const partLabel =
+              value === 1
+                ? "Present"
+                : value === 0
+                ? "Missing"
+                : String(value);
+
+            return (
               <div
+                key={part}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 12,
-                }}
-              >
-                {Object.keys(selectedPC.parts).map((part) => {
-                  const Icon = partIcons[part];
-                  const style = getStatusStyle(selectedPC.id, part);
-                  return (
-                    <div
-                      key={part}
-                      style={{
-                        textAlign: "center",
-                        padding: 12,
-                        borderRadius: 10,
-                        background: "#f8f9fa",
-                      }}
-                    >
-                      <Icon size={50} color={style.color} />
-                      <div style={{ textTransform: "capitalize", marginTop: 6 }}>
-                        {part}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#495057", marginTop: 4 }}>
-                        {selectedPC.parts[part]}
-                      </div>
-                      <StatusButtons
-                        part={part}
-                        compId={selectedPC.id}
-                        status={statuses[selectedPC.id]?.[part] || "operational"}
-                        setStatus={handleStatusChange}
-                      />
-                    </div>
-                  );
-                })}
-                
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 20,
-                  marginTop: 25,
-                  flexWrap: "wrap",
-                  background: "#f8f9fa",
+                  textAlign: "center",
                   padding: 12,
-                  borderRadius: 8,
+                  borderRadius: 10,
+                  background: "#f8f9fa",
                 }}
               >
-                {Object.keys(statusColors).map((s) => (
-                  <div
-                    key={s}
-                    style={{ display: "flex", alignItems: "center", gap: 6 }}
-                  >
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: "50%",
-                        backgroundColor: statusColors[s].color,
-                        border: "1px solid #ccc",
-                      }}
-                    />
-                    <span style={{ fontSize: 14, color: "#495057" }}>
-                      {statusColors[s].label}
-                    </span>
-                  </div>
-                ))}
+                <Icon size={50} color={style.color} />
+                <div style={{ textTransform: "capitalize", marginTop: 6 }}>
+                  {part}
+                </div>
+
+              
+                <div style={{ fontSize: 12, color: "#495057", marginTop: 4 }}>
+                  {partLabel}
+                </div>
+
+                <StatusButtons
+                  part={part}
+                  compId={selectedPC.id}
+                  status={statuses[selectedPC.id]?.[part] || "operational"}
+                  setStatus={(compId, p, newStatus) => {
+                    setStatuses((prev) => ({
+                      ...prev,
+                      [compId]: { ...prev[compId], [p]: newStatus },
+                    }));
+                  }}
+                />
               </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 20,
+            marginTop: 25,
+            flexWrap: "wrap",
+            background: "#f8f9fa",
+            padding: 12,
+            borderRadius: 8,
+          }}
+        >
+          {Object.keys(statusColors).map((s) => (
+            <div
+              key={s}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  backgroundColor: statusColors[s].color,
+                  border: "1px solid #ccc",
+                }}
+              />
+              <span style={{ fontSize: 14, color: "#495057" }}>
+                {statusColors[s].label}
+              </span>
             </div>
-            <div className="modal-footer">
-             <button
-              onClick={() => {
+          ))}
+        </div>
+      </div>
+
+      <div className="modal-footer">
+        <button
+          onClick={() => {
+            const compStatuses = statuses[selectedPC.id];
+            fetch("http://localhost:5000/update_computer_status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                compId: selectedPC.id,
+                statuses: compStatuses,
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Saved:", data);
                 setSelectedPC(null);
                 setSaveMsg("Status updated successfully!");
                 setTimeout(() => setSaveMsg(""), 4000);
+              })
+              .catch((err) => console.error("Error saving statuses:", err));
               }}
               className="btn"
               style={{
-                backgroundColor: "#28a745",
+                backgroundColor: "#006633",
                 color: "white",
                 fontWeight: "600",
                 padding: "8px 16px",
@@ -617,11 +749,10 @@ function LabDetail({ lab, computers, back, addComputer }) {
             >
               Save
             </button>
-             
-            </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {showAddComputer && (
         <AddComputerModal
@@ -640,7 +771,7 @@ export default function App() {
   const [computers, setComputers] = useState([]);
   const [showAddLab, setShowAddLab] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     fetch("http://localhost:5000/get_laboratory")
       .then((res) => res.json())
       .then((data) => setLabs(data))
@@ -650,22 +781,22 @@ export default function App() {
       .then((res) => res.json())
       .then((data) => setComputers(data))
       .catch((err) => console.error("Error fetching computers:", err));
-      
   }, []);
+
   const addLab = (lab) => setLabs((prev) => [...prev, lab]);
   const addComputer = (comp) => setComputers((prev) => [...prev, comp]);
-  
 
   return (
     <div style={{ padding: 40, background: "#f1f3f6", minHeight: "100vh" }}>
       {!selectedLab && (
         <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <h2 style={{ marginBottom: 20, color: "#0d6efd" }}>
+          <h2 style={{ marginBottom: 20, color: "#006633" }}>
             Laboratories and Computers
           </h2>
           <button
             onClick={() => setShowAddLab(true)}
-            className="btn btn-primary"
+            className="btn"
+            style={{ backgroundColor: "#006633", color: "white" }}
           >
             + Add Laboratory
           </button>
@@ -684,8 +815,6 @@ export default function App() {
       {showAddLab && (
         <AddLabModal addLab={addLab} onClose={() => setShowAddLab(false)} />
       )}
-
-     
     </div>
   );
 }
