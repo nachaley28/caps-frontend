@@ -42,11 +42,9 @@ function RouteWithTransitions() {
 
 function App() {
   return (
-    <Router>
       <div className="App">
         <RouteWithTransitions />
       </div>
-    </Router>
   );
 }
 
