@@ -344,7 +344,7 @@ function AddComputerModal({lab,addComputer,addComputers,onClose,}) {
         const res = await fetch("http://localhost:5000/computer/bulk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ computers }),
+          body: JSON.stringify({ data: computers }),
         });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         const inserted = await res.json();
