@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { useNavigate } from "react-router-dom";
 export default function Reports() {
   const [adminReports, setAdminReports] = useState([]);
   const [filterText, setFilterText] = useState("");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:5000/check_session")
+      .then(res => res.json())
+      .then(data => {
+        console.log("Session check response:", data);
+        if (!data.logged_in) {
+          navigate("/");
+        }
+      })
+  }, [navigate]);
 
   useEffect(() => {
     fetch("http://localhost:5000/get_admin_computer_reports")

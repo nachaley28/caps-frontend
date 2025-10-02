@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   FaDesktop,
   FaMouse,
@@ -144,7 +145,7 @@ function LabGrid({ labs, selectLab, openEditLab }) {
               style={{ cursor: "pointer" }}
               title="Delete"
               onClick={() => {
-                fetch(`http://localhost:5000/delete_lab/${lab.id}`, {
+                fetch(`http://localhost:5000/delete_lab/${lab.name}`, {
                   method: "DELETE",
                 })
                   .then(() => window.location.reload())
@@ -880,12 +881,27 @@ function LabDetail({ lab, computers, back, addComputer }) {
     </div>
   );
 }
-
+import { useNavigate } from "react-router-dom";
 export default function App() {
   const [selectedLab, setSelectedLab] = useState(null);
   const [labs, setLabs] = useState([]);
   const [computers, setComputers] = useState([]);
   const [showAddLab, setShowAddLab] = useState(false);
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:5000/check_session")
+      .then(res => res.json())
+      .then(data => {
+        console.log("Session check response:", data);
+        if (!data.logged_in) {
+          navigate("/");
+        }
+      })
+  }, [navigate]);
+
+  
 
   useEffect(() => {
     fetch("http://localhost:5000/get_laboratory")
@@ -903,6 +919,7 @@ export default function App() {
   const addComputer = (comp) => setComputers((prev) => [...prev, comp]);
 
   return (
+    
     <div style={{ padding: 40, background: "#f1f3f6", minHeight: "100vh" }}>
       {!selectedLab && (
         <div style={{ textAlign: "center", marginBottom: 30 }}>

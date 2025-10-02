@@ -14,12 +14,25 @@ const COLORS = {
   info: "#9c6ade",
   warning: "#ff9d76",
 };
-
+import { useNavigate } from "react-router-dom";
 export default function AdminDashboard() {
   const [stats, setStats] = useState({});
   const [computerPartStatus, setcomputerPartStatus] = useState([]);
   const [labsComputers, setLabsComputers] = useState([]);
   const [damageMissing, setDamageMissing] = useState([]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:5000/check_session")
+      .then(res => res.json())
+      .then(data => {
+        console.log("Session check response:", data);
+        if (!data.logged_in) {
+          navigate("/");
+        }
+      })
+  }, [navigate]);
 
   useEffect(() => {
     fetch("http://localhost:5000/get_data")

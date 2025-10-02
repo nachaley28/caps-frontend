@@ -29,7 +29,13 @@ function AdminLayout() {
 
   const toggleProfileSidebar = () => setShowProfileSidebar(!showProfileSidebar);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  const handleLogout = () => navigate("/");
+  const handleLogout = async () => {
+    await fetch("http://localhost:5000/logout", {
+      method: "GET",
+      credentials: "include",
+    })
+    .then(navigate("/"));
+  };
 
   const sidebarLinks = [
     { icon: <FaHome />, label: "Dashboard", path: "/admin" },
