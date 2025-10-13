@@ -166,7 +166,7 @@ export default function AdminDashboard() {
 
 
     {/* Labs & Computers */}
-        <Col xs={12} md={6} lg={6}>
+      <Col xs={12} md={6} lg={6}>
         <Card className="chart-card shadow-lg rounded-3">
           <Card.Body>
             <Card.Title className="fw-bold text-center mb-3">
@@ -175,19 +175,17 @@ export default function AdminDashboard() {
             <ResponsiveContainer width="100%" height={340}>
               <BarChart
                 data={labsComputers}
-                layout="vertical"
-                margin={{ top: 30, right: 30, left: 60, bottom: 30 }}
+                margin={{ top: 30, right: 30, left: 20, bottom: 40 }}
               >
                 <CartesianGrid strokeDasharray="2 4" stroke="#d6d6d6" />
-                <YAxis
-                  dataKey="lab"
-                  type="category"
-                  interval={0}
-                  width={120}
-                  tick={{ fill: "#333", fontSize: 14 }}
-                />
                 <XAxis
-                  type="number"
+                  dataKey="lab"
+                  tick={{ fill: "#333", fontSize: 14 }}
+                  interval={0}
+                  angle={-20}
+                  dy={10}
+                />
+                <YAxis
                   allowDecimals={false}
                   tick={{ fill: "#333", fontSize: 14 }}
                 />
@@ -197,7 +195,7 @@ export default function AdminDashboard() {
                     backgroundColor: "#f9f9f9",
                     border: "1px solid #ccc",
                     borderRadius: "8px",
-                    fontSize: 14
+                    fontSize: 14,
                   }}
                 />
                 <Legend
@@ -207,15 +205,16 @@ export default function AdminDashboard() {
                 />
                 <Bar
                   dataKey="computers"
-                  fill="#36A420"         
-                  barSize={28}          
-                  radius={[6, 6, 6, 6]}   
+                  fill="#36A420"
+                  barSize={40}
+                  radius={[6, 6, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
           </Card.Body>
         </Card>
       </Col>
+
 
 
       {/* Damage vs Missing */}

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
+
 export default function Reports() {
   const [adminReports, setAdminReports] = useState([]);
   const [filterText, setFilterText] = useState("");
 
   const navigate = useNavigate();
 
+  // Check session
   useEffect(() => {
     fetch("http://localhost:5000/check_session")
       .then(res => res.json())
@@ -17,22 +19,26 @@ export default function Reports() {
           navigate("/");
         }
       })
+      .catch(err => console.error(err));
   }, [navigate]);
 
+  // Fetch reports
   useEffect(() => {
     fetch("http://localhost:5000/get_admin_computer_reports")
-      .then((res) => res.json())
-      .then((data) => setAdminReports(data))
-      .catch((err) => console.error(err));
+      .then(res => res.json())
+      .then(data => setAdminReports(data))
+      .catch(err => console.error(err));
   }, []);
 
-  // Filtered data based on search
-  const filteredReports = adminReports.filter((r) =>
-  (r.item || "").toLowerCase().includes(filterText.toLowerCase()) ||
-  (r.lab || "").toLowerCase().includes(filterText.toLowerCase()) ||
-  (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
-  (r.notes || "").toLowerCase().includes(filterText.toLowerCase())
-);
+  // Filter and sort reports: latest first
+  const filteredReports = adminReports
+    .filter((r) =>
+      (r.item || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.lab || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.notes || "").toLowerCase().includes(filterText.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const columns = [
     {
@@ -107,7 +113,6 @@ export default function Reports() {
         Admin Reports Dashboard
       </h1>
 
-    
       <div className="mb-3 text-end">
         <input
           type="text"
@@ -126,7 +131,6 @@ export default function Reports() {
         highlightOnHover
         responsive
         customStyles={customStyles}
-        defaultSortFieldId={1} 
       />
     </div>
   );

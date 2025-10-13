@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-
+import { useEffect, useState,useRef} from "react";
 import {
   FaDesktop,
   FaMouse,
@@ -53,19 +52,23 @@ function StatusButtons({ part, compId, status, setStatus }) {
   );
 }
 
-
-function LabGrid({ labs, selectLab, openEditLab }) {
-  // ✅ PC counts for each lab
+function LabGrid({ labs, selectLab }) {
   const [pcCount, setPcCount] = useState({});
+  const [editLab, setEditLab] = useState(null);
+  const [deleteLab, setDeleteLab] = useState(null);
+  const [formData, setFormData] = useState({ name: "", location: "" });
+  const [editPos, setEditPos] = useState({ top: 0, left: 0 });
+  const [deletePos, setDeletePos] = useState({ top: 0, left: 0 });
+
+  const editModalRef = useRef(null);
+  const deleteModalRef = useRef(null);
+
 
   useEffect(() => {
     if (!labs || labs.length === 0) return;
-
-    // Fetch all lab counts in one request
     fetch("http://localhost:5000/labs-pc-count")
       .then((res) => res.json())
       .then((data) => {
-        // Convert list of { lab, count } to object { labName: count }
         const counts = {};
         data.forEach((item) => {
           counts[item.lab] = item.count;
@@ -75,128 +78,292 @@ function LabGrid({ labs, selectLab, openEditLab }) {
       .catch((err) => console.error("Error fetching lab counts:", err));
   }, [labs]);
 
+  // Close modals when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editModalRef.current && !editModalRef.current.contains(event.target)) {
+        setEditLab(null);
+      }
+      if (deleteModalRef.current && !deleteModalRef.current.contains(event.target)) {
+        setDeleteLab(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Open Edit Modal
+  const handleEditClick = (lab, event) => {
+    event.stopPropagation();
+    setEditLab(lab);
+    setFormData({ name: lab.name, location: lab.location });
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset;
+    const scrollX = window.scrollX || window.pageXOffset;
+    const modalWidth = 340;
+    const modalHeight = 180;
+
+    let top = rect.top + scrollY;
+    let left = rect.right + 12 + scrollX;
+
+    if (left + modalWidth > window.innerWidth - 12) left = rect.left - modalWidth - 12 + scrollX;
+    if (top + modalHeight > window.innerHeight + scrollY - 12) top = window.innerHeight + scrollY - modalHeight - 12;
+
+    setEditPos({ top, left });
+  };
+
+  // Open Delete Modal
+  const handleDeleteClick = (lab, event) => {
+    event.stopPropagation();
+    setDeleteLab(lab);
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset;
+    const scrollX = window.scrollX || window.pageXOffset;
+    const modalWidth = 320;
+    const modalHeight = 150;
+
+    let top = rect.top + scrollY;
+    let left = rect.right + 12 + scrollX;
+
+    if (left + modalWidth > window.innerWidth - 12) left = rect.left - modalWidth - 12 + scrollX;
+    if (top + modalHeight > window.innerHeight + scrollY - 12) top = window.innerHeight + scrollY - modalHeight - 12;
+
+    setDeletePos({ top, left });
+  };
+const handleEditSubmit = () => {
+  fetch(`http://localhost:5000/edit_lab/${encodeURIComponent(setEditLab.lab_name)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      lab_name: formData.name, // matches Flask's data.get("lab_name")
+      location: formData.location
+    }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        console.log(data.message);
+        window.location.reload();
+      } else {
+        console.error("Edit error:", data.message);
+      }
+    })
+    .catch(err => console.error("Edit error:", err));
+};
+
+  const handleDelete = () => {
+    fetch(`http://localhost:5000/delete_lab/${deleteLab.name}`, { method: "DELETE" })
+      .then(() => {
+        setDeleteLab(null);
+        window.location.reload();
+      })
+      .catch((err) => console.error("Delete error:", err));
+  };
+
   return (
-    <div className="d-flex flex-wrap gap-3 justify-content-center">
-    {labs
-      .slice()
-      .sort((a, b) => a.name - b.name) // sort by lab number
-      .map((lab) => (
+    <div className="d-flex flex-wrap gap-4 justify-content-center">
+      {labs
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((lab) => (
+          <div
+            key={lab.id}
+            onClick={() => selectLab(lab)}
+            style={{
+              position: "relative",
+              background: "#fff",
+              borderRadius: 20,
+              padding: "30px 20px",
+              cursor: "pointer",
+              textAlign: "center",
+              width: 260,
+              minHeight: 170,
+              boxShadow: "0 4px 18px rgba(0,0,0,0.12)",
+              transition: "all 0.25s ease",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "translateY(-6px)";
+              e.currentTarget.style.boxShadow = "0 12px 25px rgba(0,102,51,0.25)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.12)";
+            }}
+          >
+            {/* PC Count */}
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                left: 12,
+                backgroundColor: "#006633",
+                color: "#FFCC00",
+                padding: "6px 10px",
+                borderRadius: "50%",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+              }}
+            >
+              {pcCount[lab.name] ?? 0}
+            </div>
+
+            {/* Action Icons */}
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                display: "flex",
+                gap: "12px",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FaTrashAlt
+                size={18}
+                color="#e74c3c"
+                style={{ cursor: "pointer", transition: "all 0.2s" }}
+                onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                onClick={(e) => handleDeleteClick(lab, e)}
+              />
+              <FaEdit
+                size={18}
+                color="#FFCC00"
+                style={{ cursor: "pointer", transition: "all 0.2s" }}
+                onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                onClick={(e) => handleEditClick(lab, e)}
+              />
+            </div>
+
+            
+            <div
+              style={{
+                backgroundColor: "#00663320",
+                borderRadius: "50%",
+                width: 64,
+                height: 64,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                margin: "0 auto 14px auto",
+              }}
+            >
+              <FaDesktop size={30} color="#006633" />
+            </div>
+
+            {/* Lab Info */}
+            <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 6 }}>
+              Computer Lab {lab.name}
+            </h5>
+            <span
+              style={{
+                backgroundColor: "#FFCC00",
+                color: "#006633",
+                padding: "5px 14px",
+                borderRadius: 14,
+                fontSize: "0.87rem",
+                fontWeight: 500,
+              }}
+            >
+              {lab.location}
+            </span>
+          </div>
+        ))}
+
+      {/* Edit Modal */}
+      {editLab && (
         <div
-          key={lab.id}
-          onClick={() => selectLab(lab)}
+          ref={editModalRef}
           style={{
-            position: "relative",
-            background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-            borderRadius: 16,
-            border: "1px solid #dee2e6",
-            padding: "25px 20px",
-            cursor: "pointer",
-            textAlign: "center",
-            width: 250,
-            minHeight: 160,
-            boxShadow: "0 3px 8px rgba(0,0,0,0.08)",
-            transition: "all 0.3s ease",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = "translateY(-6px)";
-            e.currentTarget.style.boxShadow =
-              "0 8px 18px rgba(0, 102, 51, 0.25)";
-            e.currentTarget.style.background =
-              "linear-gradient(135deg, #ffffff, #f1f3f6)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.08)";
-            e.currentTarget.style.background =
-              "linear-gradient(135deg, #f8f9fa, #e9ecef)";
+            position: "absolute",
+            top: editPos.top,
+            left: editPos.left,
+            zIndex: 1000,
+            backgroundColor: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 20,
+            padding: 22,
+            width: 340,
+            boxShadow: "0 15px 35px rgba(0,0,0,0.35)",
+            textAlign: "left",
           }}
         >
-         
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              backgroundColor: "#006633",
-              color: "#FFCC00",
-              padding: "4px 8px",
-              borderRadius: "50%",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-            }}
-          >
-            {pcCount[lab.name] ?? 0}
-          </div>
-
-          
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              display: "flex",
-              gap: "10px",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FaTrashAlt
-              size={18}
-              color="red"
-              style={{ cursor: "pointer" }}
-              title="Delete"
-              onClick={() => {
-                fetch(`http://localhost:5000/delete_lab/${lab.name}`, {
-                  method: "DELETE",
-                })
-                  .then(() => window.location.reload())
-                  .catch((err) => console.error("Delete error:", err));
-              }}
-            />
-            <FaEdit
-              size={18}
-              color="#FFCC00"
-              style={{ cursor: "pointer" }}
-              title="Edit"
-              onClick={() => openEditLab(lab)}
+          <h6 style={{ fontWeight: 700, marginBottom: 18, color: "#006633" }}>Edit Lab</h6>
+          <div className="mb-3">
+            <label className="form-label" style={{ fontSize: 14 }}>
+              Lab Name
+            </label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-
-        
-          <div
-            style={{
-              backgroundColor: "#00663320",
-              borderRadius: "50%",
-              width: 60,
-              height: 60,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              margin: "0 auto 12px auto",
-            }}
-          >
-            <FaDesktop size={28} color="#006633" />
+          <div className="mb-3">
+            <label className="form-label" style={{ fontSize: 14 }}>
+              Location
+            </label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
           </div>
-
-          <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 6 }}>
-            Computer Lab {lab.name}
-          </h5>
-          <span
-            style={{
-              backgroundColor: "#FFCC00",
-              color: "#006633",
-              padding: "3px 10px",
-              borderRadius: 12,
-              fontSize: "0.85rem",
-              fontWeight: 500,
-            }}
-          >
-            {lab.location}
-          </span>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setEditLab(null)}>
+              Cancel
+            </button>
+            <button className="btn btn-success btn-sm" onClick={handleEditSubmit}>
+              Save
+            </button>
+          </div>
         </div>
-      ))}
-  </div>
+      )}
+
+      {/* Delete Modal */}
+      {deleteLab && (
+        <div
+          ref={deleteModalRef}
+          style={{
+            position: "absolute",
+            top: deletePos.top,
+            left: deletePos.left,
+            zIndex: 1000,
+            backgroundColor: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 20,
+            padding: 22,
+            width: 320,
+            boxShadow: "0 15px 35px rgba(0,0,0,0.35)",
+            textAlign: "center",
+          }}
+        >
+          <h6 style={{ color: "#e74c3c", marginBottom: 18, fontWeight: 700 }}>Delete Lab</h6>
+          <p>
+            Are you sure you want to delete <strong>Computer Lab {deleteLab.name}</strong>?
+          </p>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setDeleteLab(null)}>
+              Cancel
+            </button>
+            <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
+
+
+
 
 
 
@@ -508,7 +675,21 @@ function LabDetail({ lab, computers, back, addComputer }) {
   const [selectedPC, setSelectedPC] = useState(null);
   const [showAddComputer, setShowAddComputer] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-  
+  const [deletePC, setDeletePC] = useState(null); 
+  const labComputers = computers
+  .filter((c) => c.lab === lab.name)
+  .sort((a, b) => a.pcNumber - b.pcNumber);
+
+
+  useEffect(() => {
+  if (saveMsg) {
+    const timer = setTimeout(() => {
+      setSaveMsg("");
+    }, 5000); 
+
+    return () => clearTimeout(timer);
+  }
+}, [saveMsg]);
 
   useEffect(() => {
     fetch("http://localhost:5000/get_computer_statuses")
@@ -528,13 +709,10 @@ function LabDetail({ lab, computers, back, addComputer }) {
           };
         });
         setStatuses(newStatuses);
-      })
-      .catch((err) => console.error("Error fetching statuses:", err));
-  }, []);
-  
-
-  const labComputers = computers.filter((c) => c.lab === lab.name);
-  const partIcons = {
+          })
+          .catch((err) => console.error("Error fetching statuses:", err));
+      }, []);
+    const partIcons = {
     monitor: FaDesktop,
     systemUnit: FaServer,
     keyboard: FaKeyboard,
@@ -564,8 +742,20 @@ function LabDetail({ lab, computers, back, addComputer }) {
     );
     return statusColors[worst].color;
   };
+  const handleDeleteComputer = async () => {
+  try {
+    const res = await fetch(`http://localhost:5000/delete_computer/${deletePC.id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setDeletePC(null);
+      window.location.reload(); 
+    }
+  } catch (err) {
+    console.error("Error deleting computer:", err);
+  }
+};
  
-
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -576,21 +766,125 @@ function LabDetail({ lab, computers, back, addComputer }) {
           + Add Computer
         </button>
       </div>
-      {saveMsg && (
-        <div
-          style={{
-            backgroundColor: "#006633",
-            color: "white",
-            padding: "5px 10px",
-            borderRadius: "6px",
-            marginBottom: "15px",
-            textAlign: "center",
-            fontWeight: "500",
-          }}
-        >
-          {saveMsg}
-        </div>
-      )}
+            {saveMsg && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 9999,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "35px 40px",
+                borderRadius: "18px",
+                textAlign: "center",
+                boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
+                width: "380px",
+                animation: "fadeIn 0.4s ease",
+              }}
+            >
+              
+              <div
+                style={{
+                  width: "70px",
+                  height: "70px",
+                  borderRadius: "50%",
+                  backgroundColor: "#E6F4EA",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  margin: "0 auto 15px auto",
+                  animation: "popIn 0.4s ease",
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 52 52"
+                  style={{ width: "38px", height: "38px" }}
+                >
+                  <circle
+                    cx="26"
+                    cy="26"
+                    r="25"
+                    fill="none"
+                    stroke="#00a651"
+                    strokeWidth="2"
+                  />
+                  <path
+                    fill="none"
+                    stroke="#00a651"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14 27l7 7 16-16"
+                  >
+                    <animate
+                      attributeName="stroke-dasharray"
+                      from="0,50"
+                      to="50,0"
+                      dur="0.6s"
+                      fill="freeze"
+                    />
+                  </path>
+                </svg>
+              </div>
+
+              <h4
+                style={{
+                  color: "#006633",
+                  fontWeight: "600",
+                  marginBottom: "8px",
+                }}
+              >
+                {saveMsg}
+              </h4>
+
+              <p style={{ color: "#555", fontSize: "14px", marginBottom: "20px" }}>
+                This window will close automatically in <b>4 seconds</b>.
+              </p>
+
+              <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+                <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#006633",
+                    color: "#fff",
+                    borderRadius: "8px",
+                    padding: "8px 18px",
+                    fontWeight: "500",
+                  }}
+                  onClick={() => setSaveMsg("")}
+                >
+                  OK
+                </button>
+
+                <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#004d26",
+                    color: "#fff",
+                    borderRadius: "8px",
+                    padding: "8px 18px",
+                    fontWeight: "500",
+                  }}
+                  onClick={() => (window.location.href = "/report")}
+                >
+                  Go to Report
+                </button>
+              </div>
+            </div>  
+          </div>
+        )}
+
 
       <h3 style={{ color: "#006633", marginBottom: 15 }}>Computer Lab{lab.name}– {lab.location}</h3>
      
@@ -626,7 +920,6 @@ function LabDetail({ lab, computers, back, addComputer }) {
                   const rect = summary.getBoundingClientRect();
                   const screenWidth = window.innerWidth;
 
-                  // Adjust left position if it overflows the screen
                   if (rect.left < 0) {
                     summary.style.left = `${-rect.left + rect.width / 2}px`;
                   } else if (rect.right > screenWidth) {
@@ -708,23 +1001,85 @@ function LabDetail({ lab, computers, back, addComputer }) {
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <FaTrashAlt
-                  size={18}
-                  color=""
-                  style={{ cursor: "pointer" }}
-                  title="Delete"
-                  onClick={() => {
-                    fetch(`http://localhost:5000/delete_computer/${pc.id}`, {
-                      method: "DELETE",
-                    })
-                      .then(() => window.location.reload())
-                      .catch((err) => console.error("Delete error:", err));
-                  }}
-                />
-              </div>
-            </div>
-        ))}
+               <FaTrashAlt
+              size={18}
+              color="white"
+              style={{ cursor: "pointer" }}
+              title="Delete"
+              onClick={() => setDeletePC(pc)} 
+            />
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+                  {deletePC && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        padding: "25px 30px",
+        borderRadius: "12px",
+        width: "350px",
+        textAlign: "center",
+        boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+      }}
+    >
+      <h5 style={{ color: "#006633", marginBottom: "15px" }}>
+        Confirm Delete
+      </h5>
+      <p style={{ color: "#444", fontSize: "15px" }}>
+        Are you sure you want to delete{" "}
+        <strong>PC {deletePC.pcNumber}</strong>?
+      </p>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "20px",
+        }}
+      >
+        <button
+          className="btn"
+          style={{
+            backgroundColor: "#6c757d",
+            color: "#fff",
+            flex: 1,
+            marginRight: "8px",
+          }}
+          onClick={() => setDeletePC(null)}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn"
+          style={{
+            backgroundColor: "#d32f2f",
+            color: "#fff",
+            flex: 1,
+            marginLeft: "8px",
+          }}
+          onClick={handleDeleteComputer}
+        >
+          Delete
+        </button>
       </div>
+    </div>
+  </div>
+)}
+
 
      {selectedPC && (
       <div className="modal-backdrop">
@@ -798,7 +1153,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
           })}
         </div>
 
-        {/* Legend */}
+       
         <div
           style={{
             display: "flex",
@@ -832,44 +1187,31 @@ function LabDetail({ lab, computers, back, addComputer }) {
           ))}
         </div>
       </div>
+      <div className="modal-footer"> 
+        <button onClick={() => { 
+          const compStatuses = statuses[selectedPC.id]; 
+          const compIdToSend = selectedPC.real_id || selectedPC.random_id || selectedPC.id; 
 
-      <div className="modal-footer">
-        <button
-          onClick={() => {
-            const compStatuses = statuses[selectedPC.id];
-            fetch("http://localhost:5000/update_computer_status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                compId: selectedPC.id,
-                statuses: compStatuses,
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                console.log("Saved:", data);
-                setSelectedPC(null);
-                setSaveMsg("Status updated successfully!");
-                setTimeout(() => setSaveMsg(""), 4000);
-              })
-              .catch((err) => console.error("Error saving statuses:", err));
-              }}
-              className="btn"
-              style={{
-                backgroundColor: "#006633",
-                color: "white",
-                fontWeight: "600",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                border: "none",
-              }}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
+          fetch("http://localhost:5000/update_computer_status", 
+          { method: "POST", headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ compId: compIdToSend, statuses: compStatuses, }), }) 
+          .then((res) => res.json()) 
+          .then((data) => { console.log("Saved:", data); 
+            setSelectedPC(null); 
+            setSaveMsg("Status updated successfully!"); 
+            setTimeout(() => setSaveMsg(""), 4000); }) 
+            .catch((err) => console.error("Error saving statuses:", err)); }} 
+          className="btn" 
+            style={{ backgroundColor: "#006633",
+            color: "white",
+            fontWeight: "600",
+            padding: "8px 16px",
+            borderRadius: "6px", border: "none", }} > 
+            Save </button> 
+            </div>
+              </div>
+            </div>
+          )}
 
       {showAddComputer && (
         <AddComputerModal

@@ -1,40 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import {
-  FaTimes,
-  FaBars,
-  FaHome,
-  FaNetworkWired,
-  FaUserCircle,
-  FaClipboardList,
-  FaUsers,
-} from "react-icons/fa";
+import { FaBars, FaHome, FaNetworkWired, FaClipboardList, FaUserEdit } from "react-icons/fa";
 
 function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+  const [user, setUser] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   useEffect(() => {
+    fetch("http://127.0.0.1:5000/get_user", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => !data.error && setUser(data))
+      .catch(err => console.error("Error fetching user:", err));
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      setSidebarOpen(window.innerWidth >= 768);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleProfileSidebar = () => setShowProfileSidebar(!showProfileSidebar);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   const handleLogout = async () => {
-    await fetch("http://localhost:5000/logout", {
-      method: "GET",
-      credentials: "include",
-    })
-    .then(navigate("/"));
+    await fetch("http://127.0.0.1:5000/logout", { method: "GET", credentials: "include" });
+    navigate("/");
   };
 
   const sidebarLinks = [
@@ -44,16 +40,7 @@ function AdminLayout() {
   ];
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        fontFamily: "Inter, sans-serif",
-        backgroundColor: "#f6f8fa",
-        color: "#2c3e50",
-        overflowX: "hidden",
-      }}
-      >
-      
+    <div style={{ height: "100vh", fontFamily: "Cambria, Georgia, serif", backgroundColor: "#f6f8fa" }}>
       <header
         style={{
           position: "fixed",
@@ -61,197 +48,165 @@ function AdminLayout() {
           left: 0,
           width: "100%",
           height: "60px",
-          backgroundColor: "#006633",          
+          backgroundColor: "#004d26",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0 1rem",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           zIndex: 1000,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {isMobile && (
-            <FaBars
-              size={22}
-              style={{ cursor: "pointer", color: "#ffffff" }}
-              onClick={toggleSidebar}
-            />
+            <FaBars size={22} style={{ cursor: "pointer", color: "#FFCC00" }} onClick={toggleSidebar} />
           )}
-        
           {!isMobile && (
-            <h3 style={{ margin: 0, color: "#FFCC00", fontWeight: "600" }}>
-             CLAIMS
-            </h3>
+            <h3 style={{ margin: 0, color: "white", fontWeight: "600", letterSpacing: "1px" }}>CLAIMS</h3>
           )}
         </div>
-
-        <FaUserCircle
-          size={34}
-          color="#FFCC00"    
-          style={{ cursor: "pointer" }}
-          onClick={toggleProfileSidebar}
-        />
       </header>
 
-      
-      <div
-        style={{
-          position: "fixed",
-          top: "60px",
-          right: showProfileSidebar ? 0 : "-260px",
-          height: isMobile ? "calc(100% - 60px)" : "100%",
-          width: isMobile ? "100%" : "260px",
-          backgroundColor: "#ffffff",
-          boxShadow: showProfileSidebar ? "-4px 0 12px rgba(0,0,0,0.1)" : "none",
-          transition: "all 0.3s ease",
-          padding: "1rem",
-          color: "#333",
-          zIndex: 1050,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: "1rem",
-          }}
-        >
-          <FaTimes
-            size={22}
-            style={{ cursor: "pointer", color: "#006633" }}
-            onClick={toggleProfileSidebar}
-          />
-        </div>
-
-        <h5
-          style={{
-            color: "#006633",
-            marginBottom: "1rem",
-            fontWeight: "600",
-          }}
-        >
-          Natalie Jenh Alarcon
-        </h5>
-
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {["View Profile", "Edit Profile", "Help", "Data & Privacy"].map(
-            (item, i) => (
-              <li
-                key={i}
-                style={{
-                  padding: "0.6rem 0.8rem",
-                  borderRadius: "6px",
-                  marginBottom: "0.3rem",
-                  cursor: "pointer",
-                  fontSize: "0.95rem",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#f5f9f5")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor = "transparent")
-                }
-                onClick={() =>
-                  navigate(
-                    "/" +
-                      item
-                        .toLowerCase()
-                        .replace(/ & /g, "-")
-                        .replace(/ /g, "-")
-                  )
-                }
-              >
-                {item}
-              </li>
-            )
-          )}
-          <li
-            style={{
-              padding: "0.6rem 0.8rem",
-              borderRadius: "6px",
-              marginTop: "0.6rem",
-              cursor: "pointer",
-              color: "#e63946",
-              fontWeight: "500",
-            }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = "#ffe5e5")
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = "transparent")
-            }
-            onClick={handleLogout}
-          >
-            Logout
-          </li>
-        </ul>
-      </div>
-
-     
       <aside
         style={{
           position: "fixed",
           top: 0,
-          left: sidebarOpen ? 0 : isMobile ? "-220px" : "0",
+          left: sidebarOpen ? 0 : isMobile ? "-280px" : "0",
+          width: "280px",
           height: "100%",
-          width: "220px",
-          backgroundColor: "#006633",  
+          backgroundColor: "#003d1f",
           paddingTop: "60px",
-          boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
+          boxShadow: "2px 0 12px rgba(0,0,0,0.25)",
           transition: "all 0.3s ease",
           zIndex: 900,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
         }}
       >
-        <ul style={{ listStyle: "none", padding: "0.75rem", margin: 0 }}>
-          {sidebarLinks.map((link, i) => {
-            const isActive = location.pathname === link.path;
-            return (
-              <li key={i} style={{ marginBottom: "0.4rem" }}>
-                <button
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    padding: "0.7rem 1rem",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: isActive ? "#FFCC00" : "transparent",
-                    color: isActive ? "#006633" : "#ffffff",
-                    fontWeight: isActive ? "700" : "500",
-                    fontSize: "0.95rem",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.3s ease",
-                  }}
-                  onClick={() => {
-                    navigate(link.path);
-                    if (isMobile) setSidebarOpen(false);
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isActive)
-                      e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)";
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isActive)
-                      e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  {React.cloneElement(link.icon, { size: 18 })}
-                  {!isMobile && link.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div>
+          <div
+            style={{
+              margin: "1rem",
+              padding: "1.5rem",
+              borderRadius: "12px",
+              backgroundColor: "#004d26",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ position: "relative", width: "100px", margin: "0 auto" }}>
+              <img
+                src={user?.image || "/img/default.png"}
+                alt="Profile"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "3px solid #FFCC00",
+                }}
+              />
+            </div>
+            <h5 style={{ color: "white", margin: "0.5rem 0 0.25rem 0", fontWeight: "700", fontSize: "1.1rem" }}>
+              {user?.name || "Loading..."}
+            </h5>
+            <p style={{ color: "#ccc", fontSize: "0.9rem", margin: "0 0 1rem 0" }}>{user?.role || "Fetching role..."}</p>
+
+          <div
+          onClick={() => navigate("/admin/edit")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            padding: "0.8rem 1.2rem",
+            borderRadius: "10px",
+            backgroundColor: location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26", // active color
+            color: location.pathname === "/admin/edit" ? "#003d1f" : "#ffffff", // active text color
+            fontWeight: "600",
+            fontSize: "0.95rem",
+            cursor: "pointer",
+            boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseOver={e => e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)"} // hover color
+          onMouseOut={e => 
+            e.currentTarget.style.backgroundColor = location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26"
+          }
+        >
+          <FaUserEdit size={18} />
+          Edit Profile
+        </div>
+
+        </div>
+          {/* Sidebar Navigation */}
+          <nav style={{ marginTop: "1rem" }}>
+            <ul style={{ listStyle: "none", padding: "0 1rem" }}>
+              {sidebarLinks.map((link, i) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <li key={i} style={{ marginBottom: "0.75rem" }}>
+                    <button
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        padding: "0.75rem 1rem",
+                        borderRadius: "10px",
+                        border: "none",
+                        backgroundColor: isActive ? "#FFCC00" : "#004d26",
+                        color: isActive ? "#003d1f" : "#ffffff",
+                        fontWeight: isActive ? "700" : "500",
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "all 0.2s ease",
+                        boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.2)" : "none",
+                      }}
+                      onClick={() => {
+                        navigate(link.path);
+                        if (isMobile) setSidebarOpen(false);
+                      }}
+                      onMouseOver={e => !isActive && (e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)")}
+                      onMouseOut={e => !isActive && (e.currentTarget.style.backgroundColor = "#004d26")}
+                    >
+                      {React.cloneElement(link.icon, { size: 18 })}
+                      {!isMobile && link.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+
+        <div
+          style={{
+            padding: "0.8rem 1rem",
+            margin: "1rem",
+            borderRadius: "10px",
+            backgroundColor: "#cc0000",
+            color: "#fff",
+            fontWeight: "600",
+            textAlign: "center",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          }}
+          onClick={handleLogout}
+          onMouseOver={e => (e.currentTarget.style.backgroundColor = "#bf101cff")}
+          onMouseOut={e => (e.currentTarget.style.backgroundColor = "#cc0000")}
+        >
+          Logout
+        </div>
       </aside>
 
-      
+      {/* Main Content */}
       <main
         style={{
-          marginLeft: isMobile ? "0" : "220px",
+          marginLeft: isMobile ? "0" : "280px",
           marginTop: "60px",
           padding: "25px",
           minHeight: "100vh",
