@@ -71,9 +71,11 @@ function LabGrid({ labs, selectLab }) {
       .then((data) => {
         const counts = {};
         data.forEach((item) => {
+          console.log(item);
           counts[item.lab] = item.count;
         });
         setPcCount(counts);
+        console.log("The counts", counts);
       })
       .catch((err) => console.error("Error fetching lab counts:", err));
   }, [labs]);
@@ -134,7 +136,8 @@ function LabGrid({ labs, selectLab }) {
     setDeletePos({ top, left });
   };
 const handleEditSubmit = () => {
-  fetch(`http://localhost:5000/edit_lab/${encodeURIComponent(setEditLab.lab_name)}`, {
+  console.log(editLab);
+  fetch(`http://localhost:5000/edit_lab/${encodeURIComponent(editLab.lab_id)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -207,7 +210,7 @@ const handleEditSubmit = () => {
                 fontSize: "0.9rem",
               }}
             >
-              {pcCount[lab.name] ?? 0}
+              {pcCount[lab.lab_id] ?? 0}
             </div>
 
             {/* Action Icons */}
@@ -467,6 +470,7 @@ function AddComputerModal({lab,addComputer,addComputers,onClose,}) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           data: {
+            id: lab.lab_id,
             name: pcNumber,
             lab_name: lab.name,
             spec: JSON.stringify(parts),
@@ -876,7 +880,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
                     padding: "8px 18px",
                     fontWeight: "500",
                   }}
-                  onClick={() => (window.location.href = "/report")}
+                  onClick={() => (window.location.href = "/admin/reports")}
                 >
                   Go to Report
                 </button>
@@ -1255,6 +1259,7 @@ export default function App() {
       .then((res) => res.json())
       .then((data) => setComputers(data))
       .catch((err) => console.error("Error fetching computers:", err));
+      
   }, []);
 
   const addLab = (lab) => setLabs((prev) => [...prev, lab]);
