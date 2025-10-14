@@ -122,15 +122,15 @@ function AdminLayout() {
             gap: "0.5rem",
             padding: "0.8rem 1.2rem",
             borderRadius: "10px",
-            backgroundColor: location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26", // active color
-            color: location.pathname === "/admin/edit" ? "#003d1f" : "#ffffff", // active text color
+            backgroundColor: location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26", 
+            color: location.pathname === "/admin/edit" ? "#003d1f" : "#ffffff", 
             fontWeight: "600",
             fontSize: "0.95rem",
             cursor: "pointer",
             boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
             transition: "all 0.2s ease",
           }}
-          onMouseOver={e => e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)"} // hover color
+          onMouseOver={e => e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)"} 
           onMouseOut={e => 
             e.currentTarget.style.backgroundColor = location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26"
           }
