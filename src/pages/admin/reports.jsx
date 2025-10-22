@@ -13,6 +13,7 @@ export default function Reports() {
   const [title, setTitle] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [userPosition, setUserPosition] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   const navigate = useNavigate();
 
@@ -23,6 +24,10 @@ export default function Reports() {
       .then((data) => {
         if (!data.logged_in) {
           navigate("/");
+        }else{
+          console.log("Fetched data:", data);
+          setUserPosition(data.user.role);
+          setUserEmail(data.user.email);
         }
       })
       .catch((err) => console.error(err));
@@ -33,16 +38,6 @@ export default function Reports() {
     fetch("http://localhost:5000/get_admin_computer_reports")
       .then((res) => res.json())
       .then((data) => setAdminReports(data))
-      .catch((err) => console.error(err));
-  }, []);
-
-  // --- Fetch user position ---
-  useEffect(() => {
-    fetch("http://localhost:5000/get_user_position")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.position) setUserPosition(data.position);
-      })
       .catch((err) => console.error(err));
   }, []);
 
@@ -81,8 +76,8 @@ export default function Reports() {
 
   // --- Handle submit modal (Send Email) ---
   const handleSubmit = async () => {
-    if (!title || !recipientEmail) {
-      alert("Please fill in both the title and recipient email.");
+    if (!title) {
+      alert("Please fill in  title");
       return;
     }
 
@@ -93,8 +88,8 @@ export default function Reports() {
         body: JSON.stringify({
           title,
           summary: summaryText,
-          recipient: recipientEmail,
           position: userPosition,
+          userEmail:userEmail
         }),
       });
 
@@ -118,12 +113,13 @@ export default function Reports() {
   // --- Generate formatted summary text ---
   const summaryText = selectedReports
     .map(
-      (r, i) =>
-        `${i + 1}. PC: ${r.item} | Lab: ${r.lab} | Status: ${r.status} | Notes: ${
-          r.notes || "—"
-        }`
-    )
-    .join("\n");
+      (r, i) =>({
+          pc: r.item,
+          lab: r.lab,
+          status: r.status,
+          notes: r.notes || "—"
+      })
+    );
 
   // --- Table columns ---
   const columns = [
@@ -275,13 +271,6 @@ export default function Reports() {
               </p>
 
               <div className="d-flex flex-column gap-3">
-                <input
-                  type="email"
-                  className="form-control"
-                  placeholder="Recipient Email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                />
                 <input
                   type="text"
                   className="form-control"
