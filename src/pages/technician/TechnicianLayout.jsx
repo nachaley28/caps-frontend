@@ -37,6 +37,7 @@ function TechnicianLayout() {
     { icon: <FaHome />, label: "Dashboard", path: "/technician" },
     { icon: <FaNetworkWired />, label: "Labs & Computers", path: "/technician/TechnicianLabs" },
     { icon: <FaClipboardList />, label: "Reports", path:  "/technician/TechnicianReports" },
+    { icon: <FaClipboardList />, label: "Logs", path:  "/technician/TechnicianLogs" },
   ];
 
   return (

@@ -22,12 +22,12 @@ function LandingPage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.user.role !== "Admin" && data.user.role !== "ISTD") {
+        if (data.user.role !== "Admin" && data.user.role !== "ITSD") {
           alert("Only Authorized can log in.");
           
           return;
         }
-        else if (data.user.role === "ISTD") {
+        else if (data.user.role === "ITSD") {
           localStorage.setItem("user", JSON.stringify(data.user));
           navigate("/technician");
           return;

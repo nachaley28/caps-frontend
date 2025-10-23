@@ -21,7 +21,7 @@ export default function TechnicianReports() {
   const [stepsTaken, setStepsTaken] = useState("");
   const [partsReplaced, setPartsReplaced] = useState("");
   const [solution, setSolution] = useState("");
-  const [status, setStatus] = useState("Operational"); // ✅ status update
+  const [status, setStatus] = useState(""); // ✅ status update
 
   const navigate = useNavigate();
 
@@ -59,12 +59,13 @@ export default function TechnicianReports() {
   // ✅ when a row is clicked, open detail modal
   const handleRowClick = (row) => {
     setSelectedReport(row);
+    setStatus(row.status);
     setShowDetailModal(true);
   };
 
   // ✅ technician submits maintenance report
   const handleTechnicianSubmit = async () => {
-    if (!issueFound || !stepsTaken || !solution) {
+    if (!solution) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -75,16 +76,17 @@ export default function TechnicianReports() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           report_id: selectedReport.id,
-          issue_found: issueFound,
-          steps_taken: stepsTaken,
-          parts_replaced: partsReplaced,
+          issue_found: {
+            lab: selectedReport.lab ,PC_Number: selectedReport.item, status : selectedReport.status, notes: selectedReport.notes
+          },
           solution: solution,
           status: status,
           technician_email: userEmail,
         }),
       });
-
+      console.log(selectedReport);
       const result = await response.json();
+      window.location.reload();
       if (response.ok) {
         alert("✅ Technician report submitted successfully!");
         setShowDetailModal(false);
@@ -92,7 +94,7 @@ export default function TechnicianReports() {
         setStepsTaken("");
         setPartsReplaced("");
         setSolution("");
-        setStatus("Operational");
+        setStatus("");
       } else {
         alert("❌ Failed: " + result.message);
       }
@@ -196,8 +198,9 @@ export default function TechnicianReports() {
                 className="form-select mb-3"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
+                
               >
-                <option>Operational</option>
+                <option>operational</option>
                 <option>Notoperational</option>
                 <option>Damaged</option>
                 <option>Missing</option>
