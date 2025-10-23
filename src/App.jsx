@@ -11,6 +11,16 @@ import Dashboard from "./pages/admin/dashboard";
 import Laboratory from "./pages/admin/labs";  
 import Reports from "./pages/admin/reports";  
 
+import TechnicianLayout from "./pages/technician/TechnicianLayout";
+import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
+import TechnicianLabs from "./pages/technician/TechnicianLabs";
+import TechnicianReports from "./pages/technician/TechnicianReports";
+
+
+
+
+
+
 function RouteWithTransitions() {
   const location = useLocation();
 
@@ -32,8 +42,19 @@ function RouteWithTransitions() {
             <Route path="profile" element={<Profile />} />    
             <Route path="edit" element={<Edit />} />          
             <Route path="labs" element={<Laboratory />} />
-            <Route path="reports" element={<Reports />} />    
+            <Route path="reports" element={<Reports />} /> 
           </Route>
+
+           <Route path="/technician" element={<TechnicianLayout />}>
+            <Route index element={<TechnicianDashboard />} /> 
+            <Route path="TechnicianLabs" element={<TechnicianLabs/>} />    
+            <Route path="TechnicianReports" element={<TechnicianReports />} />       
+      
+          </Route>
+
+          
+
+
         </Routes>
       </motion.div>
     </AnimatePresence>

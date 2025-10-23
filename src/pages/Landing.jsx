@@ -22,12 +22,22 @@ function LandingPage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.user.role !== "Admin") {
-          alert("Only Admins can log in.");
+        if (data.user.role !== "Admin" && data.user.role !== "ISTD") {
+          alert("Only Authorized can log in.");
+          
           return;
         }
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/admin");
+        else if (data.user.role === "ISTD") {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate("/technician");
+          return;
+        }
+        else if(data.user.role === "Admin"){
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate("/admin");
+          return;
+        }
+        
       } else {
         alert(data.msg || "Login failed");
       }
