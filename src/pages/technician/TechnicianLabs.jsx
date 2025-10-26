@@ -152,7 +152,7 @@ function StatusButtons({ part, compId, status, setStatus }) {
 
 
 
-function AddLabModal({ addLab, onClose }) {
+function  AddLabModal({ addLab, onClose }) {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
 
@@ -165,11 +165,20 @@ function AddLabModal({ addLab, onClose }) {
         data: { lab_name: name, location: location },
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error);
+          return res.json();
+        }
+        return data;
+      })
       .then((newLab) => {
+        console.log("Added lab:", newLab);
         addLab(newLab);
         onClose();
       })
+      
       .catch((err) => console.error("Error adding lab:", err));
   };
 
@@ -643,7 +652,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
                   padding: "8px 18px",
                   fontWeight: "500",
                 }}
-                onClick={() => (window.location.href = "/admin/reports")}
+                onClick={() => (window.location.href = "technician/TechnicianReports")}
               >
                 See Report
               </button>

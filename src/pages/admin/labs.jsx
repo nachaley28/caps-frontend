@@ -458,8 +458,16 @@ function AddLabModal({ addLab, onClose }) {
         data: { lab_name: name, location: location },
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error);
+          return res.json();
+        }
+        return data;
+      })
       .then((newLab) => {
+        console.log("Added lab:", newLab);
         addLab(newLab);
         onClose();
       })
