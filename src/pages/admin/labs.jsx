@@ -52,6 +52,8 @@ function StatusButtons({ part, compId, status, setStatus }) {
   );
 }
 
+
+
 function LabGrid({ labs, selectLab }) {
   const [pcCount, setPcCount] = useState({});
   const [editLab, setEditLab] = useState(null);
@@ -120,10 +122,18 @@ function LabGrid({ labs, selectLab }) {
   };
 
   return (
-    <div className="d-flex flex-wrap gap-4 justify-content-center">
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(5, minmax(160px, 1fr))",
+        gap: "20px",
+        padding: "20px",
+        justifyItems: "center",
+      }}
+    >
       {labs
         .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a, b) => parseInt(a.name) - parseInt(b.name)) // numeric sort
         .map((lab) => (
           <div
             key={lab.id}
@@ -131,13 +141,13 @@ function LabGrid({ labs, selectLab }) {
             style={{
               position: "relative",
               background: "#fff",
-              borderRadius: 20,
-              padding: "30px 20px",
+              borderRadius: 16,
+              padding: "20px 15px",
               cursor: "pointer",
               textAlign: "center",
-              width: 260,
-              minHeight: 170,
-              boxShadow: "0 4px 18px rgba(0,0,0,0.12)",
+              width: "100%",
+              minHeight: 140,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
               transition: "all 0.25s ease",
             }}
           >
@@ -145,38 +155,38 @@ function LabGrid({ labs, selectLab }) {
             <div
               style={{
                 position: "absolute",
-                top: 12,
-                left: 12,
+                top: 10,
+                left: 10,
                 backgroundColor: "#006633",
                 color: "#FFCC00",
-                padding: "6px 10px",
+                padding: "5px 9px",
                 borderRadius: "50%",
                 fontWeight: 600,
-                fontSize: "0.9rem",
+                fontSize: "0.85rem",
               }}
             >
               {pcCount[lab.name] ?? 0}
             </div>
 
-            {/* Edit/Delete Buttons */}
+            {/* Edit/Delete */}
             <div
               style={{
                 position: "absolute",
-                top: 12,
-                right: 12,
+                top: 10,
+                right: 10,
                 display: "flex",
-                gap: "12px",
+                gap: "6px",
               }}
               onClick={(e) => e.stopPropagation()}
             >
               <FaTrashAlt
-                size={18}
+                size={16}
                 color="#e74c3c"
                 style={{ cursor: "pointer" }}
                 onClick={(e) => handleDeleteClick(lab, e)}
               />
               <FaEdit
-                size={18}
+                size={16}
                 color="#FFCC00"
                 style={{ cursor: "pointer" }}
                 onClick={(e) => handleEditClick(lab, e)}
@@ -188,28 +198,28 @@ function LabGrid({ labs, selectLab }) {
               style={{
                 backgroundColor: "#00663320",
                 borderRadius: "50%",
-                width: 64,
-                height: 64,
+                width: 48,
+                height: 48,
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                margin: "0 auto 14px auto",
+                margin: "0 auto 10px auto",
               }}
             >
-              <FaDesktop size={30} color="#006633" />
+              <FaDesktop size={24} color="#006633" />
             </div>
 
             {/* Lab Name & Location */}
-            <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 6 }}>
+            <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 4 }}>
               Computer Lab {lab.name}
             </h5>
             <span
               style={{
                 backgroundColor: "#FFCC00",
                 color: "#006633",
-                padding: "5px 14px",
+                padding: "3px 10px",
                 borderRadius: 14,
-                fontSize: "0.87rem",
+                fontSize: "0.82rem",
                 fontWeight: 500,
               }}
             >
@@ -221,23 +231,6 @@ function LabGrid({ labs, selectLab }) {
       {/* Edit Modal */}
       {editLab && (
         <div
-          className="modal-backdrop"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setEditLab(null)}
-        >
-         <div
-          className="modal-backdrop"
           style={{
             position: "fixed",
             top: 0,
@@ -253,33 +246,27 @@ function LabGrid({ labs, selectLab }) {
           onClick={() => setEditLab(null)}
         >
           <div
-            className="modal-content"
             style={{
               background: "#fff",
               borderRadius: 16,
-              padding: "30px 25px",
-              width: 360,
+              padding: "25px 20px",
+              width: 320,
               textAlign: "center",
               boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
               position: "relative",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <h4 style={{ color: "#006633", marginBottom: 20, fontWeight: 600 }}>
-              Edit Lab
-            </h4>
-
-            {/* Inputs */}
+            <h4 style={{ color: "#006633", marginBottom: 15, fontWeight: 600 }}>Edit Lab</h4>
             <input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Lab Name"
               style={{
                 width: "100%",
-                marginBottom: 15,
-                padding: "10px 8px",
-                borderRadius: 8,
+                marginBottom: 10,
+                padding: "8px 6px",
+                borderRadius: 6,
                 border: "1px solid #ccc",
                 fontSize: 14,
               }}
@@ -290,28 +277,25 @@ function LabGrid({ labs, selectLab }) {
               placeholder="Location"
               style={{
                 width: "100%",
-                marginBottom: 20,
-                padding: "10px 8px",
-                borderRadius: 8,
+                marginBottom: 15,
+                padding: "8px 6px",
+                borderRadius: 6,
                 border: "1px solid #ccc",
                 fontSize: 14,
               }}
             />
-
-            {/* Action Buttons */}
-            <div style={{ display: "flex", justifyContent: "center", gap: 15 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
               <button
                 onClick={() => setEditLab(null)}
                 style={{
                   flex: 1,
-                  padding: "10px 0",
-                  borderRadius: 8,
+                  padding: "8px 0",
+                  borderRadius: 6,
                   border: "none",
                   backgroundColor: "#FFCC00",
                   color: "#006633",
                   fontWeight: 600,
                   cursor: "pointer",
-                  transition: "0.3s",
                 }}
               >
                 Cancel
@@ -320,14 +304,13 @@ function LabGrid({ labs, selectLab }) {
                 onClick={handleEditSubmit}
                 style={{
                   flex: 1,
-                  padding: "10px 0",
-                  borderRadius: 8,
+                  padding: "8px 0",
+                  borderRadius: 6,
                   border: "none",
                   backgroundColor: "#006633",
                   color: "#fff",
                   fontWeight: 600,
                   cursor: "pointer",
-                  transition: "0.3s",
                 }}
               >
                 Save
@@ -335,30 +318,11 @@ function LabGrid({ labs, selectLab }) {
             </div>
           </div>
         </div>
-
-                </div>
-              )}
+      )}
 
       {/* Delete Modal */}
       {deleteLab && (
         <div
-          className="modal-backdrop"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setDeleteLab(null)}
-        >
-         <div
-          className="modal-backdrop"
           style={{
             position: "fixed",
             top: 0,
@@ -374,72 +338,62 @@ function LabGrid({ labs, selectLab }) {
           onClick={() => setDeleteLab(null)}
         >
           <div
-            className="modal-content"
             style={{
               background: "#fff",
               borderRadius: 16,
-              padding: "30px 25px",
-              width: 360,
+              padding: "25px 20px",
+              width: 300,
               textAlign: "center",
               boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
               position: "relative",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            
-            <h4 style={{ color: "#006633", marginBottom: 15, fontWeight: 600 }}>
-              Confirm Delete
-            </h4>
-
-           
-            <p style={{ fontSize: 16, color: "#444" }}>
-              Are you sure you want to delete{" "}
-              <strong>Computer Lab {deleteLab.name}</strong>?
+            <h4 style={{ color: "#006633", marginBottom: 12, fontWeight: 600 }}>Confirm Delete</h4>
+            <p style={{ fontSize: 14, color: "#444" }}>
+              Are you sure you want to delete <strong>Computer Lab {deleteLab.name}</strong>?
             </p>
-
-          
-              <div style={{ display: "flex", justifyContent: "center", gap: 15, marginTop: 25 }}>
-                <button
-                  onClick={() => setDeleteLab(null)}
-                  style={{
-                    flex: 1,
-                    padding: "10px 0",
-                    borderRadius: 8,
-                    border: "none",
-                    backgroundColor: "#FFCC00",
-                    color: "#006633",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "0.3s",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  style={{
-                    flex: 1,
-                    padding: "10px 0",
-                    borderRadius: 8,
-                    border: "none",
-                    backgroundColor: "#d32f2f",
-                    color: "#fff",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "0.3s",
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
+              <button
+                onClick={() => setDeleteLab(null)}
+                style={{
+                  flex: 1,
+                  padding: "8px 0",
+                  borderRadius: 6,
+                  border: "none",
+                  backgroundColor: "#FFCC00",
+                  color: "#006633",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                style={{
+                  flex: 1,
+                  padding: "8px 0",
+                  borderRadius: 6,
+                  border: "none",
+                  backgroundColor: "#d32f2f",
+                  color: "#fff",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Delete
+              </button>
             </div>
           </div>
-
         </div>
       )}
     </div>
   );
 }
+
+
+
 
 
 
@@ -936,19 +890,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
              
 
               <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
-                <button
-                  className="btn"
-                  style={{
-                    backgroundColor: "#006633",
-                    color: "#fff",
-                    borderRadius: "8px",
-                    padding: "8px 18px",
-                    fontWeight: "500",
-                  }}
-                  onClick={() => setSaveMsg("")}
-                >
-                  OK
-                </button>
+                
 
                 <button
                   className="btn"

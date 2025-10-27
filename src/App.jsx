@@ -16,6 +16,8 @@ import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
 import TechnicianLabs from "./pages/technician/TechnicianLabs";
 import TechnicianReports from "./pages/technician/TechnicianReports";
 import TechnicianLogs from "./pages/technician/TechnicianLogs";
+import TechnicianEdit from "./pages/technician/TechnicianEdit";
+
 
 
 
@@ -51,6 +53,7 @@ function RouteWithTransitions() {
             <Route path="TechnicianLabs" element={<TechnicianLabs/>} />    
             <Route path="TechnicianReports" element={<TechnicianReports />} />
             <Route path="TechnicianLogs" element={<TechnicianLogs />} />
+            <Route path="TechnicianEdit" element={<TechnicianEdit />} />
       
           </Route>
 

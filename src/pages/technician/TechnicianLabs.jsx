@@ -8,8 +8,7 @@ import {
   FaPlug,
   FaWifi,
   FaTimes,
-  FaTrashAlt,
-  FaEdit,
+  
 } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./TechnicianLabs.css";  
@@ -52,7 +51,7 @@ function StatusButtons({ part, compId, status, setStatus }) {
   );
 }
 
- function LabGrid({ labs, selectLab }) {
+function LabGrid({ labs, selectLab }) {
   const [pcCount, setPcCount] = useState({});
 
   // Fetch PC counts per lab
@@ -72,10 +71,18 @@ function StatusButtons({ part, compId, status, setStatus }) {
   }, [labs]);
 
   return (
-    <div className="d-flex flex-wrap gap-4 justify-content-center">
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(5, minmax(180px, 1fr))", // 5 columns
+        gap: "20px",
+        padding: "20px",
+        justifyItems: "center",
+      }}
+    >
       {labs
         .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a, b) => Number(a.name) - Number(b.name)) // numeric sort 1-50
         .map((lab) => (
           <div
             key={lab.id}
@@ -84,13 +91,21 @@ function StatusButtons({ part, compId, status, setStatus }) {
               position: "relative",
               background: "#fff",
               borderRadius: 20,
-              padding: "30px 20px",
+              padding: "20px 15px",
               cursor: "pointer",
               textAlign: "center",
-              width: 260,
-              minHeight: 170,
+              width: "100%",
+              minHeight: 150,
               boxShadow: "0 4px 18px rgba(0,0,0,0.12)",
-              transition: "all 0.25s ease",
+              transition: "transform 0.25s ease, box-shadow 0.25s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.boxShadow = "0 8px 22px rgba(0,0,0,0.18)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.12)";
             }}
           >
             {/* PC Count */}
@@ -115,28 +130,36 @@ function StatusButtons({ part, compId, status, setStatus }) {
               style={{
                 backgroundColor: "#00663320",
                 borderRadius: "50%",
-                width: 64,
-                height: 64,
+                width: 50,
+                height: 50,
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                margin: "0 auto 14px auto",
+                margin: "0 auto 12px auto",
               }}
             >
-              <FaDesktop size={30} color="#006633" />
+              <FaDesktop size={24} color="#006633" />
             </div>
 
-            {/* Lab Info */}
-            <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 6 }}>
+            {/* Lab Name */}
+            <h5
+              style={{
+                color: "#006633",
+                fontWeight: 600,
+                marginBottom: 6,
+              }}
+            >
               Computer Lab {lab.name}
             </h5>
+
+          
             <span
               style={{
                 backgroundColor: "#FFCC00",
                 color: "#006633",
-                padding: "5px 14px",
+                padding: "4px 10px",
                 borderRadius: 14,
-                fontSize: "0.87rem",
+                fontSize: "0.85rem",
                 fontWeight: 500,
               }}
             >
@@ -152,313 +175,10 @@ function StatusButtons({ part, compId, status, setStatus }) {
 
 
 
-function  AddLabModal({ addLab, onClose }) {
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    fetch("http://localhost:5000/add_laboratory", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: { lab_name: name, location: location },
-      }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error);
-          return res.json();
-        }
-        return data;
-      })
-      .then((newLab) => {
-        console.log("Added lab:", newLab);
-        addLab(newLab);
-        onClose();
-      })
-      
-      .catch((err) => console.error("Error adding lab:", err));
-  };
-
-  return (
-    <div className="modal-backdrop">
-      <div className="modal-card">
-        <div className="modal-header" style={{ backgroundColor: "#006633", color: "white" }}>
-          <h5 className="mb-0">Add Laboratory</h5>
-          <button onClick={onClose} className="btn-close text-white">
-            <FaTimes />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="modal-body">
-          <div className="mb-3">
-            <label className="form-label fw-bold">Laboratory Number</label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Enter Laboratory Number"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Location</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Enter Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            />
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn" style={{ backgroundColor: "#006633", color: "white" }}>
-              Add Lab
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 
 
 
-function AddComputerModal({lab,addComputer,addComputers,onClose,}) {
-  const [pcNumber, setPcNumber] = useState("");
-  const [parts, setParts] = useState({
-    monitor: "",
-    systemUnit: "",
-    keyboard: "",
-    mouse: "",
-    headphone: "",
-    hdmi: "",
-    power: "",
-    wifi: "",
-  });
-  const [bulkMode, setBulkMode] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  const handleChange = (e) =>
-    setParts({ ...parts, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:5000/computer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data: {
-            id: lab.lab_id,
-            name: pcNumber,
-            lab_name: lab.name,
-            spec: JSON.stringify(parts),
-          },
-        }),
-      });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const newComputer = await res.json();
-      addComputer?.(newComputer);
-      onClose();
-    } catch (err) {
-      console.error("Error adding computer:", err);
-    }
-  };
-
-  const handleBulkUpload = () => {
-    if (!selectedFile) return;
-
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-      const computers = rows.map((r) => ({
-        pc_name: r.pc_name || r.pcNumber || r.name || "",
-        lab_name: lab.name,
-        specs: JSON.stringify({
-          monitor: r.monitor || "",
-          systemUnit: r.systemUnit || "",
-          keyboard: r.keyboard || "",
-          mouse: r.mouse || "",
-          headphone: r.headphone || "",
-          hdmi: r.hdmi || "",
-          power: r.power || "",
-          wifi: r.wifi || "",
-        }),
-      }));
-
-      setUploading(true);
-      try {
-        const res = await fetch("http://localhost:5000/computer/bulk", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: computers }),
-        });
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
-        const inserted = await res.json();
-        addComputers?.(inserted);
-        window.location.reload();
-        onClose();
-      } catch (err) {
-        console.error("Bulk add error:", err);
-      } finally {
-        setUploading(false);
-      }
-    };
-    reader.readAsArrayBuffer(selectedFile);
-  };
-
-  const partIcons = {
-    monitor: <FaDesktop className="text-success" />,
-    systemUnit: <FaServer className="text-success" />,
-    keyboard: <FaKeyboard className="text-success" />,
-    mouse: <FaMouse className="text-success" />,
-    headphone: <FaHeadphones className="text-success" />,
-    hdmi: <FaPlug className="text-success" />,
-    power: <FaPlug className="text-success" />,
-    wifi: <FaWifi className="text-success" />,
-  };
-
-  return (
-    <div className="modal-backdrop">
-      <div className="modal-card large">
-        <div
-          className="modal-header"
-          style={{ backgroundColor: "#006633", color: "white" }}
-        >
-          <div className="d-flex justify-content-between w-100 align-items-center">
-            <h5 className="mb-0">Add Computer – Lab {lab.name}</h5>
-            <div>
-              <button
-                type="button"
-                className={`btn btn-sm me-2 ${
-                  !bulkMode ? "btn-light" : "btn-outline-light"
-                }`}
-                onClick={() => setBulkMode(false)}
-              >
-                Manual
-              </button>
-              <button
-                type="button"
-                className={`btn btn-sm ${
-                  bulkMode ? "btn-light" : "btn-outline-light"
-                }`}
-                onClick={() => setBulkMode(true)}
-              >
-                Bulk Upload
-              </button>
-              <button onClick={onClose} className="btn-close text-white ms-3">
-                <FaTimes />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="modal-body">
-          {bulkMode ? (
-            <div className="p-3">
-              <label className="form-label fw-bold">Upload CSV/Excel</label>
-              <input
-                type="file"
-                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                onChange={(e) => setSelectedFile(e.target.files[0] || null)}
-                className="form-control mb-3"
-                disabled={uploading}
-              />
-
-              <button
-                type="button"
-                className="btn"
-                style={{ backgroundColor: "#006633", color: "white" }}
-                disabled={!selectedFile || uploading}
-                onClick={handleBulkUpload}
-              >
-                {uploading ? "Uploading…" : "Upload"}
-              </button>
-
-              <small className="text-muted d-block mt-2">
-                Required columns: pc_name (or pcNumber/name), monitor,
-                systemUnit, keyboard, mouse, headphone, hdmi, power, wifi
-              </small>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="form-label fw-bold">PC Number</label>
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <FaDesktop className="text-success" />
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={pcNumber}
-                    onChange={(e) => setPcNumber(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <h6 className="fw-bold mt-3 mb-3" style={{ color: "#006633" }}>
-                Parts Serial Numbers
-              </h6>
-              <div className="row g-3">
-                {Object.keys(parts).map((p) => (
-                  <div key={p} className="col-md-6">
-                    <label className="form-label text-capitalize">
-                      {p} Serial Number
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">{partIcons[p]}</span>
-                      <input
-                        type="text"
-                        name={p}
-                        className="form-control"
-                        value={parts[p]}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="modal-footer mt-4">
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn"
-                  style={{ backgroundColor: "#006633", color: "white" }}
-                >
-                  Add Computer
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function LabDetail({ lab, computers, back, addComputer }) {
   const [statuses, setStatuses] = useState({});
@@ -538,13 +258,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
         <button onClick={back} className="btn btn-secondary btn-sm">
           ← Back to Labs
         </button>
-        <button
-          onClick={() => setShowAddComputer(true)}
-          className="btn"
-          style={{ backgroundColor: "#006633", color: "white" }}
-        >
-          + Add Computer
-        </button>
+       
       </div>
 
       {saveMsg && (
@@ -963,13 +677,7 @@ export default function App() {
           <h2 style={{ marginBottom: 20, color: "#006633" }}>
             Laboratories and Computers
           </h2>
-          <button
-            onClick={() => setShowAddLab(true)}
-            className="btn"
-            style={{ backgroundColor: "#006633", color: "white" }}
-          >
-            + Add Laboratory
-          </button>
+         
         </div>
       )}
       {!selectedLab ? (

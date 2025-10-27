@@ -24,7 +24,7 @@ export default function TechnicianLogs() {
       .then((data) => {
         if (!data.logged_in) {
           navigate("/");
-        }else{
+        } else {
           console.log("Fetched data:", data);
           setUserPosition(data.user.role);
           setUserEmail(data.user.email);
@@ -42,18 +42,16 @@ export default function TechnicianLogs() {
   }, []);
 
   // --- Filter and sort ---
-  const filteredReports = TechnicianLogs
-    .filter(
-      (r) =>
-        (r.fix_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
-        (r.isssolution_made || "").toLowerCase().includes(filterText.toLowerCase()) ||
-        (r.report_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
-        (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
-        (r.technician_email || "").toLowerCase().includes(filterText.toLowerCase()) ||
-        (r.timestamp || "").toLowerCase().includes(filterText.toLowerCase())
-    )
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-    console.log(filteredReports)
+  const filteredReports = TechnicianLogs.filter(
+    (r) =>
+      (r.fix_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.isssolution_made || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.report_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.technician_email || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.timestamp || "").toLowerCase().includes(filterText.toLowerCase())
+  ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
   // --- Handle selecting reports ---
   const handleSelectReport = (report) => {
     setSelectedReports((prevSelected) =>
@@ -79,7 +77,7 @@ export default function TechnicianLogs() {
   // --- Handle submit modal (Send Email) ---
   const handleSubmit = async () => {
     if (!title) {
-      alert("Please fill in  title");
+      alert("Please fill in a title");
       return;
     }
 
@@ -88,12 +86,12 @@ export default function TechnicianLogs() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          data:{
+          data: {
             title,
-          issue_report: selectedReports,
-          position: userPosition,
-          userEmail:userEmail
-          }
+            issue_report: selectedReports,
+            position: userPosition,
+            userEmail: userEmail,
+          },
         }),
       });
 
@@ -114,17 +112,6 @@ export default function TechnicianLogs() {
     setSelectedReports([]);
   };
 
-  // --- Generate formatted summary text ---
-  const summaryText = selectedReports
-    .map(
-      (r, i) =>({
-          pc: r.item,
-          lab: r.lab,
-          status: r.status,
-          notes: r.notes || "—"
-      })
-    );
-
   // --- Table columns ---
   const columns = [
     ...(showCheckboxes
@@ -143,37 +130,32 @@ export default function TechnicianLogs() {
         ]
       : []),
     {
-      name: "Report id",
+      name: "Report ID",
       selector: (row) => row.report_id,
       sortable: true,
     },
     {
-      name: "Fix id",
+      name: "Fix ID",
       selector: (row) => row.fix_id,
       sortable: true,
     },
-    
     {
-        
       name: "Lab",
       selector: (row) => row.issue_found.lab,
       sortable: true,
     },
     {
-        
       name: "PC Number",
       selector: (row) => row.issue_found.PC_Number,
       sortable: true,
     },
     {
-        
-      name: "notes",
+      name: "Notes",
       selector: (row) => row.issue_found.notes,
       sortable: true,
     },
     {
-        
-      name: "status",
+      name: "Status",
       selector: (row) => row.issue_found.status,
       sortable: true,
     },
@@ -185,37 +167,47 @@ export default function TechnicianLogs() {
       name: "Status",
       selector: (row) => row.status,
       sortable: true,
-      cell: (row) => (
-        <span
-          style={{
-            backgroundColor:
-              row.status === "Operational"
-                ? "#006633"
-                : row.status === "Notoperational" || row.status === "Warning"
-                ? "#FFCC00"
-                : row.status === "Damaged"
-                ? "#dc3545"
-                : row.status === "Missing"
-                ? "#6c757d"
-                : "#f8f9fa",
-            color:
-              row.status === "Notoperational" || row.status === "Warning"
-                ? "#000"
-                : "#fff",
-            padding: "3px 7px",
-            borderRadius: "5px",
-          }}
-        >
-          {row.status}
-        </span>
-      ),
+      cell: (row) => {
+        const status = row.status?.trim().toLowerCase(); // Normalize input
+        let bgColor = "#f8f9fa";
+        let textColor = "#000";
+
+        if (status === "operational") {
+          bgColor = "#006633";
+          textColor = "#fff";
+        } else if (status === "notoperational" || status === "warning") {
+          bgColor = "#FFCC00";
+          textColor = "#000";
+        } else if (status === "damaged") {
+          bgColor = "#dc3545";
+          textColor = "#fff";
+        } else if (status === "missing") {
+          bgColor = "#6c757d";
+          textColor = "#fff";
+        }
+
+        return (
+          <span
+            style={{
+              backgroundColor: bgColor,
+              color: textColor,
+              padding: "3px 7px",
+              borderRadius: "5px",
+              display: "inline-block",
+              minWidth: "90px",
+              textAlign: "center",
+            }}
+          >
+            {row.status || "—"}
+          </span>
+        );
+      },
     },
     {
       name: "Date",
       selector: (row) => new Date(row.timestamp).toLocaleString(),
       sortable: true,
     },
-    
   ];
 
   const customStyles = {
@@ -309,7 +301,7 @@ export default function TechnicianLogs() {
                   onChange={(e) => setTitle(e.target.value)}
                 />
 
-                {/* Summary Table */}
+                
                 <div
                   className="table-responsive border rounded mt-3"
                   style={{ maxHeight: "250px", overflowY: "auto" }}

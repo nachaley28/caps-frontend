@@ -13,14 +13,11 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./TechnicianDashboard.css";
 
-
 const COLORS = {
-  primary: "#006633",
-  secondary: "#4e79a7",
-  success: "#59a14f",
-  danger: "#e15759",
-  info: "#9c6ade",
-  warning: "#ff9d76",
+  operational: "#59a14f", // green
+  notOperational: "#ff9d76", // yellow
+  damaged: "#e15759", // red
+  missing: "#6c757d", // gray
 };
 
 const KPI = ({ title, value, icon, color, bg }) => (
@@ -33,7 +30,6 @@ const KPI = ({ title, value, icon, color, bg }) => (
   </Card>
 );
 
-
 const ChartCard = ({ title, children }) => (
   <Card className="chart-card shadow-sm">
     <Card.Body>
@@ -43,14 +39,13 @@ const ChartCard = ({ title, children }) => (
   </Card>
 );
 
-export default function AdminDashboard() {
+export default function TechnicianDashboard() {
   const [stats, setStats] = useState({});
   const [computerPartStatus, setComputerPartStatus] = useState([]);
   const [labsComputers, setLabsComputers] = useState([]);
   const [damageMissing, setDamageMissing] = useState([]);
   const navigate = useNavigate();
 
-  
   useEffect(() => {
     fetch("http://localhost:5000/check_session")
       .then(res => res.json())
@@ -58,7 +53,6 @@ export default function AdminDashboard() {
         if (!data.logged_in) navigate("/");
       });
   }, [navigate]);
-
 
   useEffect(() => {
     fetch("http://localhost:5000/get_data")
@@ -69,7 +63,6 @@ export default function AdminDashboard() {
 
         setComputerPartStatus(Array.isArray(data.computerPartStatus) ? data.computerPartStatus : []);
 
-       
         setLabsComputers(
           Array.isArray(data.labEquipments)
             ? data.labEquipments.map(lab => ({
@@ -79,7 +72,6 @@ export default function AdminDashboard() {
             : []
         );
 
-        
         setDamageMissing(
           Array.isArray(data.damageMissing)
             ? data.damageMissing.map(lab => ({
@@ -94,14 +86,14 @@ export default function AdminDashboard() {
   }, []);
 
   const summaryItems = [
-    { title: "Total Labs", value: stats.totalLabs, icon: <FaLaptop />, color: "#0D6EFD", bg: "#eaf2ff" },
-    { title: "Total Computers", value: stats.totalComputers, icon: <FaCogs />, color: "#4e79a7", bg: "#edf2f9" },
-    { title: "Operational Parts", value: stats.operational, icon: <FaUserCheck />, color: "#59a14f", bg: "#eaf7ef" },
-    { title: "Not Operational", value: stats.notOperational, icon: <FaUserTimes />, color: "#e15759", bg: "#fdecec" },
-    { title: "Total Users", value: stats.totalUsers, icon: <FaUsers />, color: "#0D6EFD", bg: "#eaf2ff" },
-    { title: "Reports Submitted", value: stats.reportsSubmitted, icon: <FaFileAlt />, color: "#9c6ade", bg: "#f4ecfb" },
-    { title: "Damaged Equipments", value: stats.damaged, icon: <FaExclamationTriangle />, color: "#ff9d76", bg: "#fff2eb" },
-    { title: "Missing Equipments", value: stats.missing, icon: <FaQuestionCircle />, color: "#e15759", bg: "#fdecec" },
+    { title: "Total Labs", value: stats.totalLabs, icon: <FaLaptop />, color: COLORS.operational, bg: "#eaf2ff" },
+    { title: "Total Computers", value: stats.totalComputers, icon: <FaCogs />, color: COLORS.notOperational, bg: "#fffbe6" },
+    { title: "Operational Parts", value: stats.operational, icon: <FaUserCheck />, color: COLORS.operational, bg: "#eaf7ef" },
+    { title: "Not Operational", value: stats.notOperational, icon: <FaUserTimes />, color: COLORS.notOperational, bg: "#fff7e6" },
+    { title: "Total Users", value: stats.totalUsers, icon: <FaUsers />, color: COLORS.operational, bg: "#eaf2ff" },
+    { title: "Reports Submitted", value: stats.reportsSubmitted, icon: <FaFileAlt />, color: COLORS.operational, bg: "#f4ecfb" },
+    { title: "Damaged Equipments", value: stats.damaged, icon: <FaExclamationTriangle />, color: COLORS.damaged, bg: "#ffe6e6" },
+    { title: "Missing Equipments", value: stats.missing, icon: <FaQuestionCircle />, color: COLORS.missing, bg: "#f0f0f0" },
   ];
 
   return (
@@ -131,8 +123,8 @@ export default function AdminDashboard() {
                   outerRadius={110}
                   label
                 >
-                  <Cell fill={COLORS.success} />
-                  <Cell fill={COLORS.danger} />
+                  <Cell fill={COLORS.operational} />
+                  <Cell fill={COLORS.notOperational} />
                 </Pie>
                 <Tooltip />
                 <Legend layout="vertical" verticalAlign="middle" align="right" />
@@ -151,10 +143,10 @@ export default function AdminDashboard() {
                 <YAxis allowDecimals={false} domain={[0, 'auto']} />
                 <Tooltip />
                 <Legend verticalAlign="top" align="center" />
-                <Bar dataKey="operational" fill={COLORS.success} barSize={20} />
-                <Bar dataKey="notOperational" fill={COLORS.warning} barSize={20} />
-                <Bar dataKey="missing" fill={COLORS.danger} barSize={20} />
-                <Bar dataKey="damaged" fill={COLORS.secondary} barSize={20} />
+                <Bar dataKey="operational" fill={COLORS.operational} barSize={20} />
+                <Bar dataKey="notOperational" fill={COLORS.notOperational} barSize={20} />
+                <Bar dataKey="missing" fill={COLORS.missing} barSize={20} />
+                <Bar dataKey="damaged" fill={COLORS.damaged} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -170,7 +162,7 @@ export default function AdminDashboard() {
                 <YAxis allowDecimals={false} tick={{ fill: "#333", fontSize: 14 }} />
                 <Tooltip cursor={{ fill: "rgba(0,0,0,0.05)" }} contentStyle={{ backgroundColor: "#f9f9f9", border: "1px solid #ccc", borderRadius: "8px", fontSize: 14 }} />
                 <Legend verticalAlign="top" align="center" wrapperStyle={{ fontSize: 14, marginBottom: 10 }} />
-                <Bar dataKey="computers" fill="#36A420" barSize={40} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="computers" fill={COLORS.operational} barSize={40} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -183,12 +175,12 @@ export default function AdminDashboard() {
               <AreaChart data={damageMissing} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
                 <defs>
                   <linearGradient id="damagedGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.danger} stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor={COLORS.danger} stopOpacity={0.2}/>
+                    <stop offset="0%" stopColor={COLORS.damaged} stopOpacity={0.9}/>
+                    <stop offset="100%" stopColor={COLORS.damaged} stopOpacity={0.2}/>
                   </linearGradient>
                   <linearGradient id="missingGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0.2}/>
+                    <stop offset="0%" stopColor={COLORS.missing} stopOpacity={0.9}/>
+                    <stop offset="100%" stopColor={COLORS.missing} stopOpacity={0.2}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -196,8 +188,8 @@ export default function AdminDashboard() {
                 <YAxis allowDecimals={false}/>
                 <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: "6px" }}/>
                 <Legend verticalAlign="top" align="center"/>
-                <Area type="monotone" dataKey="damaged" stroke={COLORS.danger} fill="url(#damagedGradient)" strokeWidth={2} activeDot={{ r: 6 }}/>
-                <Area type="monotone" dataKey="missing" stroke={COLORS.primary} fill="url(#missingGradient)" strokeWidth={2} activeDot={{ r: 6 }}/>
+                <Area type="monotone" dataKey="damaged" stroke={COLORS.damaged} fill="url(#damagedGradient)" strokeWidth={2} activeDot={{ r: 6 }}/>
+                <Area type="monotone" dataKey="missing" stroke={COLORS.missing} fill="url(#missingGradient)" strokeWidth={2} activeDot={{ r: 6 }}/>
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>

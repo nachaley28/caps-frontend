@@ -1,40 +1,24 @@
-
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
-import { FaPaperPlane } from "react-icons/fa";
-
 
 export default function TechnicianReports() {
   const [adminReports, setAdminReports] = useState([]);
   const [filterText, setFilterText] = useState("");
-  const [selectedReports, setSelectedReports] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showCheckboxes, setShowCheckboxes] = useState(false);
-  const [title, setTitle] = useState("");
-  const [userPosition, setUserPosition] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [selectedReport, setSelectedReport] = useState(null); // ✅ selected report for detail modal
-  const [showDetailModal, setShowDetailModal] = useState(false); // ✅ modal visibility
-  const [issueFound, setIssueFound] = useState("");
-  const [stepsTaken, setStepsTaken] = useState("");
-  const [partsReplaced, setPartsReplaced] = useState("");
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [solution, setSolution] = useState("");
-  const [status, setStatus] = useState(""); // ✅ status update
-
+  const [status, setStatus] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:5000/check_session")
       .then((res) => res.json())
       .then((data) => {
-        if (!data.logged_in) {
-          navigate("/");
-        } else {
-          setUserPosition(data.user.role);
-          setUserEmail(data.user.email);
-        }
+        if (!data.logged_in) navigate("/");
+        else setUserEmail(data.user.email);
       })
       .catch((err) => console.error(err));
   }, [navigate]);
@@ -56,20 +40,17 @@ export default function TechnicianReports() {
     )
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // ✅ when a row is clicked, open detail modal
   const handleRowClick = (row) => {
     setSelectedReport(row);
     setStatus(row.status);
     setShowDetailModal(true);
   };
 
-  // ✅ technician submits maintenance report
   const handleTechnicianSubmit = async () => {
     if (!solution) {
-      alert("Please fill in all required fields.");
+      alert("Please fill in the solution field.");
       return;
     }
-
     try {
       const response = await fetch("http://localhost:5000/submit_technician_report", {
         method: "POST",
@@ -77,24 +58,20 @@ export default function TechnicianReports() {
         body: JSON.stringify({
           report_id: selectedReport.id,
           issue_found: {
-            lab: selectedReport.lab ,PC_Number: selectedReport.item, status : selectedReport.status, notes: selectedReport.notes
+            lab: selectedReport.lab,
+            PC_Number: selectedReport.item,
+            status: selectedReport.status,
+            notes: selectedReport.notes,
           },
           solution: solution,
           status: status,
           technician_email: userEmail,
         }),
       });
-      console.log(selectedReport);
       const result = await response.json();
-      window.location.reload();
       if (response.ok) {
         alert("✅ Technician report submitted successfully!");
-        setShowDetailModal(false);
-        setIssueFound("");
-        setStepsTaken("");
-        setPartsReplaced("");
-        setSolution("");
-        setStatus("");
+        window.location.reload();
       } else {
         alert("❌ Failed: " + result.message);
       }
@@ -104,20 +81,32 @@ export default function TechnicianReports() {
     }
   };
 
+  const statusColors = {
+    operational: "#28a745",
+    Notoperational: "#ffc107",
+    Damaged: "#dc3545",
+    Missing: "#6c757d",
+  };
+
   const columns = [
-    {
-      name: "PC Number",
-      selector: (row) => row.item,
-      sortable: true,
-    },
-    {
-      name: "Lab",
-      selector: (row) => row.lab,
-      sortable: true,
-    },
+    { name: "PC Number", selector: (row) => row.item, sortable: true },
+    { name: "Lab", selector: (row) => row.lab, sortable: true },
     {
       name: "Status",
-      selector: (row) => row.status,
+      selector: (row) => (
+        <span
+          style={{
+            backgroundColor: statusColors[row.status] || "#ccc",
+            color: "white",
+            padding: "5px 10px",
+            borderRadius: "12px",
+            fontWeight: "500",
+            textTransform: "capitalize",
+          }}
+        >
+          {row.status}
+        </span>
+      ),
       sortable: true,
     },
     {
@@ -125,10 +114,7 @@ export default function TechnicianReports() {
       selector: (row) => new Date(row.date).toLocaleString(),
       sortable: true,
     },
-    {
-      name: "Notes",
-      selector: (row) => row.notes || "—",
-    },
+    { name: "Notes", selector: (row) => row.notes || "—" },
   ];
 
   const customStyles = {
@@ -152,7 +138,7 @@ export default function TechnicianReports() {
         placeholder="Search reports..."
         value={filterText}
         onChange={(e) => setFilterText(e.target.value)}
-        style={{ maxWidth: "300px" }}
+        style={{ maxWidth: "300px", margin: "0 auto", display: "block" }}
       />
 
       <DataTable
@@ -162,7 +148,7 @@ export default function TechnicianReports() {
         highlightOnHover
         responsive
         customStyles={customStyles}
-        onRowClicked={handleRowClick} // ✅ make rows clickable
+        onRowClicked={handleRowClick}
         pointerOnHover
       />
 
@@ -170,50 +156,97 @@ export default function TechnicianReports() {
       {showDetailModal && selectedReport && (
         <div
           className="modal d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
         >
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content p-4">
-              <h4 className="text-center mb-3" style={{ color: "#006633" }}>
-                Technician Report
-              </h4>
-
-           
+          <div
+            className="modal-dialog modal-dialog-centered"
+            style={{ maxWidth: "500px" }}
+          >
+            <div className="modal-content p-4 rounded-4 shadow">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h5 className="m-0" style={{ color: "#006633" }}>
+                  Technician Report
+                </h5>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="btn btn-sm btn-light"
+                  style={{
+                    fontWeight: "bold",
+                    border: "none",
+                    color: "#006633",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
 
               <hr />
 
-              <h5 style={{ color: "#006633" }}>🧾 Maintenance Details</h5>
-              <p>Issue Found :<br></br>PC{selectedReport.item}<br></br>{selectedReport.status}<br></br> {selectedReport.notes}  </p>
-               
-             
+              <div>
+                <p className="mb-2">
+                  <strong>PC Number:</strong> {selectedReport.item}
+                </p>
+                <p className="mb-2">
+                  <strong>Lab:</strong> {selectedReport.lab}
+                </p>
+                <p className="mb-2">
+                  <strong>Previous Status:</strong>{" "}
+                  <span
+                    style={{
+                      backgroundColor: statusColors[selectedReport.status] || "#ccc",
+                      color: "white",
+                      padding: "4px 10px",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    {selectedReport.status}
+                  </span>
+                </p>
+                <p>
+                  <strong>Notes:</strong> {selectedReport.notes || "—"}
+                </p>
+              </div>
+
               <textarea
-                className="form-control mb-2"
-                placeholder="Solution applied"
+                className="form-control mb-3"
+                placeholder="Enter solution applied..."
                 value={solution}
                 onChange={(e) => setSolution(e.target.value)}
               />
 
-              <label>Status Update:</label>
-              <select
-                className="form-select mb-3"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                
-              >
-                <option>operational</option>
-                <option>Notoperational</option>
-                <option>Damaged</option>
-                <option>Missing</option>
-              </select>
+              <label className="fw-bold">Status Update:</label>
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {["operational", "Notoperational", "Damaged", "Missing"].map(
+                  (s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`btn ${
+                        status === s ? "text-white" : "btn-light"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          status === s ? statusColors[s] : "#f1f1f1",
+                        fontSize: "14px",
+                        flex: "1 1 calc(50% - 5px)",
+                        textTransform: "capitalize",
+                      }}
+                      onClick={() => setStatus(s)}
+                    >
+                      {s}
+                    </button>
+                  )
+                )}
+              </div>
 
               <div className="text-end">
                 <button
-                  className="btn btn-secondary me-2"
-                  onClick={() => setShowDetailModal(false)}
+                  className="btn btn-success"
+                  style={{ backgroundColor: "#006633", border: "none" }}
+                  onClick={handleTechnicianSubmit}
                 >
-                  Close
-                </button>
-                <button className="btn btn-success" onClick={handleTechnicianSubmit}>
                   Submit Report
                 </button>
               </div>

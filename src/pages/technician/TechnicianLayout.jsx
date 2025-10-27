@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { FaBars, FaHome, FaNetworkWired, FaClipboardList, FaUserEdit } from "react-icons/fa";
+import { FaBars, FaHome, FaNetworkWired, FaClipboardList, FaUserEdit, FaHistory } from "react-icons/fa";
 
 function TechnicianLayout() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ function TechnicianLayout() {
     { icon: <FaHome />, label: "Dashboard", path: "/technician" },
     { icon: <FaNetworkWired />, label: "Labs & Computers", path: "/technician/TechnicianLabs" },
     { icon: <FaClipboardList />, label: "Reports", path:  "/technician/TechnicianReports" },
-    { icon: <FaClipboardList />, label: "Logs", path:  "/technician/TechnicianLogs" },
+    { icon: <FaHistory />, label: "Logs", path:  "/technician/TechnicianLogs" },
   ];
 
   return (
@@ -115,7 +115,7 @@ function TechnicianLayout() {
             <p style={{ color: "#ccc", fontSize: "0.9rem", margin: "0 0 1rem 0" }}>{user?.role || "Fetching role..."}</p>
 
           <div
-          onClick={() => navigate("/admin/edit")}
+          onClick={() => navigate("/technician/TechnicianEdit")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -123,8 +123,8 @@ function TechnicianLayout() {
             gap: "0.5rem",
             padding: "0.8rem 1.2rem",
             borderRadius: "10px",
-            backgroundColor: location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26", 
-            color: location.pathname === "/admin/edit" ? "#003d1f" : "#ffffff", 
+            backgroundColor: location.pathname === "/technician/TechnicianEdit" ? "#FFCC00" : "#004d26", 
+            color: location.pathname === "/technician/TechnicianEdit" ? "#003d1f" : "#ffffff", 
             fontWeight: "600",
             fontSize: "0.95rem",
             cursor: "pointer",
@@ -133,7 +133,7 @@ function TechnicianLayout() {
           }}
           onMouseOver={e => e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)"} 
           onMouseOut={e => 
-            e.currentTarget.style.backgroundColor = location.pathname === "/admin/edit" ? "#FFCC00" : "#004d26"
+            e.currentTarget.style.backgroundColor = location.pathname === "/technician/TechnicianEdit" ? "#FFCC00" : "#004d26"
           }
         >
           <FaUserEdit size={18} />
