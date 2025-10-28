@@ -41,31 +41,39 @@ function AdminLayout() {
 
   return (
     <div style={{ height: "100vh", fontFamily: "Cambria, Georgia, serif", backgroundColor: "#f6f8fa" }}>
-      <header
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "60px",
-          backgroundColor: "#004d26",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 1rem",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          zIndex: 1000,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {isMobile && (
-            <FaBars size={22} style={{ cursor: "pointer", color: "#FFCC00" }} onClick={toggleSidebar} />
-          )}
-          {!isMobile && (
-            <h3 style={{ margin: 0, color: "white", fontWeight: "600", letterSpacing: "1px" }}>CLAIMS</h3>
-          )}
-        </div>
-      </header>
+     <header
+           style={{
+             position: "fixed",
+             top: 0,
+             left: 0,
+             width: "100%",
+             height: "60px",
+             backgroundColor: "#004d26",
+             display: "flex",
+             justifyContent: "space-between",
+             alignItems: "center",
+             padding: "0 1rem",
+             boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+             zIndex: 1000,
+           }}
+         >
+       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+         {isMobile && (
+           <FaBars
+             size={22}
+             style={{ cursor: "pointer", color: "#FFCC00" }}
+             onClick={toggleSidebar}
+           />
+         )}
+         {!isMobile && (
+           <img
+             src="/img/image.png"
+             alt="CLAIMS Logo"
+             style={{ height: "40px" }} // adjust as needed
+           />
+         )}
+       </div>
+         </header>
 
       <aside
         style={{

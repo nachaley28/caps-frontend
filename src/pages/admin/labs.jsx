@@ -59,6 +59,8 @@ function LabGrid({ labs, selectLab }) {
   const [editLab, setEditLab] = useState(null);
   const [deleteLab, setDeleteLab] = useState(null);
   const [formData, setFormData] = useState({ name: "", location: "" });
+  const [hoveredLabName, setHoveredLabName] = useState(null); // hover tracked by name
+  const [selectedLabName, setSelectedLabName] = useState(null); // selection tracked by name
 
   // Fetch PC counts per lab
   useEffect(() => {
@@ -76,20 +78,17 @@ function LabGrid({ labs, selectLab }) {
       .catch((err) => console.error("Error fetching lab counts:", err));
   }, [labs]);
 
-  // Open Edit modal
   const handleEditClick = (lab, e) => {
     e.stopPropagation();
     setEditLab(lab);
     setFormData({ name: lab.name, location: lab.location });
   };
 
-  // Open Delete modal
   const handleDeleteClick = (lab, e) => {
     e.stopPropagation();
     setDeleteLab(lab);
   };
 
-  // Submit Edit
   const handleEditSubmit = () => {
     fetch(`http://localhost:5000/edit_lab/${encodeURIComponent(editLab.lab_id)}`, {
       method: "PUT",
@@ -111,7 +110,6 @@ function LabGrid({ labs, selectLab }) {
       .catch((err) => console.error("Edit error:", err));
   };
 
-  // Delete Lab
   const handleDelete = () => {
     fetch(`http://localhost:5000/delete_lab/${deleteLab.name}`, { method: "DELETE" })
       .then(() => {
@@ -133,102 +131,114 @@ function LabGrid({ labs, selectLab }) {
     >
       {labs
         .slice()
-        .sort((a, b) => parseInt(a.name) - parseInt(b.name)) // numeric sort
-        .map((lab) => (
-          <div
-            key={lab.id}
-            onClick={() => selectLab(lab)}
-            style={{
-              position: "relative",
-              background: "#fff",
-              borderRadius: 16,
-              padding: "20px 15px",
-              cursor: "pointer",
-              textAlign: "center",
-              width: "100%",
-              minHeight: 140,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-              transition: "all 0.25s ease",
-            }}
-          >
-            {/* PC Count */}
+        .sort((a, b) => parseInt(a.name) - parseInt(b.name))
+        .map((lab) => {
+          const isActive = hoveredLabName === lab.name || selectedLabName === lab.name;
+
+          return (
             <div
+              key={lab.name} // use name as key
+              onClick={() => {
+                selectLab(lab);
+                setSelectedLabName(lab.name);
+              }}
+              onMouseEnter={() => setHoveredLabName(lab.name)}
+              onMouseLeave={() => setHoveredLabName(null)}
               style={{
-                position: "absolute",
-                top: 10,
-                left: 10,
-                backgroundColor: "#006633",
-                color: "#FFCC00",
-                padding: "5px 9px",
-                borderRadius: "50%",
-                fontWeight: 600,
-                fontSize: "0.85rem",
+                position: "relative",
+                background: selectedLabName === lab.name ? "#E0FFE0" : "#fff",
+                borderRadius: 16,
+                padding: "20px 15px",
+                cursor: "pointer",
+                textAlign: "center",
+                width: "100%",
+                minHeight: 140,
+                boxShadow: isActive
+                  ? "0 8px 20px rgba(0,0,0,0.25)"
+                  : "0 4px 12px rgba(0,0,0,0.12)",
+                transform: isActive ? "translateY(-5px)" : "translateY(0)",
+                transition: "all 0.25s ease",
               }}
             >
-              {pcCount[lab.name] ?? 0}
+              {/* PC Count */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  backgroundColor: "#006633",
+                  color: "#FFCC00",
+                  padding: "5px 9px",
+                  borderRadius: "50%",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                }}
+              >
+                {pcCount[lab.name] ?? 0}
+              </div>
+
+              {/* Edit/Delete */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  display: "flex",
+                  gap: "6px",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaTrashAlt
+                  size={16}
+                  color="#e74c3c"
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => handleDeleteClick(lab, e)}
+                />
+                <FaEdit
+                  size={16}
+                  color="#FFCC00"
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => handleEditClick(lab, e)}
+                />
+              </div>
+
+              {/* Desktop Icon */}
+              <div
+                style={{
+                  backgroundColor: "#00663320",
+                  borderRadius: "50%",
+                  width: 48,
+                  height: 48,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  margin: "0 auto 10px auto",
+                }}
+              >
+                <FaDesktop size={24} color="#006633" />
+              </div>
+
+              {/* Lab Name & Location */}
+              <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 4 }}>
+                Computer Lab {lab.name}
+              </h5>
+              <span
+                style={{
+                  backgroundColor: "#FFCC00",
+                  color: "#006633",
+                  padding: "3px 10px",
+                  borderRadius: 14,
+                  fontSize: "0.82rem",
+                  fontWeight: 500,
+                }}
+              >
+                {lab.location}
+              </span>
             </div>
+          );
+        })}
 
-            {/* Edit/Delete */}
-            <div
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                display: "flex",
-                gap: "6px",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FaTrashAlt
-                size={16}
-                color="#e74c3c"
-                style={{ cursor: "pointer" }}
-                onClick={(e) => handleDeleteClick(lab, e)}
-              />
-              <FaEdit
-                size={16}
-                color="#FFCC00"
-                style={{ cursor: "pointer" }}
-                onClick={(e) => handleEditClick(lab, e)}
-              />
-            </div>
-
-            {/* Desktop Icon */}
-            <div
-              style={{
-                backgroundColor: "#00663320",
-                borderRadius: "50%",
-                width: 48,
-                height: 48,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                margin: "0 auto 10px auto",
-              }}
-            >
-              <FaDesktop size={24} color="#006633" />
-            </div>
-
-            {/* Lab Name & Location */}
-            <h5 style={{ color: "#006633", fontWeight: 600, marginBottom: 4 }}>
-              Computer Lab {lab.name}
-            </h5>
-            <span
-              style={{
-                backgroundColor: "#FFCC00",
-                color: "#006633",
-                padding: "3px 10px",
-                borderRadius: 14,
-                fontSize: "0.82rem",
-                fontWeight: 500,
-              }}
-            >
-              {lab.location}
-            </span>
-          </div>
-        ))}
-
-      {/* Edit Modal */}
+      {/* Modals (Edit/Delete) */}
       {editLab && (
         <div
           style={{
@@ -320,7 +330,6 @@ function LabGrid({ labs, selectLab }) {
         </div>
       )}
 
-      {/* Delete Modal */}
       {deleteLab && (
         <div
           style={{
