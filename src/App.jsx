@@ -18,6 +18,11 @@ import TechnicianReports from "./pages/technician/TechnicianReports";
 import TechnicianLogs from "./pages/technician/TechnicianLogs";
 import TechnicianEdit from "./pages/technician/TechnicianEdit";
 
+import LabGrid from "./pages/admin/components/LabGrid";
+import AddLabModal from "./pages/admin/components/AddLabModal";
+import LabDetail from './pages/admin/components/LabDetail';
+import AddComputerModal from './pages/admin/components/AddComputerModal';
+
 
 
 
@@ -46,6 +51,10 @@ function RouteWithTransitions() {
             <Route path="edit" element={<Edit />} />          
             <Route path="labs" element={<Laboratory />} />
             <Route path="reports" element={<Reports />} /> 
+            <Route path="LabGrid" element={<LabGrid />} /> 
+            <Route path="AddLabModal" element={<AddLabModal />} />
+            <Route path="LabDetail" element={<LabDetail/>} />
+            <Route path="AddComputerModal" element={<AddComputerModal/>} />
           </Route>
 
            <Route path="/technician" element={<TechnicianLayout />}>
