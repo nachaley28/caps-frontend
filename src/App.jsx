@@ -23,6 +23,8 @@ import AddLabModal from "./pages/admin/components/AddLabModal";
 import LabDetail from './pages/admin/components/LabDetail';
 import AddComputerModal from './pages/admin/components/AddComputerModal';
 
+import DeanLayout from "./pages/dean/DeanLayout";
+
 
 
 
@@ -63,6 +65,13 @@ function RouteWithTransitions() {
             <Route path="TechnicianReports" element={<TechnicianReports />} />
             <Route path="TechnicianLogs" element={<TechnicianLogs />} />
             <Route path="TechnicianEdit" element={<TechnicianEdit />} />
+      
+          </Route>
+
+           <Route path="/dean" element={<DeanLayout />}>
+            <Route index element={<TechnicianDashboard />} /> 
+            
+           
       
           </Route>
 

@@ -1,4 +1,4 @@
-// src/pages/admin/components/LabGrid.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   FaDesktop,
@@ -15,7 +15,7 @@ export default function LabGrid({ labs, selectLab }) {
   const [hoveredLabName, setHoveredLabName] = useState(null);
   const [selectedLabName, setSelectedLabName] = useState(null);
 
-  // Fetch PC counts per lab
+ 
   useEffect(() => {
     if (!labs || labs.length === 0) return;
 

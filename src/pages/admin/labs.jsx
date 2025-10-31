@@ -29,63 +29,36 @@ export default function App() {
   const addComputer = (comp) => setComputers(prev => [...prev, comp]);
 
   return (
-   <div
-  style={{
-    padding: 40,
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    alignItems: "center", // centers content horizontally
-  }}
->
-  {/* Centered heading */}
-  <h2 style={{ color: "#006633", fontWeight: 700, marginBottom: 10 }}>
-    Laboratories & Computers
-  </h2>
-
-  {!selectedLab && (
-    <button
-      onClick={() => setShowAddLab(true)}
-      style={{
-        backgroundColor: "#006633",
-        color: "#fff",
-        border: "none",
-        padding: "10px 18px",
-        borderRadius: "8px",
-        fontSize: "16px",
-        fontWeight: 600,
-        cursor: "pointer",
-        boxShadow: "0 3px 8px rgba(0,0,0,0.15)",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#004d26";
-        e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.boxShadow = "0 6px 12px rgba(0,0,0,0.2)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "#006633";
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.15)";
-      }}
-    >
-      + Add Lab
-    </button>
-  )}
-
-  {!selectedLab ? (
-    <LabGrid labs={labs} selectLab={setSelectedLab} />
-  ) : (
-    <LabDetail
-      lab={selectedLab}
-      computers={computers}
-      back={() => setSelectedLab(null)}
-      addComputer={addComputer}
-    />
-  )}
-
-  {showAddLab && <AddLabModal addLab={addLab} onClose={() => setShowAddLab(false)} />}
-</div>
-
+  <div style={{ padding: 40, background: "#f1f3f6", minHeight: "100vh" }}>
+      {!selectedLab && (
+        <div style={{ textAlign: "center", marginBottom: 30 }}>
+          <h2 style={{ marginBottom: 20, color: "#006633" }}>
+            Laboratories and Computers
+          </h2>
+          <button
+            onClick={() => setShowAddLab(true)}
+            className="btn"
+            style={{ backgroundColor: "#006633", color: "white" }}
+          >
+            + Add Laboratory
+          </button>
+        </div>
+      )}
+      {!selectedLab ? (
+        <LabGrid labs={labs} selectLab={setSelectedLab} />
+      ) : (
+        <LabDetail
+          lab={selectedLab}
+          computers={computers}
+          back={() => setSelectedLab(null)}
+          addComputer={addComputer}
+        />
+      )}
+      {showAddLab && (
+        <AddLabModal addLab={addLab} onClose={() => setShowAddLab(false)} />
+      )}
+    </div>
   );
+
+  
 }

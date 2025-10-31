@@ -22,7 +22,7 @@ function LandingPage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.user.role !== "Admin" && data.user.role !== "ITSD") {
+        if (data.user.role !== "Admin" && data.user.role !== "ITSD"  && data.user.role !== "DEAN") {
           alert("Only Authorized can log in.");
           
           return;
@@ -35,6 +35,11 @@ function LandingPage() {
         else if(data.user.role === "Admin"){
           localStorage.setItem("user", JSON.stringify(data.user));
           navigate("/admin");
+          return;
+        }
+         else if(data.user.role === "DEAN"){
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate("/dean");
           return;
         }
         

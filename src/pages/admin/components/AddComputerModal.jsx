@@ -8,12 +8,20 @@ import {
   FaPlug,
   FaWifi,
   FaTimes,
+  FaHashtag,
+  FaTrashAlt,
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./labs.css";
 
-export default function AddComputerModal({lab,addComputer,addComputers,onClose,}) {
+export default function AddComputerModal({
+  lab,
+  addComputer,
+  addComputers,
+  onClose,
+}) {
+  if (!lab) return null;
+
   const [pcNumber, setPcNumber] = useState("");
   const [parts, setParts] = useState({
     monitor: "",
@@ -25,6 +33,7 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
     power: "",
     wifi: "",
   });
+  const [otherParts, setOtherParts] = useState([{ name: "", serial: "" }]);
   const [bulkMode, setBulkMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -32,8 +41,34 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
   const handleChange = (e) =>
     setParts({ ...parts, [e.target.name]: e.target.value });
 
+  const handleOtherPartChange = (index, field, value) => {
+    const updated = [...otherParts];
+    updated[index][field] = value;
+    setOtherParts(updated);
+  };
+
+  const addOtherPart = () => {
+    if (otherParts.length < 10) {
+      setOtherParts([...otherParts, { name: "", serial: "" }]);
+    }
+  };
+
+  const removeOtherPart = (index) => {
+    const updated = otherParts.filter((_, i) => i !== index);
+    setOtherParts(updated);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const exists = lab.computers?.some(
+      (c) => c.name.toLowerCase() === pcNumber.toLowerCase()
+    );
+    if (exists) {
+      alert(`A computer with the name "${pcNumber}" already exists in this lab.`);
+      return;
+    }
+
     try {
       const res = await fetch("http://localhost:5000/computer", {
         method: "POST",
@@ -44,6 +79,7 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
             name: pcNumber,
             lab_name: lab.name,
             spec: JSON.stringify(parts),
+            other_parts: JSON.stringify(otherParts),
           },
         }),
       });
@@ -176,10 +212,14 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
               </small>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={handleSubmit}
+              style={{ maxWidth: "1000px", margin: "auto" }}
+            >
+              {/* PC Number */}
               <div className="mb-3">
                 <label className="form-label fw-bold">PC Number</label>
-                <div className="input-group">
+                <div className="input-group input-group-sm">
                   <span className="input-group-text">
                     <FaDesktop className="text-success" />
                   </span>
@@ -193,16 +233,19 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
                 </div>
               </div>
 
-              <h6 className="fw-bold mt-3 mb-3" style={{ color: "#006633" }}>
+              {/* Section Title */}
+              <h6 className="fw-bold mb-3" style={{ color: "#006633" }}>
                 Parts Serial Numbers
               </h6>
-              <div className="row g-3">
+
+              {/* 3-column grid */}
+              <div className="row g-2">
                 {Object.keys(parts).map((p) => (
-                  <div key={p} className="col-md-6">
-                    <label className="form-label text-capitalize">
+                  <div key={p} className="col-md-4">
+                    <label className="form-label text-capitalize small mb-1">
                       {p} Serial Number
                     </label>
-                    <div className="input-group">
+                    <div className="input-group input-group-sm">
                       <span className="input-group-text">{partIcons[p]}</span>
                       <input
                         type="text"
@@ -217,18 +260,85 @@ export default function AddComputerModal({lab,addComputer,addComputers,onClose,}
                 ))}
               </div>
 
+              {/* Other Parts Section */}
+              <h6 className="fw-bold mt-4 mb-3" style={{ color: "#006633" }}>
+                Other Parts (Optional)
+              </h6>
+              <div className="row g-2">
+                {otherParts.map((part, index) => (
+                  <div key={index} className="col-md-6">
+                    <div className="d-flex align-items-start gap-2">
+                      <div className="flex-grow-1">
+                        <label className="form-label small mb-1">
+                          Other Part {index + 1}
+                        </label>
+                        <div className="input-group input-group-sm mb-2">
+                          <span className="input-group-text">
+                            <FaPlug className="text-secondary" />
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Part Name"
+                            value={part.name}
+                            onChange={(e) =>
+                              handleOtherPartChange(index, "name", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text">
+                            <FaHashtag className="text-secondary" />
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Serial Number"
+                            value={part.serial}
+                            onChange={(e) =>
+                              handleOtherPartChange(index, "serial", e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm mt-4"
+                        onClick={() => removeOtherPart(index)}
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add button */}
+              <div className="d-flex justify-content-end mt-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm"
+                  onClick={addOtherPart}
+                  disabled={otherParts.length >= 10}
+                >
+                  + Add Other Part
+                </button>
+              </div>
+
               {/* Footer */}
               <div className="modal-footer mt-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-outline-secondary btn-sm"
                   onClick={onClose}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn"
+                  className="btn btn-sm"
                   style={{ backgroundColor: "#006633", color: "white" }}
                 >
                   Add Computer

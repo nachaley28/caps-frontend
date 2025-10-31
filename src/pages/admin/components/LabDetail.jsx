@@ -10,6 +10,8 @@ import {
   FaTimes,
   FaTrashAlt,
   FaCheckCircle,
+  FaEdit,
+  FaHashtag, 
 } from "react-icons/fa";
 import AddComputerModal from "./AddComputerModal";
 
@@ -55,6 +57,61 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
   const [showAddComputer, setShowAddComputer] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [deletePC, setDeletePC] = useState(null); 
+  const [editPC, setEditPC] = useState(null);
+  const [selectedPart,setSelectedPart]= useState(true); 
+  const [selectedPCs, setSelectedPCs] = useState([]);
+  const [rangeStart, setRangeStart] = useState([]);
+  const [rangeEnd, setRangeEnd] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState([]);
+
+
+
+
+
+  const [editData, setEditData] = useState({
+    pcNumber: "",
+    parts: {},
+    otherParts: [],
+  });
+  const [showOtherParts, setShowOtherParts] = useState(true); 
+  const [showQuickUpdate, setShowQuickUpdate] = useState(false);
+  const getNextStatus = (current) => {
+  const keys = Object.keys(statusColors);
+  const idx = keys.indexOf(current);
+  return keys[(idx + 1) % keys.length];
+};
+
+
+  // ✅ Handlers for Other Parts
+  const handleOtherPartChange = (index, key, value) => {
+    const updated = [...editData.otherParts];
+    updated[index][key] = value;
+    setEditData({ ...editData, otherParts: updated });
+  };
+
+  const removeOtherPart = (index) => {
+    const updated = [...editData.otherParts];
+    updated.splice(index, 1);
+    setEditData({ ...editData, otherParts: updated });
+  };
+
+  const addOtherPart = () => {
+    if (editData.otherParts.length < 10) {
+      setEditData({
+        ...editData,
+        otherParts: [...editData.otherParts, { name: "", serial: "" }],
+      });
+    }
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    console.log("Edited PC data:", editData);
+    // TODO: send editData to backend
+    setEditPC(null);
+    setSaveMsg("Computer info updated successfully!");
+  };
+
   const labComputers = computers
   .filter((c) => c.lab === lab.name)
   .sort((a, b) => a.pcNumber - b.pcNumber);
@@ -135,17 +192,30 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
         }
       };
       
+      
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <button onClick={back} className="btn btn-secondary btn-sm">
-          ← Back to Labs
+        ← Back to Labs
         </button>
-        <button onClick={() => setShowAddComputer(true)} className="btn" style={{ backgroundColor: "#006633", color: "white" }}>
+        <div>
+        <button
+          onClick={() => setShowAddComputer(true)}
+          className="btn"
+          style={{ backgroundColor: "#006633", color: "white", marginRight: 10 }}>
           + Add Computer
         </button>
+
+        <button
+          onClick={() => setShowQuickUpdate(true)}
+          className="btn btn-warning"
+          style={{ color: "#000" }}>
+          Quick Update
+        </button>
         </div>
-            {saveMsg && (
+      </div>
+        {saveMsg && (
           <div
             style={{
               position: "fixed",
@@ -227,8 +297,6 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
                 {saveMsg}
               </h4>
 
-             
-
               <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
                 
 
@@ -245,6 +313,20 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
                 >
                   See Report
                 </button>
+
+                 <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#004d26",
+                    color: "#fff",
+                    borderRadius: "8px",
+                    padding: "8px 18px",
+                    fontWeight: "500",
+                  }}
+                  onClick={() => (window.location.href = "/admin/labs")}
+                >
+                  Dismiss
+              </button>
               </div>
             </div>  
           </div>
@@ -366,18 +448,275 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-               <FaTrashAlt
+                <FaEdit
+                size={18}
+                color="white"
+                style={{ cursor: "pointer" }}
+                title="Edit"
+                onClick={() => {
+                  setEditPC(pc);
+                  setEditData({
+                    pcNumber: pc.pcNumber,
+                    serialNumber: pc.serialNumber || "",
+                  });
+                }}
+              />
+             <FaTrashAlt
               size={18}
               color="white"
               style={{ cursor: "pointer" }}
               title="Delete"
               onClick={() => setDeletePC(pc)} 
             />
+             </div>
+            </div>
+          ))}
+      </div>
+
+        {deletePC && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 9999,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "25px 30px",
+                borderRadius: "12px",
+                width: "350px",
+                textAlign: "center",
+                boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              <h5 style={{ color: "#006633", marginBottom: "15px" }}>
+                Confirm Delete
+              </h5>
+              <p style={{ color: "#444", fontSize: "15px" }}>
+                Are you sure you want to delete{" "}
+                <strong>PC {deletePC.pcNumber}</strong>?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "20px",
+                }}
+              >
+                <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#6c757d",
+                    color: "#fff",
+                    flex: 1,
+                    marginRight: "8px",
+                  }}
+                  onClick={() => setDeletePC(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#d32f2f",
+                    color: "#fff",
+                    flex: 1,
+                    marginLeft: "8px",
+                  }}
+                  onClick={handleDeleteComputer}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+ {/* ✅ EDIT MODAL */}
+        {editPC && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            overflowY: "auto",
+            padding: "15px",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "20px 25px",
+              borderRadius: "12px",
+              width: "100%",
+              maxWidth: "700px",
+              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h5 style={{ color: "#006633", marginBottom: "15px" }}>
+              Edit Computer Info – PC {editData.pcNumber || ""}
+            </h5>
+
+            <form onSubmit={handleEditSubmit}>
+              {/* PC Number */}
+              <div className="mb-2">
+                <label className="form-label fw-bold small">PC Number</label>
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text">
+                    <FaDesktop className="text-success" />
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editData.pcNumber || ""}
+                    onChange={(e) =>
+                      setEditData({ ...editData, pcNumber: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Predefined Parts */}
+              <div className="mb-3">
+                <h6 className="fw-bold small" style={{ color: "#006633" }}>
+                  Parts Serial Numbers
+                </h6>
+                <div className="row g-2">
+                  {["monitor","systemUnit","keyboard","mouse","headphone","hdmi","power","wifi"].map((part) => {
+                    const Icon = partIcons[part] || FaPlug;
+                    return (
+                      <div key={part} className="col-6 col-md-4">
+                        <div className="input-group input-group-sm mb-1">
+                          <span className="input-group-text"><Icon /></span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={`${part} Serial`}
+                            value={editData.parts?.[part] || ""}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                parts: { ...editData.parts, [part]: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Other Parts Toggle */}
+              <div className="d-flex justify-content-end mb-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => setShowOtherParts((prev) => !prev)}
+                >
+                  {showOtherParts ? "Hide Other Parts" : "Edit Other Parts"}
+                </button>
+              </div>
+
+              {/* Other Parts Inputs */}
+              {showOtherParts && (
+                <div className="row g-2 mb-2">
+                  {(editData.otherParts || []).map((op, idx) => (
+                    <div key={idx} className="col-12 col-md-6">
+                      <div className="d-flex align-items-start gap-2">
+                        <div className="flex-grow-1">
+                          <div className="input-group input-group-sm mb-1">
+                            <span className="input-group-text"><FaPlug /></span>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Part Name"
+                              value={op?.name || ""}
+                              onChange={(e) => handleOtherPartChange(idx, "name", e.target.value)}
+                            />
+                          </div>
+                          <div className="input-group input-group-sm">
+                            <span className="input-group-text"><FaHashtag /></span>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Serial Number"
+                              value={op?.serial || ""}
+                              onChange={(e) => handleOtherPartChange(idx, "serial", e.target.value)}
+                            />
                           </div>
                         </div>
-                    ))}
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => removeOtherPart(idx)}
+                        >
+                          <FaTrashAlt />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="col-12 d-flex justify-content-end mt-1">
+                    <button
+                      type="button"
+                      className="btn btn-outline-success btn-sm"
+                      onClick={addOtherPart}
+                      disabled={(editData.otherParts || []).length >= 10}
+                    >
+                      + Add Other Part
+                    </button>
                   </div>
-                  {deletePC && (
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="d-flex justify-content-end gap-2 mt-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setEditPC(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "#006633", color: "#fff" }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        )}
+
+
+
+
+
+         
+
+
+
+
+{showQuickUpdate && (
   <div
     style={{
       position: "fixed",
@@ -385,68 +724,303 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
       left: 0,
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      backgroundColor: "rgba(0,0,0,0.5)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       zIndex: 9999,
+      padding: "10px",
     }}
   >
     <div
       style={{
         background: "#fff",
-        padding: "25px 30px",
-        borderRadius: "12px",
-        width: "350px",
-        textAlign: "center",
-        boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+        borderRadius: "15px",
+        width: "80%",
+        maxWidth: "850px",
+        maxHeight: "90vh",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
       }}
     >
-      <h5 style={{ color: "#006633", marginBottom: "15px" }}>
-        Confirm Delete
-      </h5>
-      <p style={{ color: "#444", fontSize: "15px" }}>
-        Are you sure you want to delete{" "}
-        <strong>PC {deletePC.pcNumber}</strong>?
-      </p>
+      {/* Header */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          marginTop: "20px",
+          alignItems: "center",
+          padding: "15px 20px",
+          borderBottom: "1px solid #ccc",
+          flexShrink: 0,
+        }}
+      >
+        <h4 style={{ color: "#006633", margin: 0 }}>Quick Update PCs Status</h4>
+        <button
+          className="btn-close"
+          onClick={() => setShowQuickUpdate(false)}
+          style={{ fontSize: "18px" }}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div
+        style={{
+          padding: "15px 20px",
+          overflowY: "auto",
+          flex: 1,
+        }}
+      >
+        {/* Step 1: Select Part */}
+        <div style={{ marginBottom: 12 }}>
+          <span style={{ fontWeight: 600 }}>Select Part to Update:</span>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 10,
+              marginTop: 8,
+              justifyContent: "center",
+            }}
+          >
+            {Object.keys(partIcons).map((part) => {
+              const Icon = partIcons[part];
+              return (
+                <button
+                  key={part}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    padding: "8px 12px",
+                    borderRadius: "10px",
+                    border:
+                      selectedPart === part ? "2px solid #006633" : "1px solid #ccc",
+                    backgroundColor: selectedPart === part ? "#e6f7e6" : "#f4f4f4",
+                    cursor: "pointer",
+                    transition: "0.2s",
+                  }}
+                  onClick={() => {
+                    setSelectedPart(part);
+                    setSelectedStatus("");
+                    setSelectedPCs([]);
+                  }}
+                >
+                  <Icon size={28} />
+                  <span style={{ fontSize: 13, marginTop: 5 }}>{part}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Step 2: Select Status */}
+        {selectedPart && (
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontWeight: 600 }}>
+              Select Status for {selectedPart}:
+            </span>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 8,
+                justifyContent: "center",
+              }}
+            >
+              {Object.keys(statusColors).map((s) => (
+                <button
+                  key={s}
+                  style={{
+                    backgroundColor:
+                      selectedStatus === s
+                        ? statusColors[s]?.color || "#f4f4f4"
+                        : "#f4f4f4",
+                    color: s === "missing" ? "#fff" : "#000",
+                    border:
+                      selectedStatus === s ? "2px solid #006633" : "1px solid #ccc",
+                    padding: "6px 16px",
+                    borderRadius: 25,
+                    cursor: "pointer",
+                    fontWeight: 500,
+                    transition: "0.2s",
+                  }}
+                  onClick={() => setSelectedStatus(s)}
+                >
+                  {statusColors[s]?.label || s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Select PCs */}
+        {selectedPart && selectedStatus && (
+          <div style={{ marginBottom: 15, display: "flex", flexDirection: "column" }}>
+            <span style={{ fontWeight: 600 }}>Select PCs to Update:</span>
+
+            {/* Select / Deselect All */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 8,
+              }}
+            >
+              <button
+                className="btn btn-outline-primary btn-sm"
+                onClick={() =>
+                  setSelectedPCs(labComputers.map((pc) => pc.id))
+                }
+              >
+                Select All
+              </button>
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setSelectedPCs([])}
+              >
+                Deselect All
+              </button>
+            </div>
+
+            {/* PC Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(10, 1fr)",
+                gap: 12,
+                marginTop: 10,
+              }}
+            >
+              {labComputers.map((pc) => {
+                const selected = selectedPCs.includes(pc.id);
+                const currentStatus =
+                  pc.parts && pc.parts[selectedPart]
+                    ? pc.parts[selectedPart]
+                    : "unknown";
+                const statusColor =
+                  statusColors[currentStatus]?.color || "#f4f4f4";
+                const selectedStatusColor =
+                  statusColors[selectedStatus]?.color || "#c8e6c9";
+
+                return (
+                  <div
+                    key={pc.id}
+                    onClick={() => {
+                      setSelectedPCs((prev) =>
+                        prev.includes(pc.id)
+                          ? prev.filter((id) => id !== pc.id)
+                          : [...prev, pc.id]
+                      );
+                    }}
+                    style={{
+                      padding: "14px",
+                      borderRadius: "10px",
+                      border: selected ? "2px solid #006633" : "1px solid #ccc",
+                      cursor: "pointer",
+                      backgroundColor: selected ? selectedStatusColor : statusColor,
+                      textAlign: "center",
+                      position: "relative",
+                    }}
+                  >
+                    <FaDesktop size={34} />
+                    <span
+                      style={{
+                        fontSize: 13,
+                        marginTop: 6,
+                        fontWeight: 500,
+                        display: "block",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        color: "#333",
+                      }}
+                      title={pc.name}
+                    >
+                      {pc.name}
+                    </span>
+                    {!selected && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: 6,
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          fontSize: 10,
+                          padding: "2px 5px",
+                          borderRadius: 4,
+                          backgroundColor: "#fff",
+                          border: "1px solid #ccc",
+                        }}
+                      >
+                        {currentStatus}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+          padding: "10px 20px",
+          borderTop: "1px solid #ccc",
+          flexShrink: 0,
         }}
       >
         <button
-          className="btn"
-          style={{
-            backgroundColor: "#6c757d",
-            color: "#fff",
-            flex: 1,
-            marginRight: "8px",
-          }}
-          onClick={() => setDeletePC(null)}
+          className="btn btn-outline-secondary btn-sm"
+          onClick={() => setShowQuickUpdate(false)}
         >
           Cancel
         </button>
         <button
-          className="btn"
-          style={{
-            backgroundColor: "#d32f2f",
-            color: "#fff",
-            flex: 1,
-            marginLeft: "8px",
+          className="btn btn-sm"
+          style={{ backgroundColor: "#006633", color: "#fff" }}
+          onClick={() => {
+            const updated = {};
+            selectedPCs.forEach((pcId) => {
+              updated[pcId] = { [selectedPart]: selectedStatus };
+            });
+
+            fetch("http://localhost:5000/update_computer_status_bulk", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ statuses: updated }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Saved all:", data);
+                setShowQuickUpdate(false);
+                setSaveMsg("Selected PCs updated!");
+                setTimeout(() => setSaveMsg(""), 4000);
+              })
+              .catch((err) =>
+                console.error("Error saving bulk statuses:", err)
+              );
           }}
-          onClick={handleDeleteComputer}
         >
-          Delete
+          Save All
         </button>
       </div>
     </div>
   </div>
 )}
 
+ 
 
-     {selectedPC && (
+ {selectedPC && (
       <div className="modal-backdrop">
         <div className="modal-card large">
           <div
@@ -578,13 +1152,20 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
             </div>
           )}
 
+
+
+
+
+
+
       {showAddComputer && (
-        <AddComputerModal
-          lab={lab}
-          addComputer={addComputer}
-          onClose={() => setShowAddComputer(false)}
-        />
-      )}
+      <AddComputerModal
+        onClose={() => setShowAddComputer(false)}
+        lab={lab} 
+      />
+    )}
+        
     </div>
   );
 }
+ 
