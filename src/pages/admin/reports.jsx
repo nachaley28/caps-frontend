@@ -20,6 +20,7 @@ export default function Reports() {
   const [showSentMessage, setShowSentMessage] = useState(false); // Toast for sent report
 
   const navigate = useNavigate();
+  
 
   // --- Check session ---
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function Reports() {
       .then((res) => res.json())
       .then((data) => {
         const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        console.log("Fetched Reports:", sortedData);
         setAdminReports(sortedData);
       })
       .catch((err) => console.error(err));
@@ -50,6 +52,7 @@ export default function Reports() {
 
   useEffect(() => {
     fetchReports();
+
   }, []);
 
   // --- Filtered reports ---
@@ -89,6 +92,7 @@ export default function Reports() {
     lab: r.lab,
     status: r.status,
     notes: r.notes || "—",
+    com_id: r.id
   }));
 
   // --- Handle submit modal (Send Email) ---

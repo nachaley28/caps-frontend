@@ -48,7 +48,8 @@ export default function AddComputerModal({
   };
 
   const addOtherPart = () => {
-    if (otherParts.length < 10) {
+    console.log(otherParts);
+    if (otherParts.length < 5) {
       setOtherParts([...otherParts, { name: "", serial: "" }]);
     }
   };
@@ -68,7 +69,6 @@ export default function AddComputerModal({
       alert(`A computer with the name "${pcNumber}" already exists in this lab.`);
       return;
     }
-
     try {
       const res = await fetch("http://localhost:5000/computer", {
         method: "POST",
