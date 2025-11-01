@@ -21,7 +21,6 @@ export default function TechnicianAndQuickUpdate() {
 
   const navigate = useNavigate();
 
-  // Session check
   useEffect(() => {
     fetch("http://localhost:5000/check_session")
       .then((res) => res.json())
@@ -32,7 +31,7 @@ export default function TechnicianAndQuickUpdate() {
       .catch((err) => console.error(err));
   }, [navigate]);
 
-  // Load reports and lab computers
+ 
   const loadReports = () => {
     fetch("http://localhost:5000/get_admin_computer_reports")
       .then((res) => res.json())
@@ -52,7 +51,7 @@ export default function TechnicianAndQuickUpdate() {
     loadLabComputers();
   }, []);
 
-  // Filter reports
+ 
   const filteredReports = adminReports
     .filter(
       (r) =>
@@ -63,7 +62,6 @@ export default function TechnicianAndQuickUpdate() {
     )
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Technician report modal open
   const handleRowClick = (row) => {
     setSelectedReport(row);
     setStatus(row.status);
@@ -72,7 +70,7 @@ export default function TechnicianAndQuickUpdate() {
     setShowDetailModal(true);
   };
 
-  // Technician submit
+
   const handleTechnicianSubmit = async () => {
     if (!solution) {
       alert("Please select a solution.");
@@ -107,7 +105,7 @@ export default function TechnicianAndQuickUpdate() {
       const result = await response.json();
       if (response.ok) {
         alert("✅ Technician report submitted!");
-        // Remove solutioned report from table
+       
         setAdminReports((prev) =>
           prev.filter((r) => r.id !== selectedReport.id)
         );
@@ -133,10 +131,10 @@ export default function TechnicianAndQuickUpdate() {
     Mouse: FaDesktop,
     Keyboard: FaDesktop,
     Monitor: FaDesktop,
-    // add more as needed
+    
   };
 
-  // Quick update submit
+
   const handleQuickUpdate = async () => {
     if (!selectedPart || !selectedStatus || selectedPCs.length === 0) {
       alert("Select part, status, and PCs.");
@@ -169,7 +167,7 @@ export default function TechnicianAndQuickUpdate() {
     }
   };
 
-  // Columns for DataTable
+
   const columns = [
     { name: "PC Number", selector: (row) => row.item, sortable: true },
     { name: "Lab", selector: (row) => row.lab, sortable: true },
@@ -205,8 +203,6 @@ export default function TechnicianAndQuickUpdate() {
         Computer Labs Reports
       </h1>
 
-     
-
       <DataTable
         columns={columns}
         data={filteredReports}
@@ -217,98 +213,110 @@ export default function TechnicianAndQuickUpdate() {
         onRowClicked={handleRowClick}
         pointerOnHover
       />
+        {showDetailModal && selectedReport && (
+          <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "500px" }}>
+              <div className="modal-content p-4 rounded-4 shadow">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h5 style={{ color: "#006633" }}>Technician Report</h5>
+                  <button onClick={() => setShowDetailModal(false)} className="btn btn-sm btn-light">
+                    <FaTimes />
+                  </button>
+                </div>
 
-      {/* Technician Report Modal */}
-      {showDetailModal && selectedReport && (
-  <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "500px" }}>
-      <div className="modal-content p-4 rounded-4 shadow">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h5 style={{ color: "#006633" }}>Technician Report</h5>
-          <button onClick={() => setShowDetailModal(false)} className="btn btn-sm btn-light">
-            <FaTimes />
-          </button>
-        </div>
+                <hr />
 
-        <hr />
+                <p><strong>PC Number:</strong> {selectedReport.item}</p>
+                <p><strong>Lab:</strong> {selectedReport.lab}</p>
+                <p>
+                  <strong>Previous Status:</strong>{" "}
+                  <span style={{
+                    backgroundColor: statusColors[selectedReport.status] || "#ccc",
+                    color: "white",
+                    padding: "4px 12px",
+                    borderRadius: "50px",
+                    fontWeight: "500",
+                  }}>
+                    {selectedReport.status}
+                  </span>
+                </p>
+                <p><strong>Notes:</strong> {selectedReport.notes || "—"}</p>
 
-        <p><strong>PC Number:</strong> {selectedReport.item}</p>
-        <p><strong>Lab:</strong> {selectedReport.lab}</p>
-        <p>
-          <strong>Previous Status:</strong>{" "}
-          <span style={{
-            backgroundColor: statusColors[selectedReport.status] || "#ccc",
-            color: "white",
-            padding: "4px 12px",
-            borderRadius: "50px",
-            fontWeight: "500",
-          }}>
-            {selectedReport.status}
-          </span>
-        </p>
-        <p><strong>Notes:</strong> {selectedReport.notes || "—"}</p>
+              
+                <label className="fw-bold">Solution Done:</label>
+                <select
+                  className="form-select mb-3"
+                  value={solution}
+                  onChange={(e) => setSolution(e.target.value)}
+                >
+                  <option value="">Select action...</option>
+                  <option value="Repaired">Repaired</option>
+                  <option value="Replaced">Replaced</option>
+                  <option value="None">None</option>
+                  <option value="Other">Other</option>
+                </select>
 
-        <label className="fw-bold">Solution Done:</label>
-        <select
-          className="form-select mb-3"
-          value={solution}
-          onChange={(e) => setSolution(e.target.value)}
-        >
-          <option value="">Select action...</option>
-          <option value="Repaired">Repaired</option>
-          <option value="Replaced">Replaced</option>
-          <option value="None">None</option>
-        </select>
+              
+                {solution === "Replaced" && (
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Replacement serial number..."
+                    value={replacementSerial}
+                    onChange={(e) => setReplacementSerial(e.target.value)}
+                  />
+                )}
 
-        {solution === "Replaced" && (
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Replacement serial number..."
-            value={replacementSerial}
-            onChange={(e) => setReplacementSerial(e.target.value)}
-          />
+                {solution === "Other" && (
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Describe the solution..."
+                    value={replacementSerial} // reuse state or create new state e.g., customSolution
+                    onChange={(e) => setReplacementSerial(e.target.value)}
+                  />
+                )}
+
+                {/* Status Update */}
+                <label className="fw-bold">Update Status:</label>
+                <div className="d-flex flex-wrap gap-2 mb-3">
+                  {["operational", "Notoperational", "Damaged", "Missing"].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`btn ${status === s ? "text-white" : "text-dark"}`}
+                      style={{
+                        backgroundColor: status === s ? statusColors[s] : "#f1f1f1",
+                        borderRadius: "50px",
+                        padding: "6px 20px",
+                        fontWeight: "500",
+                        flex: "1 1 45%",
+                        minWidth: "100px",
+                        transition: "0.2s",
+                      }}
+                      onClick={() => setStatus(s)}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="text-end">
+                  <button
+                    className="btn btn-success"
+                    style={{ backgroundColor: "#006633" }}
+                    onClick={handleTechnicianSubmit}
+                  >
+                    Submit Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
-        <label className="fw-bold">Update Status:</label>
-        <div className="d-flex flex-wrap gap-2 mb-3">
-          {["operational", "Notoperational", "Damaged", "Missing"].map((s) => (
-            <button
-              key={s}
-              type="button"
-              className={`btn ${status === s ? "text-white" : "text-dark"}`}
-              style={{
-                backgroundColor: status === s ? statusColors[s] : "#f1f1f1",
-                borderRadius: "50px",
-                padding: "6px 20px",
-                fontWeight: "500",
-                flex: "1 1 45%",
-                minWidth: "100px",
-                transition: "0.2s",
-              }}
-              onClick={() => setStatus(s)}
-            >
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        <div className="text-end">
-          <button
-            className="btn btn-success"
-            style={{ backgroundColor: "#006633" }}
-            onClick={handleTechnicianSubmit}
-          >
-            Submit Report
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 
 
-      {/* Quick Update Modal */}
      
     </div>
   );

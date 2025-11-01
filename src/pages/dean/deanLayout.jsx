@@ -36,6 +36,7 @@ function DeanLayout() {
 
   const sidebarLinks = [
     { icon: <FaHome />, label: "Dashboard", path: "/dean" },
+     { icon: <FaHome />, label: "Labs and Computers", path: "/dean/DeanLabs" },
    
   ];
 
@@ -69,7 +70,7 @@ function DeanLayout() {
       <img
         src="/img/image.png"
         alt="CLAIMS Logo"
-        style={{ height: "40px" }} // adjust as needed
+        style={{ height: "40px" }} 
       />
     )}
   </div>
@@ -121,7 +122,7 @@ function DeanLayout() {
             <p style={{ color: "#ccc", fontSize: "0.9rem", margin: "0 0 1rem 0" }}>{user?.role || "Fetching role..."}</p>
 
           <div
-          onClick={() => navigate("/technician/TechnicianEdit")}
+          onClick={() => navigate( "/dean/DeanEdit")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -129,8 +130,8 @@ function DeanLayout() {
             gap: "0.5rem",
             padding: "0.8rem 1.2rem",
             borderRadius: "10px",
-            backgroundColor: location.pathname === "/technician/TechnicianEdit" ? "#FFCC00" : "#004d26", 
-            color: location.pathname === "/technician/TechnicianEdit" ? "#003d1f" : "#ffffff", 
+            backgroundColor: location.pathname === "/dean/DeanEdit" ? "#FFCC00" : "#004d26", 
+            color: location.pathname ===  "/dean/DeanEdit" ? "#003d1f" : "#ffffff", 
             fontWeight: "600",
             fontSize: "0.95rem",
             cursor: "pointer",
@@ -139,7 +140,7 @@ function DeanLayout() {
           }}
           onMouseOver={e => e.currentTarget.style.backgroundColor = "rgba(255,204,0,0.15)"} 
           onMouseOut={e => 
-            e.currentTarget.style.backgroundColor = location.pathname === "/technician/TechnicianEdit" ? "#FFCC00" : "#004d26"
+            e.currentTarget.style.backgroundColor = location.pathname === "/dean/DeanEdit" ? "#FFCC00" : "#004d26"
           }
         >
           <FaUserEdit size={18} />

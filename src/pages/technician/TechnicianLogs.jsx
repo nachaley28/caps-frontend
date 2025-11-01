@@ -3,6 +3,7 @@ import DataTable from "react-data-table-component";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
+import "./Technician.css";
 
 export default function TechnicianLogs() {
   const [TechnicianLogs, setTechnicianLogs] = useState([]);
@@ -11,21 +12,28 @@ export default function TechnicianLogs() {
   const [showModal, setShowModal] = useState(false);
   const [showCheckboxes, setShowCheckboxes] = useState(false);
   const [title, setTitle] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState("");
   const [userPosition, setUserPosition] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [alreadySentModal, setAlreadySentModal] = useState(false);
 
   const navigate = useNavigate();
+
+  // --- Toast function ---
+  const showToast = (message) => {
+    const toast = document.createElement("div");
+    toast.className = "toast-message";
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  };
 
   // --- Check session ---
   useEffect(() => {
     fetch("http://localhost:5000/check_session")
       .then((res) => res.json())
       .then((data) => {
-        if (!data.logged_in) {
-          navigate("/");
-        } else {
-          console.log("Fetched data:", data);
+        if (!data.logged_in) navigate("/");
+        else {
           setUserPosition(data.user.role);
           setUserEmail(data.user.email);
         }
@@ -33,7 +41,7 @@ export default function TechnicianLogs() {
       .catch((err) => console.error(err));
   }, [navigate]);
 
-  // --- Fetch reports ---
+  // --- Fetch logs ---
   useEffect(() => {
     fetch("http://localhost:5000/get_technician_logs")
       .then((res) => res.json())
@@ -45,7 +53,7 @@ export default function TechnicianLogs() {
   const filteredReports = TechnicianLogs.filter(
     (r) =>
       (r.fix_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
-      (r.isssolution_made || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (r.solution_made || "").toLowerCase().includes(filterText.toLowerCase()) ||
       (r.report_id || "").toLowerCase().includes(filterText.toLowerCase()) ||
       (r.status || "").toLowerCase().includes(filterText.toLowerCase()) ||
       (r.technician_email || "").toLowerCase().includes(filterText.toLowerCase()) ||
@@ -64,11 +72,11 @@ export default function TechnicianLogs() {
   // --- Handle Send Button ---
   const handleSendButton = () => {
     if (!showCheckboxes) {
-      alert("Please click 'Select Reports' first to choose reports.");
+      alert("Please click 'Select Logs' first to choose logs.");
       return;
     }
     if (selectedReports.length === 0) {
-      alert("Please select at least one report.");
+      alert("Please select at least one log.");
       return;
     }
     setShowModal(true);
@@ -98,9 +106,9 @@ export default function TechnicianLogs() {
       const result = await response.json();
 
       if (response.ok) {
-        alert("✅ Report email sent successfully!");
+        alert("✅ Logs email sent successfully!");
       } else {
-        alert("❌ Failed to send report: " + result.message);
+        alert("❌ Failed to send email: " + result.message);
       }
     } catch (error) {
       console.error(error);
@@ -119,111 +127,49 @@ export default function TechnicianLogs() {
           {
             name: "",
             cell: (row) => (
-              <input
-                type="checkbox"
-                checked={selectedReports.includes(row)}
-                onChange={() => handleSelectReport(row)}
-              />
+              <div
+                style={{ display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
+                onClick={() => {
+                  if (row.sent === 1) {
+                    setAlreadySentModal(true);
+                    return;
+                  }
+                  handleSelectReport(row);
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedReports.includes(row)}
+                  readOnly
+                  style={{
+                    pointerEvents: "none",
+                    opacity: row.sent === 1 ? 0.5 : 1
+                  }}
+                />
+              </div>
             ),
             width: "70px",
           },
         ]
       : []),
-    {
-      name: "Report ID",
-      selector: (row) => row.report_id,
-      sortable: true,
-    },
-    {
-      name: "Fix ID",
-      selector: (row) => row.fix_id,
-      sortable: true,
-    },
-    {
-      name: "Lab",
-      selector: (row) => row.issue_found.lab,
-      sortable: true,
-    },
-    {
-      name: "PC Number",
-      selector: (row) => row.issue_found.PC_Number,
-      sortable: true,
-    },
-    {
-      name: "Notes",
-      selector: (row) => row.issue_found.notes,
-      sortable: true,
-    },
-    {
-      name: "Status",
-      selector: (row) => row.issue_found.status,
-      sortable: true,
-    },
-    {
-      name: "Solution Made",
-      selector: (row) => row.isssolution_made || "—",
-    },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      sortable: true,
-      cell: (row) => {
-        const status = row.status?.trim().toLowerCase(); // Normalize input
-        let bgColor = "#f8f9fa";
-        let textColor = "#000";
-
-        if (status === "operational") {
-          bgColor = "#006633";
-          textColor = "#fff";
-        } else if (status === "notoperational" || status === "warning") {
-          bgColor = "#FFCC00";
-          textColor = "#000";
-        } else if (status === "damaged") {
-          bgColor = "#dc3545";
-          textColor = "#fff";
-        } else if (status === "missing") {
-          bgColor = "#6c757d";
-          textColor = "#fff";
-        }
-
-        return (
-          <span
-            style={{
-              backgroundColor: bgColor,
-              color: textColor,
-              padding: "3px 7px",
-              borderRadius: "5px",
-              display: "inline-block",
-              minWidth: "90px",
-              textAlign: "center",
-            }}
-          >
-            {row.status || "—"}
-          </span>
-        );
-      },
-    },
-    {
-      name: "Date",
-      selector: (row) => new Date(row.timestamp).toLocaleString(),
-      sortable: true,
-    },
+    { name: "Report ID", selector: (row) => row.report_id, sortable: true },
+    { name: "Fix ID", selector: (row) => row.fix_id, sortable: true },
+    { name: "Lab", selector: (row) => row.issue_found.lab, sortable: true },
+    { name: "PC Number", selector: (row) => row.issue_found.PC_Number, sortable: true },
+    { name: "Notes", selector: (row) => row.issue_found.notes, sortable: true },
+    { name: "Status", selector: (row) => row.issue_found.status, sortable: true },
+    { name: "Solution Made", selector: (row) => row.solution || "—" },
+    { name: "Technician Email", selector: (row) => row.technician_email },
+    { name: "Date", selector: (row) => new Date(row.timestamp).toLocaleString(), sortable: true },
   ];
 
   const customStyles = {
-    headRow: {
-      style: {
-        backgroundColor: "#006633",
-        color: "#fff",
-      },
-    },
+    headRow: { style: { backgroundColor: "#006633", color: "#fff" } },
   };
 
   return (
     <div className="container py-5">
-      <h1 className="text-center mb-4" style={{ color: "#006633" }}>
-        Admin Reports Dashboard
-      </h1>
+      <h1 className="text-center mb-4" style={{ color: "#006633" }}>Technician Logs Dashboard</h1>
 
       <div className="d-flex justify-content-between mb-3">
         <button
@@ -239,7 +185,7 @@ export default function TechnicianLogs() {
         <input
           type="text"
           className="form-control"
-          placeholder="Search reports..."
+          placeholder="Search logs..."
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           style={{ maxWidth: "300px" }}
@@ -263,7 +209,6 @@ export default function TechnicianLogs() {
           position: "fixed",
           bottom: "30px",
           right: "30px",
-          borderRadius: "50%",
           width: "60px",
           height: "60px",
           display: "flex",
@@ -277,20 +222,11 @@ export default function TechnicianLogs() {
 
       {/* Modal */}
       {showModal && (
-        <div
-          className="modal d-block"
-          tabIndex="-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
+        <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content p-4">
-              <h4 className="mb-3 text-center" style={{ color: "#006633" }}>
-                Send Report
-              </h4>
-
-              <p>
-                <strong>User Position:</strong> {userPosition || "Unknown"}
-              </p>
+              <h4 className="mb-3 text-center" style={{ color: "#006633" }}>Send Log Report</h4>
+              <p><strong>User Position:</strong> {userPosition || "Unknown"}</p>
 
               <div className="d-flex flex-column gap-3">
                 <input
@@ -301,11 +237,7 @@ export default function TechnicianLogs() {
                   onChange={(e) => setTitle(e.target.value)}
                 />
 
-                
-                <div
-                  className="table-responsive border rounded mt-3"
-                  style={{ maxHeight: "250px", overflowY: "auto" }}
-                >
+                <div className="table-responsive border rounded mt-3" style={{ maxHeight: "250px", overflowY: "auto" }}>
                   <table className="table table-striped table-bordered">
                     <thead className="table-success">
                       <tr>
@@ -327,9 +259,9 @@ export default function TechnicianLogs() {
                           <td>{r.fix_id}</td>
                           <td>{r.issue_found.PC_Number}</td>
                           <td>{r.issue_found.lab}</td>
-                          <td>{r.status}</td>
+                          <td>{r.issue_found.status}</td>
                           <td>{r.issue_found.notes}</td>
-                          <td>{r.isssolution_made}</td>
+                          <td>{r.solution}</td>
                           <td>{r.technician_email}</td>
                           <td>{r.timestamp}</td>
                         </tr>
@@ -340,20 +272,33 @@ export default function TechnicianLogs() {
               </div>
 
               <div className="text-end mt-4">
-                <button
-                  className="btn btn-secondary me-2"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button className="btn btn-success" onClick={handleSubmit}>
-                  Submit
-                </button>
+                <button className="btn btn-secondary me-2" onClick={() => setShowModal(false)}>Cancel</button>
+                <button className="btn btn-success" onClick={handleSubmit}>Send</button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Already Sent Modal */}
+      {alreadySentModal && (
+        <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4 text-center">
+              <div className="alert alert-warning mb-3">
+                ⚠️ This log has already been sent!
+              </div>
+              <button
+                className="btn btn-primary"
+                onClick={() => setAlreadySentModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
