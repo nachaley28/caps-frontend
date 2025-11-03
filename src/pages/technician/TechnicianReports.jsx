@@ -99,6 +99,7 @@ export default function TechnicianAndQuickUpdate() {
             replacement_serial: replacementSerial,
             status,
             technician_email: userEmail,
+            com_id: selectedReport,
           }),
         }
       );

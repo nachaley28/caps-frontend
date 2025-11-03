@@ -186,6 +186,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
   const [showAddComputer, setShowAddComputer] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [showOtherParts, setShowOtherParts] = useState(true); 
+  const [otherParts, setotherParts] = useState({});
 
   const labComputers = computers
     .filter((c) => c.lab === lab.name)
@@ -222,6 +223,25 @@ function LabDetail({ lab, computers, back, addComputer }) {
       .catch((err) => console.error("Error fetching statuses:", err));
   }, []);
 
+  useEffect(() => {
+    const fetchOtherParts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/get_other_part_status");
+        const data = await res.json();
+  
+        const partsByPC = {};
+        data.forEach((row) => {
+          partsByPC[row.com_id] = row.parts;
+        });
+  
+        setotherParts(partsByPC);
+      } catch (err) {
+        console.error("Error fetching other parts:", err);
+      }
+    };
+  
+    fetchOtherParts();
+  }, []);
   const partIcons = {
     monitor: FaDesktop,
     systemUnit: FaServer,
@@ -235,11 +255,22 @@ function LabDetail({ lab, computers, back, addComputer }) {
 
   const getStatusStyle = (compId, part) =>
     statusColors[statuses[compId]?.[part] || "operational"];
-  const setStatus = (compId, part, status) =>
+  const setStatus = (compId, part, status, isOtherPart = false) => {
+  if (isOtherPart) {
+    setotherParts((prev) => ({
+      ...prev,
+      [compId]: {
+        ...prev[compId],
+        [part]: status,
+      },
+    }));
+  } else {
     setStatuses((prev) => ({
       ...prev,
       [compId]: { ...prev[compId], [part]: status },
     }));
+  }
+};
 
   const getPCColor = (pc) => {
     const partStatuses = Object.keys(pc.parts).map(
@@ -602,7 +633,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
               minHeight: 80,
             }}
           >
-            {selectedPC.otherParts && selectedPC.otherParts.length > 0 ? (
+            {otherParts[selectedPC.id] && Object.keys(otherParts[selectedPC.id]).length > 0 ? (
               <div
                 style={{
                   display: "grid",
@@ -610,9 +641,10 @@ function LabDetail({ lab, computers, back, addComputer }) {
                   gap: 12,
                 }}
               >
-                {selectedPC.otherParts.map((op, idx) => (
+                {Object.entries(otherParts[selectedPC.id] || {}).map(([partName, status]) => (
+                  
                   <div
-                    key={idx}
+                    key={partName}
                     style={{
                       textAlign: "center",
                       padding: 10,
@@ -622,12 +654,22 @@ function LabDetail({ lab, computers, back, addComputer }) {
                       boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
                     }}
                   >
-                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{op.name}</div>
+                    
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        marginBottom: 8,
+                        fontSize: 14,
+                        color: "#333",
+                      }}
+                    >
+                      {partName}
+                    </div>
                     <StatusButtons
-                      part={op.name}
+                      part={partName}
                       compId={selectedPC.id}
-                      status={statuses[selectedPC.id]?.[op.name] || "operational"}
-                      setStatus={setStatus}
+                      status={status || "operational"}
+                      setStatus={(id, part, s) => setStatus(id, part, s, true)}
                     />
                   </div>
                 ))}
@@ -672,6 +714,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
         <button
           onClick={() => {
             const compStatuses = statuses[selectedPC.id];
+            const compOtherParts = otherParts[selectedPC.id] || {};
             const compIdToSend =
               selectedPC.real_id || selectedPC.random_id || selectedPC.id;
 
@@ -681,6 +724,7 @@ function LabDetail({ lab, computers, back, addComputer }) {
               body: JSON.stringify({
                 compId: compIdToSend,
                 statuses: compStatuses,
+                compOtherParts: compOtherParts
               }),
             })
               .then((res) => res.json())
