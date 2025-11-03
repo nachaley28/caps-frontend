@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import AddUserModal from "./AddUserModal";
 
 function DeanEdit() {
   const [user, setUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -85,6 +87,12 @@ function DeanEdit() {
 
   return (
     <div className="container py-5">
+      <div className="d-flex justify-content-end mb-3">
+        <button className="btn btn-success" onClick={() => setShowModal(true)}>
+          + Register User
+        </button>
+      </div>
+      <AddUserModal show={showModal} onClose={() => setShowModal(false)} />
       <div className="row justify-content-center g-4">
         {/* Image Card */}
         <div className="col-12 col-md-4">
@@ -152,5 +160,6 @@ const FormField = ({ label, name, value, onChange, type = "text" }) => (
     />
   </div>
 );
+
 
 export default DeanEdit;

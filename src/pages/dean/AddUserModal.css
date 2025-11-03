@@ -1,0 +1,43 @@
+.modal.show {
+  display: block !important;
+  background-color: transparent;
+  pointer-events: auto !important;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-backdrop.custom-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.modal-content {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal {
+  z-index: 1055;
+}
+
+.modal-backdrop {
+  z-index: 1040;
+}

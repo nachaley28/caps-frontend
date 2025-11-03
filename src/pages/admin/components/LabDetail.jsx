@@ -23,6 +23,7 @@ const statusColors = {
 };
 
 function StatusButtons({ part, compId, status, setStatus }) {
+  // console.log("Rendering StatusButtons for part:", part, "compId:", compId, "status:", status);
   const statuses = ["operational", "notOperational", "damaged", "missing"];
   const [hovered, setHovered] = useState(null);
 
@@ -62,17 +63,22 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
   const [selectedPCs, setSelectedPCs] = useState([]);
   const [rangeStart, setRangeStart] = useState([]);
   const [rangeEnd, setRangeEnd] = useState([]);
+  const [otherParts, setotherParts] = useState({});
     const [selectedStatus, setSelectedStatus] = useState([]);
+  
 
-
-
-
-
-  const [editData, setEditData] = useState({
-    pcNumber: "",
-    parts: {},
-    otherParts: [],
+console.log("otherParts in LabDetail:",selectedPC)
+if (selectedPC && otherParts[selectedPC.id]) {
+  console.log(otherParts[selectedPC.id]);
+  Object.entries(otherParts[selectedPC.id]).forEach(([partName, status], idx) => {
+    console.log('Other part:', partName, 'status:', status, 'idx:', idx);
   });
+}
+
+
+
+
+  const [editData, setEditData] = useState([]);
   const [showOtherParts, setShowOtherParts] = useState(true); 
   const [showQuickUpdate, setShowQuickUpdate] = useState(false);
   const getNextStatus = (current) => {
@@ -80,9 +86,45 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
   const idx = keys.indexOf(current);
   return keys[(idx + 1) % keys.length];
 };
+  console.log("editData.otherParts",editData)
+  console.log("showOtherParts",otherParts)
+  
+useEffect(() => {
+  if (!editPC) return;
+
+  const fetchEditData = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/get_edit_data");
+      const data = await res.json();
+      console.log("Fetched edit data array:", data);
+
+      const pcData = data.find((item) => item.id === editPC.id);
+
+      if (!pcData) {
+        console.warn("No PC found for ID:", editPC.id);
+        return;
+      }
+
+      setEditData({
+        com_id: pcData.id,
+        lab_id: pcData.lab_id,
+        pcNumber: pcData.pc_name || "",
+        parts: pcData.specs || {},
+        otherParts: Object.entries(pcData.other_parts || {}).map(([name, serial]) => ({
+          name,
+          serial,
+        })),
+      });
+    } catch (err) {
+      console.error("Error fetching computer details:", err);
+    }
+  };
+
+  fetchEditData();
+}, [editPC]);
 
 
-  // ✅ Handlers for Other Parts
+
   const handleOtherPartChange = (index, key, value) => {
     const updated = [...editData.otherParts];
     updated[index][key] = value;
@@ -104,13 +146,34 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
     }
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
+  const handleEditSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
     console.log("Edited PC data:", editData);
-    // TODO: send editData to backend
+
+    const res = await fetch(`http://localhost:5000/update_edit_data/${editPC.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editData),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to update computer');
+    }
+
+    const data = await res.json();
+    console.log('Update response:', data);
+
     setEditPC(null);
-    setSaveMsg("Computer info updated successfully!");
-  };
+
+    setTimeout(() => window.location.reload(), 1000);
+  } catch (err) {
+    console.error('Error updating computer:', err);
+    alert('Failed to update computer. Please try again.');
+  }
+};
+
 
   const labComputers = computers
   .filter((c) => c.lab === lab.name)
@@ -128,69 +191,111 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
 }, [saveMsg]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/get_computer_statuses")
-      .then((res) => res.json())
-      .then((data) => {
-        const newStatuses = {};
-        data.forEach((row) => {
-          newStatuses[row.com_id] = {
-            hdmi: row.hdmi,
-            headphone: row.headphone,
-            keyboard: row.keyboard,
-            monitor: row.monitor,
-            mouse: row.mouse,
-            power: row.power,
-            systemUnit: row.systemUnit,
-            wifi: row.wifi,
-          };
-        });
-        setStatuses(newStatuses);
-          })
-          .catch((err) => console.error("Error fetching statuses:", err));
-      }, []);
-          const partIcons = {
-          monitor: FaDesktop,
-          systemUnit: FaServer,
-          keyboard: FaKeyboard,
-          mouse: FaMouse,
-          headphone: FaHeadphones,
-          hdmi: FaPlug,
-          power: FaPlug,
-          wifi: FaWifi,
-        };
+  const fetchComputerStatuses = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/get_computer_statuses");
+      const data = await res.json();
 
-        const getStatusStyle = (compId, part) =>
-          statusColors[statuses[compId]?.[part] || "operational"];
-        const setStatus = (compId, part, status) =>
-          setStatuses((prev) => ({
-            ...prev,
-            [compId]: { ...prev[compId], [part]: status },
-          }));
-
-        const getPCColor = (pc) => {
-          const partStatuses = Object.keys(pc.parts).map(
-            (p) => statuses[pc.id]?.[p] || "operational"
-          );
-          const worst = partStatuses.reduce(
-            (max, curr) =>
-              statusColors[curr].priority > statusColors[max].priority ? curr : max,
-            "operational"
-          );
-          return statusColors[worst].color;
+      const newStatuses = {};
+      data.forEach((row) => {
+        newStatuses[row.com_id] = {
+          hdmi: row.hdmi,
+          headphone: row.headphone,
+          keyboard: row.keyboard,
+          monitor: row.monitor,
+          mouse: row.mouse,
+          power: row.power,
+          systemUnit: row.systemUnit,
+          wifi: row.wifi,
         };
-        const handleDeleteComputer = async () => {
-        try {
-          const res = await fetch(`http://localhost:5000/delete_computer/${deletePC.id}`, {
-            method: "DELETE",
-          });
-          if (res.ok) {
-            setDeletePC(null);
-            window.location.reload(); 
-          }
-        } catch (err) {
-          console.error("Error deleting computer:", err);
-        }
-      };
+      });
+
+      setStatuses(newStatuses);
+    } catch (err) {
+      console.error("Error fetching computer statuses:", err);
+    }
+  };
+
+  fetchComputerStatuses();
+}, []);
+
+useEffect(() => {
+  const fetchOtherParts = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/get_other_part_status");
+      const data = await res.json();
+
+      const partsByPC = {};
+      data.forEach((row) => {
+        partsByPC[row.com_id] = row.parts;
+      });
+
+      setotherParts(partsByPC);
+    } catch (err) {
+      console.error("Error fetching other parts:", err);
+    }
+  };
+
+  fetchOtherParts();
+}, []);
+
+const partIcons = {
+  monitor: FaDesktop,
+  systemUnit: FaServer,
+  keyboard: FaKeyboard,
+  mouse: FaMouse,
+  headphone: FaHeadphones,
+  hdmi: FaPlug,
+  power: FaPlug,
+  wifi: FaWifi,
+};
+
+const getStatusStyle = (compId, part) =>
+  statusColors[statuses[compId]?.[part] || "operational"];
+
+const setStatus = (compId, part, status, isOtherPart = false) => {
+  if (isOtherPart) {
+    setotherParts((prev) => ({
+      ...prev,
+      [compId]: {
+        ...prev[compId],
+        [part]: status,
+      },
+    }));
+  } else {
+    setStatuses((prev) => ({
+      ...prev,
+      [compId]: { ...prev[compId], [part]: status },
+    }));
+  }
+};
+
+
+const getPCColor = (pc) => {
+  const partStatuses = Object.keys(pc.parts).map(
+    (p) => statuses[pc.id]?.[p] || "operational"
+  );
+  const worst = partStatuses.reduce(
+    (max, curr) =>
+      statusColors[curr].priority > statusColors[max].priority ? curr : max,
+    "operational"
+  );
+  return statusColors[worst].color;
+};
+
+const handleDeleteComputer = async () => {
+  try {
+    const res = await fetch(`http://localhost:5000/delete_computer/${deletePC.id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setDeletePC(null);
+      window.location.reload();
+    }
+  } catch (err) {
+    console.error("Error deleting computer:", err);
+  }
+};
       
       
   return (
@@ -636,6 +741,7 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
         >
           {["monitor", "systemUnit", "keyboard", "mouse", "headphone", "hdmi", "power", "wifi"].map(
             (part) => {
+              console.log("Rendering part input for:", part);
               const Icon = partIcons[part] || FaPlug;
               return (
                 <div key={part}>
@@ -760,7 +866,7 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
                         handleOtherPartChange(idx, "name", e.target.value)
                       }
                       placeholder="Part Name"
-                      style={{ flex: 1, border: "none", outline: "none", padding: "4px 2px", backgroundColor: "transparent" }}
+                      style={{ flex: 1, border: "none", outline: "none", padding: "4px 2px",backgroundColor: "transparent", color: "#666"}}
                     />
                   </div>
 
@@ -1306,65 +1412,76 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
 
         {/* Other Parts Section */}
         {showOtherParts && (
+  <div
+    style={{
+      backgroundColor: "#fff3e0",
+      border: "1px solid #ffb74d",
+      borderRadius: 10,
+      padding: 15,
+      marginTop: 12,
+      minHeight: 80,
+    }}
+  >
+   {otherParts[selectedPC.id] && Object.keys(otherParts[selectedPC.id]).length > 0 ? (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 12,
+        }}
+      >
+        {Object.entries(otherParts[selectedPC.id] || {}).map(([partName, status]) => (
+          
           <div
+            key={partName}
             style={{
-              backgroundColor: "#fff3e0",
-              border: "1px solid #ffb74d",
+              textAlign: "center",
+              padding: 10,
               borderRadius: 10,
-              padding: 15,
-              marginTop: 12,
-              minHeight: 80,
+              background: "#fff8f0",
+              minHeight: 100,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
             }}
           >
-            {selectedPC.otherParts && selectedPC.otherParts.length > 0 ? (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 12,
-                }}
-              >
-                {selectedPC.otherParts.map((op, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      textAlign: "center",
-                      padding: 10,
-                      borderRadius: 10,
-                      background: "#fff8f0",
-                      minHeight: 100,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                    }}
-                  >
-                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{op.name}</div>
-                    <StatusButtons
-                      part={op.name}
-                      compId={selectedPC.id}
-                      status={statuses[selectedPC.id]?.[op.name] || "operational"}
-                      setStatus={setStatus}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div
-                style={{
-                  textAlign: "center",
-                  color: "#ff5722",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  padding: 15,
-                }}
-              >
-                No other parts
-              </div>
-            )}
+            
+            <div
+              style={{
+                fontWeight: 600,
+                marginBottom: 8,
+                fontSize: 14,
+                color: "#333",
+              }}
+            >
+              {partName}
+            </div>
+            <StatusButtons
+              part={partName}
+              compId={selectedPC.id}
+              status={status || "operational"}
+              setStatus={(id, part, s) => setStatus(id, part, s, true)}
+            />
           </div>
-        )}
+        ))}
+      </div>
+    ) : (
+      <div
+        style={{
+          textAlign: "center",
+          color: "#ff5722",
+          fontWeight: 600,
+          fontSize: 14,
+          padding: 15,
+        }}
+      >
+        No other parts
+      </div>
+    )}
+  </div>
+)}
 
       </div>
 
-      {/* Footer */}
+
       <div
         className="modal-footer"
         style={{ display: "flex", justifyContent: "flex-end", padding: 12, gap: 12 }}
@@ -1386,6 +1503,7 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
         <button
           onClick={() => {
             const compStatuses = statuses[selectedPC.id];
+            const compOtherParts = otherParts[selectedPC.id] || {};
             const compIdToSend =
               selectedPC.real_id || selectedPC.random_id || selectedPC.id;
 
@@ -1395,6 +1513,7 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
               body: JSON.stringify({
                 compId: compIdToSend,
                 statuses: compStatuses,
+                compOtherParts: compOtherParts
               }),
             })
               .then((res) => res.json())

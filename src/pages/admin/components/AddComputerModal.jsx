@@ -79,6 +79,7 @@ export default function AddComputerModal({ lab, addComputer, addComputers, onClo
       const newComputer = await res.json();
       addComputer?.(newComputer);
       onClose();
+      setTimeout(() => window.location.reload(), 10);
     } catch (err) {
       console.error(err);
     }

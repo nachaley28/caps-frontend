@@ -15,6 +15,7 @@ export default function AddLabModal({ addLab, onClose }) {
       body: JSON.stringify({ data: { lab_name: name, location } }),
     })
       .then(async (res) => {
+        setTimeout(() => window.location.reload(), 10);
         const data = await res.json();
         if (!res.ok) {
           alert(data.error || "Error adding lab");
