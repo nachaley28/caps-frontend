@@ -44,7 +44,9 @@ export default function Reports() {
         const sortedData = data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
+        console.log("sortedData",data)
         setAdminReports(sortedData);
+        
       })
       .catch((err) => console.error(err));
   };
@@ -68,6 +70,7 @@ export default function Reports() {
 
   // --- Select / Deselect reports ---
   const handleSelectReport = (report) => {
+    console.log("report",report);
     setSelectedReports((prev) =>
       prev.includes(report)
         ? prev.filter((r) => r !== report)
@@ -85,6 +88,7 @@ export default function Reports() {
       alert("Please select at least one report.");
       return;
     }
+    console.log("selectedReports",selectedReports)
     setShowModal(true);
   };
 

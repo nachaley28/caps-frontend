@@ -39,16 +39,16 @@ export default function TechnicianAndQuickUpdate() {
       .catch((err) => console.error(err));
   };
 
-  const loadLabComputers = () => {
-    fetch("http://localhost:5000/get_lab_computers")
-      .then((res) => res.json())
-      .then((data) => setLabComputers(data))
-      .catch((err) => console.error(err));
-  };
+  // const loadLabComputers = () => {
+  //   fetch("http://localhost:5000/get_lab_computers")
+  //     .then((res) => res.json())
+  //     .then((data) => setLabComputers(data))
+  //     .catch((err) => console.error(err));
+  // };
 
   useEffect(() => {
     loadReports();
-    loadLabComputers();
+    // loadLabComputers();
   }, []);
 
  
