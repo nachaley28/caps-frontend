@@ -117,16 +117,25 @@ function LandingPage() {
             }}
           />
         </div>
-        <h2
-          className="fw-bold mb-2"
+       <div
           style={{
-            color: "white",
-            letterSpacing: "2px",
-            textShadow: "1px 1px 3px rgba(0,0,0,0.3)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",    
+            marginBottom: "20px",     
           }}
         >
-          CLAIMS
-        </h2>
+          <img
+            src="/img/image.png"
+            alt="Claims"
+            style={{
+              width: "150px",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(1px 1px 3px rgba(0,0,0,0.3))",
+            }}
+          />
+        </div>
 
         <p
           style={{
