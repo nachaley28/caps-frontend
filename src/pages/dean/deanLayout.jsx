@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { FaBars, FaHome, FaNetworkWired, FaClipboardList, FaUserEdit, FaHistory } from "react-icons/fa";
+import { FaBars, FaHome, FaNetworkWired, FaUser, FaUserEdit, FaHistory } from "react-icons/fa";
 
 function DeanLayout() {
   const navigate = useNavigate();
@@ -36,7 +36,8 @@ function DeanLayout() {
 
   const sidebarLinks = [
     { icon: <FaHome />, label: "Dashboard", path: "/dean" },
-     { icon: <FaHome />, label: "Labs and Computers", path: "/dean/DeanLabs" },
+    { icon: <FaNetworkWired />, label: "Labs and Computers", path: "/dean/DeanLabs" },
+    { icon: <FaUser />, label: "Users", path: "/dean/User" },
    
   ];
 

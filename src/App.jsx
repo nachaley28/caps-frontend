@@ -26,6 +26,8 @@ import AddComputerModal from './pages/admin/components/AddComputerModal';
 import DeanLayout from "./pages/dean/DeanLayout";
 import DeanLabs from "./pages/dean/DeanLabs";
 import DeanEdit from "./pages/dean/DeanEdit";
+import User from "./pages/dean/User";
+
 
 
 
@@ -73,7 +75,7 @@ function RouteWithTransitions() {
             <Route index element={<TechnicianDashboard />} /> 
             <Route path="DeanLabs" element={<DeanLabs/>} />
             <Route path="DeanEdit" element={<DeanEdit/>} />
-            
+             <Route path="User" element={<User/>} />
             
            
       

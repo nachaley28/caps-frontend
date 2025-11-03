@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./AddUserModal.css"; // 👈 create this CSS file (see below)
 
 function AddUserModal({ show, onClose }) {
   const [formData, setFormData] = useState({
-    lgid: "",
     name: "",
     email: "",
     role: "",
@@ -34,9 +32,6 @@ function AddUserModal({ show, onClose }) {
 
     let imageUrl = "";
 
-    // Upload profile image (optional)
-
-    // Register user
     const res = await fetch("http://127.0.0.1:5000/register_user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,43 +53,49 @@ function AddUserModal({ show, onClose }) {
       <div className={`modal fade ${show ? "show d-block visible" : ""}`} tabIndex="-1">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content rounded-4 shadow">
-            <div className="modal-header bg-success text-white">
+            <div className="modal-header bg-success text-white position-relative">
               <h5 className="modal-title">Register New User</h5>
-              <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={onClose}
+                style={{
+                  position: "absolute",
+                  top: "15px",
+                  right: "15px",
+                  filter: "invert(0)", // makes 'X' icon black
+                  opacity: 1,
+                }}
+              ></button>
             </div>
 
             <div className="modal-body">
               <form onSubmit={adduserhandleSubmit}>
-                <div className="row g-3">
-                  {/* Profile Image */}
-                  
-                  {/* Form Fields */}
+                <div className="row g-4">
+                  <div className="col-md-4 text-center">
+                    <img
+                      src={imagePreview}
+                      alt="Profile Preview"
+                      className="img-thumbnail rounded-circle mb-3"
+                      style={{ width: "150px", height: "150px", objectFit: "cover" }}
+                    />
+                    <input type="file" className="form-control" onChange={handleFileChange} />
+                  </div>
+
                   <div className="col-md-8">
                     <div className="row g-3">
-                      <div className="col-md-6">
-                        <FormField label="LGID" name="lgid" value={formData.lgid} onChange={handleChange} />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Name" name="name" value={formData.name} onChange={handleChange} />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Email" name="email" value={formData.email} onChange={handleChange} type="email" />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Password" name="password" value={formData.password} onChange={handleChange} type="password" />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Department" name="department" value={formData.department} onChange={handleChange} />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Position" name="position" value={formData.position} onChange={handleChange} />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Role" name="role" value={formData.role} onChange={handleChange} />
-                      </div>
-                      <div className="col-md-6">
-                        <FormField label="Year" name="year" value={formData.year} onChange={handleChange} />
-                      </div>
+                      {["name", "email", "password", "department", "position", "role", "year"].map(field => (
+                        <div className="col-md-6" key={field}>
+                          <FormField
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            name={field}
+                            value={formData[field]}
+                            onChange={handleChange}
+                            type={field === "password" ? "password" : field === "email" ? "email" : "text"}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -108,13 +109,12 @@ function AddUserModal({ show, onClose }) {
         </div>
       </div>
 
-      {/* Custom Backdrop */}
       {show && <div className="modal-backdrop fade show custom-backdrop" onClick={onClose}></div>}
     </>
   );
 }
 
-const FormField = ({ label, name, value, onChange, type = "text" }) => (
+const FormField = ({ label, name, value, onChange, type }) => (
   <div>
     <label className="form-label fw-bold text-success">{label}</label>
     <input

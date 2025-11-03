@@ -44,9 +44,7 @@ export default function Reports() {
         const sortedData = data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-        console.log("sortedData",data)
         setAdminReports(sortedData);
-        
       })
       .catch((err) => console.error(err));
   };
@@ -70,7 +68,6 @@ export default function Reports() {
 
   // --- Select / Deselect reports ---
   const handleSelectReport = (report) => {
-    console.log("report",report);
     setSelectedReports((prev) =>
       prev.includes(report)
         ? prev.filter((r) => r !== report)
@@ -88,7 +85,6 @@ export default function Reports() {
       alert("Please select at least one report.");
       return;
     }
-    console.log("selectedReports",selectedReports)
     setShowModal(true);
   };
 
@@ -245,7 +241,7 @@ export default function Reports() {
         customStyles={customStyles}
       />
 
-      {/* Floating Send Button */}
+    
       <button
         className="btn btn-success rounded-circle p-3"
         onClick={handleSendButton}
@@ -264,7 +260,7 @@ export default function Reports() {
         <FaPaperPlane size={20} />
       </button>
 
-      {/* Input Modal */}
+  
       {showModal && (
         <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -318,7 +314,7 @@ export default function Reports() {
         </div>
       )}
 
-      {/* Status Modal */}
+     
       {showStatusModal && (
         <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -342,7 +338,7 @@ export default function Reports() {
         </div>
       )}
 
-      {/* Already Sent Modal */}
+    
       {alreadySentModal && (
         <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}>
           <div className="modal-dialog modal-dialog-centered">
