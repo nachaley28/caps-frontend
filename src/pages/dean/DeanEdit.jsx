@@ -117,7 +117,6 @@ function DeanEdit() {
           </div>
         </div>
 
-        {/* Profile Info */}
         <div className="col-12 col-md-4">
           <div className="card shadow-sm p-4 h-100">
             <h4 className="text-center text-success mb-4">Profile Info</h4>
@@ -128,7 +127,6 @@ function DeanEdit() {
           </div>
         </div>
 
-        {/* Change Password */}
         <div className="col-12 col-md-4">
           <div className="card shadow-sm p-4 h-100">
             <h4 className="text-center text-success mb-4">Change Password</h4>

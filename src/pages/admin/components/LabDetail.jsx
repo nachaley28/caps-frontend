@@ -1292,254 +1292,254 @@ const handleDeleteComputer = async () => {
 
  
 
- {selectedPC && (
-  <div className="modal-backdrop">
-    <div
-      className="modal-card"
-      style={{
-        width: "90%",         
-        maxWidth: "900px",
-        margin: "0 auto",
-      }}
-    >
-      {/* Header */}
-      <div
-        className="modal-header"
-        style={{ backgroundColor: "#006633", color: "white", padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      >
-        <span>PC {selectedPC.pcNumber} – Update Status</span>
-        <button
-          onClick={() => setSelectedPC(null)}
-          className="btn-close text-white"
-        >
-          <FaTimes />
-        </button>
-      </div>
+      {selectedPC && (
+        <div className="modal-backdrop">
+          <div
+            className="modal-card"
+            style={{
+              width: "90%",         
+              maxWidth: "900px",
+              margin: "0 auto",
+            }}
+          >
+            {/* Header */}
+            <div
+              className="modal-header"
+              style={{ backgroundColor: "#006633", color: "white", padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+            >
+              <span>PC {selectedPC.pcNumber} – Update Status</span>
+              <button
+                onClick={() => setSelectedPC(null)}
+                className="btn-close text-white"
+              >
+                <FaTimes />
+              </button>
+            </div>
 
-      {/* Body */}
-      <div className="modal-body" style={{ padding: 20 }}>
-        {/* Main parts grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 12,
-          }}
-        >
-          {Object.keys(selectedPC.parts).map((part) => {
-            const Icon = partIcons[part];
-            const style = getStatusStyle(selectedPC.id);
-            const value = selectedPC.parts[part];
-            const partLabel =
-              value === 1 ? "Present" : value === 0 ? "Missing" : String(value);
-
-            return (
+            {/* Body */}
+            <div className="modal-body" style={{ padding: 20 }}>
+              {/* Main parts grid */}
               <div
-                key={part}
                 style={{
-                  textAlign: "center",
-                  padding: 12,
-                  borderRadius: 10,
-                  background: "#f8f9fa",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 12,
                 }}
               >
-                <Icon size={50} color={style.color} />
-                <div style={{ textTransform: "capitalize", marginTop: 6 }}>
-                  {part}
-                </div>
-                <div style={{ fontSize: 12, color: "#495057", marginTop: 4 }}>
-                  {partLabel}
-                </div>
-                <StatusButtons
-                  part={part}
-                  compId={selectedPC.id}
-                  status={statuses[selectedPC.id]?.[part] || "operational"}
-                  setStatus={setStatus}
-                />
-              </div>
-            );
-          })}
-        </div>
+                {Object.keys(selectedPC.parts).map((part) => {
+                  const Icon = partIcons[part];
+                  const style = getStatusStyle(selectedPC.id);
+                  const value = selectedPC.parts[part];
+                  const partLabel =
+                    value === 1 ? "Present" : value === 0 ? "Missing" : String(value);
 
-        {/* Status Legend */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 20,
-            marginTop: 25,
-            flexWrap: "wrap",
-            background: "#f8f9fa",
-            padding: 12,
-            borderRadius: 8,
-          }}
-        >
-          {Object.keys(statusColors).map((s) => (
-            <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  return (
+                    <div
+                      key={part}
+                      style={{
+                        textAlign: "center",
+                        padding: 12,
+                        borderRadius: 10,
+                        background: "#f8f9fa",
+                      }}
+                    >
+                      <Icon size={50} color={style.color} />
+                      <div style={{ textTransform: "capitalize", marginTop: 6 }}>
+                        {part}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#495057", marginTop: 4 }}>
+                        {partLabel}
+                      </div>
+                      <StatusButtons
+                        part={part}
+                        compId={selectedPC.id}
+                        status={statuses[selectedPC.id]?.[part] || "operational"}
+                        setStatus={setStatus}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Status Legend */}
               <div
                 style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  backgroundColor: statusColors[s].color,
-                  border: "1px solid #ccc",
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 20,
+                  marginTop: 25,
+                  flexWrap: "wrap",
+                  background: "#f8f9fa",
+                  padding: 12,
+                  borderRadius: 8,
                 }}
-              />
-              <span style={{ fontSize: 14, color: "#495057" }}>
-                {statusColors[s].label}
-              </span>
-            </div>
-          ))}
-        </div>
+              >
+                {Object.keys(statusColors).map((s) => (
+                  <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        backgroundColor: statusColors[s].color,
+                        border: "1px solid #ccc",
+                      }}
+                    />
+                    <span style={{ fontSize: 14, color: "#495057" }}>
+                      {statusColors[s].label}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-        {/* Toggle Other Parts Button */}
-        <div style={{ marginTop: 20, textAlign: "center" }}>
-          <button
-            onClick={() => setShowOtherParts(prev => !prev)}
-            style={{
-              backgroundColor: "#ff9800",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              padding: "10px 16px",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontSize: 14,
-            }}
-          >
-            {showOtherParts ? "Hide Other Parts" : "Update Other Parts"}
-          </button>
-        </div>
+              {/* Toggle Other Parts Button */}
+              <div style={{ marginTop: 20, textAlign: "center" }}>
+                <button
+                  onClick={() => setShowOtherParts(prev => !prev)}
+                  style={{
+                    backgroundColor: "#ff9800",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "10px 16px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: 14,
+                  }}
+                >
+                  {showOtherParts ? "Hide Other Parts" : "Update Other Parts"}
+                </button>
+              </div>
 
-        {/* Other Parts Section */}
-        {showOtherParts && (
-  <div
-    style={{
-      backgroundColor: "#fff3e0",
-      border: "1px solid #ffb74d",
-      borderRadius: 10,
-      padding: 15,
-      marginTop: 12,
-      minHeight: 80,
-    }}
-  >
-   {otherParts[selectedPC.id] && Object.keys(otherParts[selectedPC.id]).length > 0 ? (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 12,
-        }}
-      >
-        {Object.entries(otherParts[selectedPC.id] || {}).map(([partName, status]) => (
-          
-          <div
-            key={partName}
-            style={{
-              textAlign: "center",
-              padding: 10,
-              borderRadius: 10,
-              background: "#fff8f0",
-              minHeight: 100,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-            }}
-          >
-            
+              {/* Other Parts Section */}
+              {showOtherParts && (
+        <div
+          style={{
+            backgroundColor: "#fff3e0",
+            border: "1px solid #ffb74d",
+            borderRadius: 10,
+            padding: 15,
+            marginTop: 12,
+            minHeight: 80,
+          }}
+        >
+        {otherParts[selectedPC.id] && Object.keys(otherParts[selectedPC.id]).length > 0 ? (
             <div
               style={{
-                fontWeight: 600,
-                marginBottom: 8,
-                fontSize: 14,
-                color: "#333",
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 12,
               }}
             >
-              {partName}
+              {Object.entries(otherParts[selectedPC.id] || {}).map(([partName, status]) => (
+                
+                <div
+                  key={partName}
+                  style={{
+                    textAlign: "center",
+                    padding: 10,
+                    borderRadius: 10,
+                    background: "#fff8f0",
+                    minHeight: 100,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      marginBottom: 8,
+                      fontSize: 14,
+                      color: "#333",
+                    }}
+                  >
+                    {partName}
+                  </div>
+                  <StatusButtons
+                    part={partName}
+                    compId={selectedPC.id}
+                    status={status || "operational"}
+                    setStatus={(id, part, s) => setStatus(id, part, s, true)}
+                  />
+                </div>
+              ))}
             </div>
-            <StatusButtons
-              part={partName}
-              compId={selectedPC.id}
-              status={status || "operational"}
-              setStatus={(id, part, s) => setStatus(id, part, s, true)}
-            />
+          ) : (
+            <div
+              style={{
+                textAlign: "center",
+                color: "#ff5722",
+                fontWeight: 600,
+                fontSize: 14,
+                padding: 15,
+              }}
+            >
+              No other parts
+            </div>
+          )}
+        </div>
+      )}
+
+            </div>
+
+
+            <div
+              className="modal-footer"
+              style={{ display: "flex", justifyContent: "flex-end", padding: 12, gap: 12 }}
+            >
+              <button
+                onClick={() => setSelectedPC(null)}
+                style={{
+                  backgroundColor: "#FFCC00",
+                  color: "#006633",
+                  fontWeight: 600,
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const compStatuses = statuses[selectedPC.id];
+                  const compOtherParts = otherParts[selectedPC.id] || {};
+                  const compIdToSend =
+                    selectedPC.real_id || selectedPC.random_id || selectedPC.id;
+
+                  fetch("http://localhost:5000/update_computer_status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      compId: compIdToSend,
+                      statuses: compStatuses,
+                      compOtherParts: compOtherParts
+                    }),
+                  })
+                    .then((res) => res.json())
+                    .then((data) => {
+                      console.log("Saved:", data);
+                      setSelectedPC(null);
+                      setSaveMsg("Status updated successfully!");
+                    })
+                    .catch((err) => console.error("Error saving statuses:", err));
+                }}
+                style={{
+                  backgroundColor: "#006633",
+                  color: "white",
+                  fontWeight: "600",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  border: "none",
+                }}
+              >
+                Save
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
-    ) : (
-      <div
-        style={{
-          textAlign: "center",
-          color: "#ff5722",
-          fontWeight: 600,
-          fontSize: 14,
-          padding: 15,
-        }}
-      >
-        No other parts
-      </div>
-    )}
-  </div>
-)}
-
-      </div>
-
-
-      <div
-        className="modal-footer"
-        style={{ display: "flex", justifyContent: "flex-end", padding: 12, gap: 12 }}
-      >
-        <button
-          onClick={() => setSelectedPC(null)}
-          style={{
-            backgroundColor: "#FFCC00",
-            color: "#006633",
-            fontWeight: 600,
-            padding: "8px 16px",
-            borderRadius: 6,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            const compStatuses = statuses[selectedPC.id];
-            const compOtherParts = otherParts[selectedPC.id] || {};
-            const compIdToSend =
-              selectedPC.real_id || selectedPC.random_id || selectedPC.id;
-
-            fetch("http://localhost:5000/update_computer_status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                compId: compIdToSend,
-                statuses: compStatuses,
-                compOtherParts: compOtherParts
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                console.log("Saved:", data);
-                setSelectedPC(null);
-                setSaveMsg("Status updated successfully!");
-              })
-              .catch((err) => console.error("Error saving statuses:", err));
-          }}
-          style={{
-            backgroundColor: "#006633",
-            color: "white",
-            fontWeight: "600",
-            padding: "8px 16px",
-            borderRadius: 6,
-            border: "none",
-          }}
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        </div>
+      )}
 
 
 
