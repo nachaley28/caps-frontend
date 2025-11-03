@@ -145,7 +145,7 @@ export default function Reports() {
                 }}
                 onClick={() => {
                   if (row.sent === 1) {
-                    setAlreadySentModal(true); // Show modal only when clicked
+                    setAlreadySentModal(true); 
                     return;
                   }
                   handleSelectReport(row);
@@ -156,8 +156,8 @@ export default function Reports() {
                   checked={selectedReports.includes(row)}
                   readOnly
                   style={{
-                    pointerEvents: "none", // ensure div handles click
-                    opacity: row.sent === 1 ? 0.5 : 1, // dim if already sent
+                    pointerEvents: "none", 
+                    opacity: row.sent === 1 ? 0.5 : 1, 
                   }}
                 />
               </div>

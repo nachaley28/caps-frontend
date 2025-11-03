@@ -9,7 +9,7 @@ import {
   FaWifi,
   FaTimes,
   FaTrashAlt,
-  FaCheckCircle,
+ 
   FaEdit,
   FaHashtag, 
 } from "react-icons/fa";
@@ -23,7 +23,6 @@ const statusColors = {
 };
 
 function StatusButtons({ part, compId, status, setStatus }) {
-  // console.log("Rendering StatusButtons for part:", part, "compId:", compId, "status:", status);
   const statuses = ["operational", "notOperational", "damaged", "missing"];
   const [hovered, setHovered] = useState(null);
 
@@ -61,10 +60,8 @@ export default function LabDetail({ lab, computers, back, addComputer }) {
   const [editPC, setEditPC] = useState(null);
   const [selectedPart,setSelectedPart]= useState(true); 
   const [selectedPCs, setSelectedPCs] = useState([]);
-  const [rangeStart, setRangeStart] = useState([]);
-  const [rangeEnd, setRangeEnd] = useState([]);
   const [otherParts, setotherParts] = useState({});
-    const [selectedStatus, setSelectedStatus] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
   
 
 console.log("otherParts in LabDetail:",selectedPC)
@@ -645,8 +642,8 @@ const handleDeleteComputer = async () => {
             </div>
           </div>
         )}
- {/* ✅ EDIT MODAL */}
-       {editPC && (
+
+      {editPC && (
   <div
     style={{
       position: "fixed",
@@ -679,7 +676,6 @@ const handleDeleteComputer = async () => {
         Edit Computer – PC {editData.pcNumber || ""}
       </h4>
 
-      {/* --- PC Info Section --- */}
       <div
         style={{
           padding: 12,
@@ -714,19 +710,19 @@ const handleDeleteComputer = async () => {
               padding: "6px 8px",
               fontSize: 14,
               backgroundColor: "transparent",
+              color: "#000",
             }}
           />
         </div>
       </div>
 
-      {/* --- Predefined Parts Section (Green) --- */}
       <div
         style={{
           padding: 12,
           border: "1px solid #ccc",
           borderRadius: 8,
           marginBottom: 15,
-          backgroundColor: "#e6f4ea", // slight green
+          backgroundColor: "#e6f4ea",
         }}
       >
         <h5 style={{ color: "#006633", marginBottom: 10, fontWeight: 600 }}>
@@ -741,7 +737,6 @@ const handleDeleteComputer = async () => {
         >
           {["monitor", "systemUnit", "keyboard", "mouse", "headphone", "hdmi", "power", "wifi"].map(
             (part) => {
-              console.log("Rendering part input for:", part);
               const Icon = partIcons[part] || FaPlug;
               return (
                 <div key={part}>
@@ -784,6 +779,7 @@ const handleDeleteComputer = async () => {
                         fontSize: 14,
                         padding: "4px 2px",
                         backgroundColor: "transparent",
+                        color: "#000",
                       }}
                     />
                   </div>
@@ -824,7 +820,7 @@ const handleDeleteComputer = async () => {
               padding: 12,
               border: "1px solid #ccc",
               borderRadius: 8,
-              backgroundColor: "#fff3e0", // orange
+              backgroundColor: "#fff3e0",
             }}
           >
             {(editData.otherParts || []).map((op, idx) => (
@@ -866,7 +862,14 @@ const handleDeleteComputer = async () => {
                         handleOtherPartChange(idx, "name", e.target.value)
                       }
                       placeholder="Part Name"
-                      style={{ flex: 1, border: "none", outline: "none", padding: "4px 2px",backgroundColor: "transparent", color: "#666"}}
+                      style={{
+                        flex: 1,
+                        border: "none",
+                        outline: "none",
+                        padding: "4px 2px",
+                        backgroundColor: "transparent",
+                        color: "#000", // text is black
+                      }}
                     />
                   </div>
 
@@ -897,7 +900,14 @@ const handleDeleteComputer = async () => {
                         handleOtherPartChange(idx, "serial", e.target.value)
                       }
                       placeholder="Serial Number"
-                      style={{ flex: 1, border: "none", outline: "none", padding: "4px 2px", backgroundColor: "transparent" }}
+                      style={{
+                        flex: 1,
+                        border: "none",
+                        outline: "none",
+                        padding: "4px 2px",
+                        backgroundColor: "transparent",
+                        color: "#000", // text is black
+                      }}
                     />
                   </div>
                 </div>
@@ -927,7 +937,10 @@ const handleDeleteComputer = async () => {
       <div style={{ marginBottom: 15 }}>
         <button
           type="button"
-          onClick={() => { setShowOtherParts(true); addOtherPart(); }}
+          onClick={() => {
+            setShowOtherParts(true);
+            addOtherPart();
+          }}
           style={{
             width: "100%",
             padding: "8px 12px",
@@ -981,12 +994,6 @@ const handleDeleteComputer = async () => {
 )}
 
 
-
-
-
-    
-
-
 {showQuickUpdate && (
   <div
     style={{
@@ -995,24 +1002,26 @@ const handleDeleteComputer = async () => {
       left: 0,
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(0,0,0,0.5)",
+      backgroundColor: "rgba(0,0,0,0.6)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       zIndex: 9999,
       padding: "10px",
+      backdropFilter: "blur(4px)",
     }}
   >
     <div
       style={{
         background: "#fff",
-        borderRadius: "15px",
-        width: "80%",
-        maxWidth: "850px",
-        maxHeight: "90vh",
+        borderRadius: "20px",
+        width: "85%",
+        maxWidth: "900px",
+        maxHeight: "92vh",
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+        boxShadow: "0 15px 30px rgba(0,0,0,0.25)",
+        overflow: "hidden",
       }}
     >
       {/* Header */}
@@ -1021,16 +1030,18 @@ const handleDeleteComputer = async () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "15px 20px",
-          borderBottom: "1px solid #ccc",
-          flexShrink: 0,
+          padding: "18px 25px",
+          borderBottom: "1px solid #e5e5e5",
+          backgroundColor: "#f8f9fa",
         }}
       >
-        <h4 style={{ color: "#006633", margin: 0 }}>Quick Update PCs Status</h4>
+        <h4 style={{ color: "#006633", margin: 0, fontWeight: 700 }}>
+          Quick Update PC Status
+        </h4>
         <button
           className="btn-close"
           onClick={() => setShowQuickUpdate(false)}
-          style={{ fontSize: "18px" }}
+          style={{ fontSize: "20px", color: "#333" }}
         >
           <FaTimes />
         </button>
@@ -1039,25 +1050,27 @@ const handleDeleteComputer = async () => {
       {/* Scrollable Content */}
       <div
         style={{
-          padding: "15px 20px",
+          padding: "18px 25px",
           overflowY: "auto",
           flex: 1,
+          backgroundColor: "#fdfdfd",
         }}
       >
         {/* Step 1: Select Part */}
-        <div style={{ marginBottom: 12 }}>
-          <span style={{ fontWeight: 600 }}>Select Part to Update:</span>
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontWeight: 600, fontSize: 15 }}>1. Select Part to Update:</span>
           <div
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: 10,
-              marginTop: 8,
+              gap: 14,
+              marginTop: 10,
               justifyContent: "center",
             }}
           >
             {Object.keys(partIcons).map((part) => {
               const Icon = partIcons[part];
+              const isActive = selectedPart === part;
               return (
                 <button
                   key={part}
@@ -1065,13 +1078,12 @@ const handleDeleteComputer = async () => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    padding: "8px 12px",
-                    borderRadius: "10px",
-                    border:
-                      selectedPart === part ? "2px solid #006633" : "1px solid #ccc",
-                    backgroundColor: selectedPart === part ? "#e6f7e6" : "#f4f4f4",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    border: isActive ? "2px solid #006633" : "1px solid #ccc",
+                    backgroundColor: isActive ? "#e8f5e9" : "#fafafa",
                     cursor: "pointer",
-                    transition: "0.2s",
+                    transition: "all 0.2s ease-in-out",
                   }}
                   onClick={() => {
                     setSelectedPart(part);
@@ -1079,8 +1091,10 @@ const handleDeleteComputer = async () => {
                     setSelectedPCs([]);
                   }}
                 >
-                  <Icon size={28} />
-                  <span style={{ fontSize: 13, marginTop: 5 }}>{part}</span>
+                  <Icon size={30} />
+                  <span style={{ fontSize: 14, marginTop: 6, fontWeight: 500 }}>
+                    {part}
+                  </span>
                 </button>
               );
             })}
@@ -1089,16 +1103,16 @@ const handleDeleteComputer = async () => {
 
         {/* Step 2: Select Status */}
         {selectedPart && (
-          <div style={{ marginBottom: 12 }}>
-            <span style={{ fontWeight: 600 }}>
-              Select Status for {selectedPart}:
+          <div style={{ marginBottom: 16 }}>
+            <span style={{ fontWeight: 600, fontSize: 15 }}>
+              2. Select Status for {selectedPart}:
             </span>
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 8,
-                marginTop: 8,
+                gap: 10,
+                marginTop: 10,
                 justifyContent: "center",
               }}
             >
@@ -1109,15 +1123,18 @@ const handleDeleteComputer = async () => {
                     backgroundColor:
                       selectedStatus === s
                         ? statusColors[s]?.color || "#f4f4f4"
-                        : "#f4f4f4",
-                    color: s === "missing" ? "#fff" : "#000",
-                    border:
-                      selectedStatus === s ? "2px solid #006633" : "1px solid #ccc",
-                    padding: "6px 16px",
-                    borderRadius: 25,
+                        : "#ffffff",
+                    color:
+                      selectedStatus === s
+                        ? "#fff"
+                        : "#333", // 🔥 Always black text when not selected
+                    border: selectedStatus === s ? "2px solid #006633" : "1px solid #ccc",
+                    padding: "8px 20px",
+                    borderRadius: 30,
                     cursor: "pointer",
-                    fontWeight: 500,
-                    transition: "0.2s",
+                    fontWeight: 600,
+                    boxShadow: selectedStatus === s ? "0 3px 8px rgba(0,0,0,0.15)" : "",
+                    transition: "all 0.2s",
                   }}
                   onClick={() => setSelectedStatus(s)}
                 >
@@ -1130,8 +1147,10 @@ const handleDeleteComputer = async () => {
 
         {/* Step 3: Select PCs */}
         {selectedPart && selectedStatus && (
-          <div style={{ marginBottom: 15, display: "flex", flexDirection: "column" }}>
-            <span style={{ fontWeight: 600 }}>Select PCs to Update:</span>
+          <div style={{ marginBottom: 15 }}>
+            <span style={{ fontWeight: 600, fontSize: 15 }}>
+              3. Select PCs to Update:
+            </span>
 
             {/* Select / Deselect All */}
             <div
@@ -1139,14 +1158,12 @@ const handleDeleteComputer = async () => {
                 display: "flex",
                 justifyContent: "flex-end",
                 gap: 10,
-                marginTop: 8,
+                marginTop: 10,
               }}
             >
               <button
                 className="btn btn-outline-primary btn-sm"
-                onClick={() =>
-                  setSelectedPCs(labComputers.map((pc) => pc.id))
-                }
+                onClick={() => setSelectedPCs(labComputers.map((pc) => pc.id))}
               >
                 Select All
               </button>
@@ -1162,19 +1179,16 @@ const handleDeleteComputer = async () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(10, 1fr)",
-                gap: 12,
-                marginTop: 10,
+                gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+                gap: 16,
+                marginTop: 12,
               }}
             >
               {labComputers.map((pc) => {
                 const selected = selectedPCs.includes(pc.id);
                 const currentStatus =
-                  pc.parts && pc.parts[selectedPart]
-                    ? pc.parts[selectedPart]
-                    : "unknown";
-                const statusColor =
-                  statusColors[currentStatus]?.color || "#f4f4f4";
+                  pc.parts?.[selectedPart] || "unknown";
+                const statusColor = statusColors[currentStatus]?.color || "#f4f4f4";
                 const selectedStatusColor =
                   statusColors[selectedStatus]?.color || "#c8e6c9";
 
@@ -1189,48 +1203,35 @@ const handleDeleteComputer = async () => {
                       );
                     }}
                     style={{
-                      padding: "14px",
-                      borderRadius: "10px",
-                      border: selected ? "2px solid #006633" : "1px solid #ccc",
+                      padding: "16px",
+                      borderRadius: "12px",
+                      border: selected ? "2px solid #006633" : "1px solid #ddd",
                       cursor: "pointer",
-                      backgroundColor: selected ? selectedStatusColor : statusColor,
+                      background:
+                        selected || currentStatus === "unknown"
+                          ? selectedStatusColor
+                          : statusColor,
                       textAlign: "center",
                       position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: selected ? "0 4px 10px rgba(0,0,0,0.15)" : "",
                     }}
                   >
-                    <FaDesktop size={34} />
-                    <span
+                    <FaDesktop size={36} />
+                    <div
                       style={{
-                        fontSize: 13,
-                        marginTop: 6,
-                        fontWeight: 500,
-                        display: "block",
+                        fontSize: 14,
+                        marginTop: 8,
+                        fontWeight: 600,
+                        color: "#333",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        color: "#333",
                       }}
-                      title={pc.name}
+                      title={pc.pcNumber}
                     >
-                      {pc.name}
-                    </span>
-                    {!selected && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: 6,
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          fontSize: 10,
-                          padding: "2px 5px",
-                          borderRadius: 4,
-                          backgroundColor: "#fff",
-                          border: "1px solid #ccc",
-                        }}
-                      >
-                        {currentStatus}
-                      </span>
-                    )}
+                      {pc.pcNumber}
+                    </div>
                   </div>
                 );
               })}
@@ -1245,20 +1246,20 @@ const handleDeleteComputer = async () => {
           display: "flex",
           justifyContent: "flex-end",
           gap: 10,
-          padding: "10px 20px",
-          borderTop: "1px solid #ccc",
-          flexShrink: 0,
+          padding: "12px 25px",
+          borderTop: "1px solid #e5e5e5",
+          backgroundColor: "#f8f9fa",
         }}
       >
         <button
-          className="btn btn-outline-secondary btn-sm"
+          className="btn btn-outline-secondary"
           onClick={() => setShowQuickUpdate(false)}
         >
           Cancel
         </button>
         <button
-          className="btn btn-sm"
-          style={{ backgroundColor: "#006633", color: "#fff" }}
+          className="btn"
+          style={{ backgroundColor: "#006633", color: "#fff", padding: "6px 16px" }}
           onClick={() => {
             const updated = {};
             selectedPCs.forEach((pcId) => {
@@ -1277,9 +1278,7 @@ const handleDeleteComputer = async () => {
                 setSaveMsg("Selected PCs updated!");
                 setTimeout(() => setSaveMsg(""), 4000);
               })
-              .catch((err) =>
-                console.error("Error saving bulk statuses:", err)
-              );
+              .catch((err) => console.error("Error saving bulk statuses:", err));
           }}
         >
           Save All
@@ -1288,6 +1287,8 @@ const handleDeleteComputer = async () => {
     </div>
   </div>
 )}
+
+
 
  
 
